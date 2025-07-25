@@ -1,6 +1,11 @@
 // User model schema and validation
 
 export const UserSchema = {
+    auth0Id: {
+        type: String,
+        required: true,
+        unique: true
+    },
     email: {
         type: String,
         required: true,
@@ -13,16 +18,15 @@ export const UserSchema = {
             message: 'Please provide a valid email address'
         }
     },
-    password: {
-        type: String,
-        required: true,
-        minlength: 8
-    },
     name: {
         type: String,
         required: true,
         trim: true,
         maxlength: 100
+    },
+    picture: {
+        type: String,
+        trim: true
     },
     school: {
         type: String,
@@ -93,16 +97,14 @@ export const UserSchema = {
 export function validateUserCreation(userData) {
     const errors = [];
 
+    if (!userData.auth0Id) {
+        errors.push('Auth0 ID is required');
+    }
+
     if (!userData.email) {
         errors.push('Email is required');
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(userData.email)) {
         errors.push('Please provide a valid email address');
-    }
-
-    if (!userData.password) {
-        errors.push('Password is required');
-    } else if (userData.password.length < 8) {
-        errors.push('Password must be at least 8 characters long');
     }
 
     if (!userData.name) {
@@ -147,8 +149,8 @@ export function validateUserUpdate(userData) {
 // Helper functions for user operations
 export function createUserDocument(userData) {
     return {
+        auth0Id: userData.auth0Id,
         email: userData.email.toLowerCase(),
-        password: userData.password, // Should be hashed before calling this
         name: userData.name.trim(),
         school: userData.school ? userData.school.trim() : '',
         role: 'teacher',

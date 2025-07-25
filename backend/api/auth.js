@@ -3,6 +3,7 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { getDb } from '../services/database.js';
 import { validateEmail, validatePassword } from '../utils/helpers.js';
+import { createUserDocument, validateUserCreation, sanitizeUserForResponse } from '../models/user.js';
 
 const router = express.Router();
 
@@ -299,6 +300,80 @@ router.put('/profile', async (req, res) => {
     } catch (error) {
         console.error('Profile update error:', error);
         res.status(500).json({ error: 'Failed to update profile' });
+    }
+});
+
+// Auth0 authentication handler
+router.post('/auth0', async (req, res) => {
+    try {
+        const { auth0Id, email, name, picture } = req.body;
+        
+        if (!auth0Id || !email || !name) {
+            return res.status(400).json({ 
+                error: 'Auth0 ID, email, and name are required' 
+            });
+        }
+
+        const db = await getDb();
+        const users = db.collection('users');
+
+        // Check if user already exists
+        let user = await users.findOne({ auth0Id });
+        
+        if (user) {
+            // Update last login
+            await users.updateOne(
+                { _id: user._id },
+                { $set: { lastLogin: new Date() } }
+            );
+        } else {
+            // Create new user
+            const userData = {
+                auth0Id,
+                email: email.toLowerCase(),
+                name,
+                picture: picture || null
+            };
+
+            const errors = validateUserCreation(userData);
+            if (errors.length > 0) {
+                return res.status(400).json({ 
+                    error: 'Validation failed',
+                    details: errors 
+                });
+            }
+
+            const newUserDoc = createUserDocument(userData);
+            const result = await users.insertOne(newUserDoc);
+            
+            user = await users.findOne({ _id: result.insertedId });
+        }
+
+        // Generate JWT token
+        const token = jwt.sign(
+            { 
+                userId: user._id,
+                email: user.email,
+                role: user.role,
+                auth0Id: user.auth0Id
+            },
+            process.env.JWT_SECRET,
+            { expiresIn: '7d' }
+        );
+
+        const sanitizedUser = sanitizeUserForResponse(user);
+
+        res.json({
+            message: 'Authentication successful',
+            token,
+            user: sanitizedUser
+        });
+
+    } catch (error) {
+        console.error('Auth0 authentication error:', error);
+        res.status(500).json({ 
+            error: 'Authentication failed. Please try again.' 
+        });
     }
 });
 

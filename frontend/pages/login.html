@@ -372,8 +372,30 @@
                 await auth0Client.handleRedirectCallback();
                 const user = await auth0Client.getUser();
                 
-                // Store user info and redirect to dashboard
-                localStorage.setItem('user', JSON.stringify(user));
+                // Send user data to backend to create/update user in MongoDB
+                const response = await fetch('/api/auth/auth0', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        auth0Id: user.sub,
+                        email: user.email,
+                        name: user.name,
+                        picture: user.picture
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to authenticate with backend');
+                }
+
+                const authData = await response.json();
+                
+                // Store user info and token
+                localStorage.setItem('user', JSON.stringify(authData.user));
+                localStorage.setItem('token', authData.token);
+                
                 window.location.href = '/pages/dashboard.html';
             } catch (error) {
                 console.error('Error handling callback:', error);
