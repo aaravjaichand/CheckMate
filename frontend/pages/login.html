@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - CheckMate</title>
+    
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="stylesheet" href="/css/dashboard-glass.css">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Auth0 SDK -->
+    <script src="https://cdn.auth0.com/js/auth0-spa-js/2.1/auth0-spa-js.production.js"></script>
+    
+    <style>
+        .login-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            padding: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .login-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at 20% 50%, rgba(37, 99, 235, 0.1) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 20%, rgba(99, 102, 241, 0.1) 0%, transparent 50%),
+                        radial-gradient(circle at 40% 80%, rgba(59, 130, 246, 0.1) 0%, transparent 50%);
+            pointer-events: none;
+        }
+
+        .login-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px) saturate(150%);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            padding: 3rem;
+            width: 100%;
+            max-width: 420px;
+            box-shadow: 
+                0 20px 60px rgba(0, 0, 0, 0.4),
+                0 8px 20px rgba(0, 0, 0, 0.2),
+                inset 0 1px 2px rgba(255, 255, 255, 0.1);
+            position: relative;
+            z-index: 1;
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 2.5rem;
+        }
+
+        .login-logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .login-logo i {
+            font-size: 2rem;
+            color: var(--primary-color);
+        }
+
+        .login-logo h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--white);
+            margin: 0;
+        }
+
+        .login-subtitle {
+            color: var(--gray-300);
+            font-size: 1rem;
+            margin: 0;
+        }
+
+        .login-methods {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .auth-button {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            padding: 1rem 1.5rem;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .auth-button:hover {
+            transform: translateY(-2px);
+        }
+
+        .google-btn {
+            background: var(--white);
+            color: #1f2937;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .google-btn:hover {
+            background: #f9fafb;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .email-btn {
+            background: linear-gradient(135deg, var(--primary-color) 0%, rgba(37, 99, 235, 0.9) 100%);
+            color: var(--white);
+            box-shadow: 
+                0 6px 25px rgba(37, 99, 235, 0.4),
+                0 2px 8px rgba(37, 99, 235, 0.2);
+        }
+
+        .email-btn:hover {
+            background: linear-gradient(135deg, rgba(37, 99, 235, 1) 0%, rgba(37, 99, 235, 0.95) 100%);
+            box-shadow: 
+                0 8px 30px rgba(37, 99, 235, 0.5),
+                0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .passwordless-btn {
+            background: rgba(0, 0, 0, 0.6);
+            color: var(--white);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(16px);
+        }
+
+        .passwordless-btn:hover {
+            background: rgba(0, 0, 0, 0.8);
+            border-color: rgba(37, 99, 235, 0.6);
+            box-shadow: 0 8px 25px rgba(37, 99, 235, 0.2);
+        }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            margin: 1.5rem 0;
+            color: var(--gray-400);
+            font-size: 0.875rem;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .divider span {
+            padding: 0 1rem;
+        }
+
+        .login-footer {
+            text-align: center;
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .login-footer p {
+            color: var(--gray-400);
+            font-size: 0.875rem;
+            margin: 0;
+        }
+
+        .login-footer a {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .login-footer a:hover {
+            text-decoration: underline;
+        }
+
+        /* Loading state */
+        .loading {
+            opacity: 0.7;
+            pointer-events: none;
+        }
+
+        .loading::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 20px;
+            height: 20px;
+            margin: -10px 0 0 -10px;
+            border: 2px solid transparent;
+            border-top: 2px solid currentColor;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Floating elements */
+        .floating-element {
+            position: absolute;
+            border-radius: 50%;
+            background: linear-gradient(135deg, rgba(37, 99, 235, 0.1), rgba(99, 102, 241, 0.1));
+            animation: float 6s ease-in-out infinite;
+            pointer-events: none;
+        }
+
+        .floating-element-1 {
+            width: 80px;
+            height: 80px;
+            top: 10%;
+            left: 10%;
+            animation-delay: 0s;
+        }
+
+        .floating-element-2 {
+            width: 120px;
+            height: 120px;
+            top: 70%;
+            right: 15%;
+            animation-delay: 2s;
+        }
+
+        .floating-element-3 {
+            width: 60px;
+            height: 60px;
+            bottom: 10%;
+            left: 20%;
+            animation-delay: 4s;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(180deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-card">
+            <div class="login-header">
+                <div class="login-logo">
+                    <i class="fas fa-graduation-cap"></i>
+                    <h1>CheckMate</h1>
+                </div>
+                <p class="login-subtitle">Welcome back! Sign in to your account</p>
+            </div>
+
+            <div class="login-methods">
+                <!-- Google Login -->
+                <button id="google-login" class="auth-button google-btn">
+                    <i class="fab fa-google"></i>
+                    Continue with Google
+                </button>
+
+                <div class="divider">
+                    <span>or</span>
+                </div>
+
+                <!-- Email/Password Login -->
+                <button id="email-login" class="auth-button email-btn">
+                    <i class="fas fa-envelope"></i>
+                    Sign in with Email
+                </button>
+
+                <div class="divider">
+                    <span>or</span>
+                </div>
+
+                <!-- Passwordless Login -->
+                <button id="passwordless-login" class="auth-button passwordless-btn">
+                    <i class="fas fa-magic"></i>
+                    Send Magic Link
+                </button>
+            </div>
+
+            <div class="login-footer">
+                <p>
+                    New to CheckMate? 
+                    <a href="#" id="signup-link">Create an account</a>
+                </p>
+                <p style="margin-top: 1rem;">
+                    <a href="/">← Back to Home</a>
+                </p>
+            </div>
+        </div>
+
+        <!-- Floating Background Elements -->
+        <div class="floating-element floating-element-1"></div>
+        <div class="floating-element floating-element-2"></div>
+        <div class="floating-element floating-element-3"></div>
+    </div>
+
+    <script>
+        let auth0Client = null;
+        let auth0Config = null;
+
+        // Fetch Auth0 configuration from server
+        async function fetchAuth0Config() {
+            try {
+                const response = await fetch('/api/config/auth0');
+                if (!response.ok) {
+                    throw new Error('Failed to fetch Auth0 configuration');
+                }
+                return await response.json();
+            } catch (error) {
+                console.error('Error fetching Auth0 config:', error);
+                throw new Error('Authentication service is not configured properly.');
+            }
+        }
+
+        // Initialize Auth0
+        async function initAuth0() {
+            try {
+                // Fetch configuration from server
+                auth0Config = await fetchAuth0Config();
+                
+                auth0Client = await auth0.createAuth0Client({
+                    domain: auth0Config.domain,
+                    clientId: auth0Config.clientId,
+                    authorizationParams: {
+                        redirect_uri: auth0Config.redirectUri,
+                        audience: auth0Config.audience
+                    }
+                });
+
+                // Check if user is already authenticated
+                const isAuthenticated = await auth0Client.isAuthenticated();
+                if (isAuthenticated) {
+                    window.location.href = '/pages/dashboard.html';
+                }
+
+                // Handle redirect callback
+                if (window.location.search.includes('code=')) {
+                    await handleCallback();
+                }
+            } catch (error) {
+                console.error('Error initializing Auth0:', error);
+                alert('Authentication service is not available. Please try again later.');
+            }
+        }
+
+        // Handle authentication callback
+        async function handleCallback() {
+            try {
+                await auth0Client.handleRedirectCallback();
+                const user = await auth0Client.getUser();
+                
+                // Store user info and redirect to dashboard
+                localStorage.setItem('user', JSON.stringify(user));
+                window.location.href = '/pages/dashboard.html';
+            } catch (error) {
+                console.error('Error handling callback:', error);
+                alert('Login failed. Please try again.');
+            }
+        }
+
+        // Login with Google
+        async function loginWithGoogle() {
+            try {
+                setLoading('google-login', true);
+                await auth0Client.loginWithRedirect({
+                    authorizationParams: {
+                        connection: 'google-oauth2'
+                    }
+                });
+            } catch (error) {
+                console.error('Google login error:', error);
+                alert('Google login failed. Please try again.');
+                setLoading('google-login', false);
+            }
+        }
+
+        // Login with Email/Password
+        async function loginWithEmail() {
+            try {
+                setLoading('email-login', true);
+                await auth0Client.loginWithRedirect({
+                    authorizationParams: {
+                        connection: 'Username-Password-Authentication'
+                    }
+                });
+            } catch (error) {
+                console.error('Email login error:', error);
+                alert('Email login failed. Please try again.');
+                setLoading('email-login', false);
+            }
+        }
+
+        // Passwordless Login
+        async function loginWithPasswordless() {
+            const email = prompt('Enter your email address for magic link:');
+            if (!email) return;
+
+            try {
+                setLoading('passwordless-login', true);
+                await auth0Client.loginWithRedirect({
+                    authorizationParams: {
+                        connection: 'email'
+                    },
+                    login_hint: email
+                });
+            } catch (error) {
+                console.error('Passwordless login error:', error);
+                alert('Magic link failed. Please try again.');
+                setLoading('passwordless-login', false);
+            }
+        }
+
+        // Set loading state
+        function setLoading(buttonId, loading) {
+            const button = document.getElementById(buttonId);
+            if (loading) {
+                button.classList.add('loading');
+                button.disabled = true;
+            } else {
+                button.classList.remove('loading');
+                button.disabled = false;
+            }
+        }
+
+        // Event listeners
+        document.addEventListener('DOMContentLoaded', () => {
+            initAuth0();
+
+            document.getElementById('google-login').addEventListener('click', loginWithGoogle);
+            document.getElementById('email-login').addEventListener('click', loginWithEmail);
+            document.getElementById('passwordless-login').addEventListener('click', loginWithPasswordless);
+            
+            document.getElementById('signup-link').addEventListener('click', (e) => {
+                e.preventDefault();
+                // Redirect to signup (same page but with signup intent)
+                alert('Signup will use the same Auth0 login methods. Choose any method above to create a new account.');
+            });
+        });
+    </script>
+</body>
+</html>

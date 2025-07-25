@@ -12,6 +12,7 @@ import authRoutes from './backend/api/auth.js';
 import uploadRoutes from './backend/api/upload.js';
 import gradingRoutes from './backend/api/grading.js';
 import dashboardRoutes from './backend/api/dashboard.js';
+import configRoutes from './backend/api/config.js';
 
 // Load environment variables
 dotenv.config();
@@ -58,6 +59,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/grading', gradingRoutes);
 app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/config', configRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {

@@ -1908,17 +1908,24 @@
 
 /* Ensure export button aligns with dropdowns */
 .analytics-controls .liquid-button {
-    height: auto;
     padding: var(--spacing-3) var(--spacing-4);
-    align-self: center;
+    align-self: flex-end;
+    margin-top: 0;
+    margin-bottom: 0;
 }
 
 /* Ensure dropdowns and button have consistent height */
 .analytics-controls .liquid-dropdown-button,
 .analytics-controls .liquid-button {
-    min-height: 44px;
+    height: 48px;
     display: flex;
     align-items: center;
+    box-sizing: border-box;
+}
+
+/* Make sure control groups align properly */
+.analytics-controls .control-group {
+    align-items: flex-end;
 }
 
 .metrics-grid {
