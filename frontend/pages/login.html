@@ -369,8 +369,10 @@
         // Handle authentication callback
         async function handleCallback() {
             try {
+                console.log('Handling Auth0 callback...');
                 await auth0Client.handleRedirectCallback();
                 const user = await auth0Client.getUser();
+                console.log('Auth0 user:', user);
                 
                 // Send user data to backend to create/update user in MongoDB
                 const response = await fetch('/api/auth/auth0', {
@@ -386,15 +388,21 @@
                     })
                 });
 
+                console.log('Backend response status:', response.status);
+
                 if (!response.ok) {
+                    const errorData = await response.text();
+                    console.error('Backend error:', errorData);
                     throw new Error('Failed to authenticate with backend');
                 }
 
                 const authData = await response.json();
+                console.log('Auth data from backend:', authData);
                 
                 // Store user info and token
                 localStorage.setItem('user', JSON.stringify(authData.user));
                 localStorage.setItem('token', authData.token);
+                console.log('Stored user data in localStorage');
                 
                 window.location.href = '/pages/dashboard.html';
             } catch (error) {

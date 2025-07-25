@@ -6,9 +6,13 @@ function loadUserData() {
         const userData = localStorage.getItem('user');
         const token = localStorage.getItem('token');
         
+        console.log('Loading user data:', { userData, token });
+        
         if (!userData || !token) {
-            // Redirect to login if no user data
-            window.location.href = '/pages/login.html';
+            // Redirect to login if no user data (but give callback time to complete)
+            setTimeout(() => {
+                window.location.href = '/pages/login.html';
+            }, 1000);
             return null;
         }
 
