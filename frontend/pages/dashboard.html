@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - GradeFlow</title>
+    
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="stylesheet" href="/css/dashboard.css">
+    <link rel="stylesheet" href="/css/dashboard-glass.css">
+    <link rel="stylesheet" href="/css/pages-glass.css">
+    <link rel="stylesheet" href="/css/liquid-nav.css">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="dashboard-body">
+    <!-- Liquid Glass Navigation -->
+    <nav class="liquid-nav">
+        <a href="/" class="nav-brand-liquid">
+            <i class="fas fa-graduation-cap"></i>
+            <span>GradeFlow</span>
+        </a>
+        
+        <div class="nav-items">
+            <a href="/pages/dashboard.html" class="nav-item-liquid active">
+                <i class="fas fa-home"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="/pages/upload.html" class="nav-item-liquid">
+                <i class="fas fa-upload"></i>
+                <span>Upload</span>
+            </a>
+            <a href="/pages/grading.html" class="nav-item-liquid">
+                <i class="fas fa-check-double"></i>
+                <span>Grading</span>
+            </a>
+            <a href="/pages/analytics.html" class="nav-item-liquid">
+                <i class="fas fa-chart-line"></i>
+                <span>Analytics</span>
+            </a>
+            <a href="/pages/settings.html" class="nav-item-liquid">
+                <i class="fas fa-cog"></i>
+                <span>Settings</span>
+            </a>
+        </div>
+        
+        <div class="nav-user-liquid">
+            <div class="user-info-liquid">
+                <div class="user-name-liquid">Teacher Name</div>
+                <div class="user-plan-liquid">Pro Plan</div>
+            </div>
+            <div class="user-avatar-liquid" onclick="toggleDropdown()">
+                <i class="fas fa-user"></i>
+            </div>
+            <div class="dropdown-liquid" id="userDropdown">
+                <a href="/pages/settings.html" class="dropdown-item-liquid">
+                    <i class="fas fa-cog"></i>
+                    Settings
+                </a>
+                <a href="/" class="dropdown-item-liquid">
+                    <i class="fas fa-sign-out-alt"></i>
+                    Logout
+                </a>
+            </div>
+        </div>
+    </nav>
+    
+    <!-- Old Navigation (Hidden) -->
+    <nav class="dashboard-nav" style="display: none;">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <i class="fas fa-graduation-cap"></i>
+                <span>GradeFlow</span>
+            </div>
+            
+            <div class="nav-user">
+                <div class="user-info">
+                    <span class="user-name" id="user-name">Teacher Name</span>
+                    <span class="user-plan" id="user-plan">Pro Plan</span>
+                </div>
+                <div class="user-avatar" id="user-avatar">
+                    <i class="fas fa-user"></i>
+                </div>
+                <div class="dropdown-menu" id="user-dropdown">
+                    <a href="/pages/dashboard.html"><i class="fas fa-home"></i> Dashboard</a>
+                    <a href="/pages/settings.html"><i class="fas fa-cog"></i> Settings</a>
+                    <a href="#" id="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Sidebar (Hidden) -->
+    <aside class="dashboard-sidebar" style="display: none;">
+        <nav class="sidebar-nav">
+            <a href="/pages/dashboard.html" class="nav-item active">
+                <i class="fas fa-home"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="/pages/upload.html" class="nav-item">
+                <i class="fas fa-upload"></i>
+                <span>Upload</span>
+            </a>
+            <a href="/pages/grading.html" class="nav-item">
+                <i class="fas fa-check-double"></i>
+                <span>Grading</span>
+            </a>
+            <a href="/pages/analytics.html" class="nav-item">
+                <i class="fas fa-chart-line"></i>
+                <span>Analytics</span>
+            </a>
+            <a href="/pages/settings.html" class="nav-item">
+                <i class="fas fa-cog"></i>
+                <span>Settings</span>
+            </a>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="dashboard-main">
+        <div class="main-header">
+            <h1>Dashboard</h1>
+            <p>Welcome back! Here's what's happening with your grading.</p>
+        </div>
+
+        <!-- Quick Stats -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-file-alt"></i>
+                </div>
+                <div class="stat-info">
+                    <div class="stat-value" id="total-worksheets">0</div>
+                    <div class="stat-label">Worksheets This Month</div>
+                </div>
+                <div class="stat-change positive">
+                    <i class="fas fa-arrow-up"></i>
+                    <span id="worksheets-change">+0%</span>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="stat-info">
+                    <div class="stat-value" id="graded-worksheets">0</div>
+                    <div class="stat-label">Graded</div>
+                </div>
+                <div class="stat-change positive">
+                    <i class="fas fa-arrow-up"></i>
+                    <span id="graded-change">+0%</span>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-star"></i>
+                </div>
+                <div class="stat-info">
+                    <div class="stat-value" id="average-score">0%</div>
+                    <div class="stat-label">Average Score</div>
+                </div>
+                <div class="stat-change neutral">
+                    <i class="fas fa-minus"></i>
+                    <span id="score-change">0%</span>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div class="stat-info">
+                    <div class="stat-value" id="time-saved">0h</div>
+                    <div class="stat-label">Time Saved</div>
+                </div>
+                <div class="stat-change positive">
+                    <i class="fas fa-arrow-up"></i>
+                    <span id="time-change">+0%</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="quick-actions">
+            <div class="action-card">
+                <div class="action-icon">
+                    <i class="fas fa-upload"></i>
+                </div>
+                <div class="action-content">
+                    <h3>Upload Worksheets</h3>
+                    <p>Upload new worksheets for AI grading</p>
+                    <a href="/pages/upload.html" class="btn btn-primary">Upload Now</a>
+                </div>
+            </div>
+
+            <div class="action-card">
+                <div class="action-icon">
+                    <i class="fas fa-check-double"></i>
+                </div>
+                <div class="action-content">
+                    <h3>Review Grading</h3>
+                    <p>Review and approve AI-graded worksheets</p>
+                    <a href="/pages/grading.html" class="btn btn-outline">Review Grading</a>
+                </div>
+            </div>
+
+            <div class="action-card">
+                <div class="action-icon">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <div class="action-content">
+                    <h3>View Analytics</h3>
+                    <p>Analyze class performance and trends</p>
+                    <a href="/pages/analytics.html" class="btn btn-outline">View Analytics</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Activity & Charts Row -->
+        <div class="dashboard-row">
+            <!-- Recent Activity -->
+            <div class="activity-section">
+                <div class="activity-card">
+                    <div class="activity-header">
+                        <h2>Recent Activity</h2>
+                        <div class="activity-filters">
+                            <select id="activity-filter" class="form-select">
+                                <option value="all">All Activity</option>
+                                <option value="uploaded">Uploaded</option>
+                                <option value="graded">Graded</option>
+                                <option value="error">Errors</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="activity-list" id="activity-list">
+                        <div class="empty-state">
+                            <i class="fas fa-history"></i>
+                            <p>No recent activity</p>
+                            <span>Your recent grading activity will appear here</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Grade Distribution Chart -->
+            <div class="chart-section">
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h2>Grade Distribution</h2>
+                        <div class="chart-controls">
+                            <select id="grade-period" class="form-select">
+                                <option value="7d">Last 7 days</option>
+                                <option value="30d" selected>Last 30 days</option>
+                                <option value="90d">Last 90 days</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="chart-container">
+                        <canvas id="gradeChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Performance Trends -->
+        <div class="trends-section">
+            <div class="trends-card">
+                <div class="trends-header">
+                    <h2>Performance Trends</h2>
+                    <div class="trends-controls">
+                        <select id="trends-subject" class="form-select">
+                            <option value="">All Subjects</option>
+                            <option value="math">Mathematics</option>
+                            <option value="english">English</option>
+                            <option value="science">Science</option>
+                        </select>
+                        <select id="trends-period" class="form-select">
+                            <option value="7d">Last 7 days</option>
+                            <option value="30d" selected>Last 30 days</option>
+                            <option value="90d">Last 90 days</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="chart-container">
+                    <canvas id="trendsChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Class Performance Summary -->
+        <div class="class-section">
+            <div class="class-card">
+                <div class="class-header">
+                    <h2>Class Performance Summary</h2>
+                    <a href="/pages/analytics.html" class="view-detailed-link">View Detailed Analytics</a>
+                </div>
+                
+                <div class="performance-grid" id="performance-grid">
+                    <div class="empty-state">
+                        <i class="fas fa-users"></i>
+                        <p>No class data available</p>
+                        <span>Upload and grade worksheets to see class performance</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Usage & Limits -->
+        <div class="usage-section">
+            <div class="usage-card">
+                <div class="usage-header">
+                    <h2>Monthly Usage</h2>
+                    <div class="plan-info">
+                        <span class="current-plan" id="current-plan">Freemium Plan</span>
+                        <a href="/pages/settings.html#billing" class="upgrade-btn">Upgrade</a>
+                    </div>
+                </div>
+                
+                <div class="usage-stats">
+                    <div class="usage-stat">
+                        <div class="usage-circle">
+                            <svg class="progress-ring" width="80" height="80">
+                                <circle class="progress-ring-circle" stroke="var(--gray-200)" stroke-width="6" fill="transparent" r="34" cx="40" cy="40"/>
+                                <circle class="progress-ring-progress" stroke="var(--primary-color)" stroke-width="6" fill="transparent" r="34" cx="40" cy="40" id="usage-circle"/>
+                            </svg>
+                            <div class="usage-percentage" id="monthly-usage-percent">0%</div>
+                        </div>
+                        <div class="usage-details">
+                            <div class="usage-numbers">
+                                <span class="used" id="monthly-used">0</span> / 
+                                <span class="limit" id="monthly-limit">50</span>
+                            </div>
+                            <div class="usage-label">Worksheets</div>
+                        </div>
+                    </div>
+                    
+                    <div class="usage-breakdown">
+                        <div class="breakdown-item">
+                            <div class="breakdown-label">This Week</div>
+                            <div class="breakdown-value" id="week-usage">0</div>
+                        </div>
+                        <div class="breakdown-item">
+                            <div class="breakdown-label">Remaining</div>
+                            <div class="breakdown-value" id="remaining-usage">50</div>
+                        </div>
+                        <div class="breakdown-item">
+                            <div class="breakdown-label">Resets</div>
+                            <div class="breakdown-value" id="reset-date">-</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Scripts -->
+    <script src="/js/dashboard.js"></script>
+    <script>
+        function toggleDropdown() {
+            const dropdown = document.getElementById('userDropdown');
+            dropdown.classList.toggle('active');
+        }
+        
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(event) {
+            const userAvatar = document.querySelector('.user-avatar-liquid');
+            const dropdown = document.getElementById('userDropdown');
+            
+            if (!userAvatar.contains(event.target) && !dropdown.contains(event.target)) {
+                dropdown.classList.remove('active');
+            }
+        });
+    </script>
+    <!-- Floating Background Elements -->
+    <div class="floating-element floating-element-1"></div>
+    <div class="floating-element floating-element-2"></div>
+    <div class="floating-element floating-element-3"></div>
+</body>
+</html>

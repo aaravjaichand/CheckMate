@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings - GradeFlow</title>
+    
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="stylesheet" href="/css/dashboard.css">
+    <link rel="stylesheet" href="/css/dashboard-glass.css">
+    <link rel="stylesheet" href="/css/pages-glass.css">
+    <link rel="stylesheet" href="/css/liquid-nav.css">
+    <link rel="stylesheet" href="/css/settings-list.css">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="dashboard-body">
+    <!-- Liquid Glass Navigation -->
+    <nav class="liquid-nav">
+        <a href="/" class="nav-brand-liquid">
+            <i class="fas fa-graduation-cap"></i>
+            <span>GradeFlow</span>
+        </a>
+        
+        <div class="nav-items">
+            <a href="/pages/dashboard.html" class="nav-item-liquid">
+                <i class="fas fa-home"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="/pages/upload.html" class="nav-item-liquid">
+                <i class="fas fa-upload"></i>
+                <span>Upload</span>
+            </a>
+            <a href="/pages/grading.html" class="nav-item-liquid">
+                <i class="fas fa-check-double"></i>
+                <span>Grading</span>
+            </a>
+            <a href="/pages/analytics.html" class="nav-item-liquid">
+                <i class="fas fa-chart-line"></i>
+                <span>Analytics</span>
+            </a>
+            <a href="/pages/settings.html" class="nav-item-liquid active">
+                <i class="fas fa-cog"></i>
+                <span>Settings</span>
+            </a>
+        </div>
+        
+        <div class="nav-user-liquid">
+            <div class="user-info-liquid">
+                <div class="user-name-liquid">Teacher Name</div>
+                <div class="user-plan-liquid">Pro Plan</div>
+            </div>
+            <div class="user-avatar-liquid" onclick="toggleDropdown()">
+                <i class="fas fa-user"></i>
+            </div>
+            <div class="dropdown-liquid" id="userDropdown">
+                <a href="/pages/settings.html" class="dropdown-item-liquid">
+                    <i class="fas fa-cog"></i>
+                    Settings
+                </a>
+                <a href="/" class="dropdown-item-liquid">
+                    <i class="fas fa-sign-out-alt"></i>
+                    Logout
+                </a>
+            </div>
+        </div>
+    </nav>
+    
+    <!-- Old Navigation (Hidden) -->
+    <nav class="dashboard-nav" style="display: none;">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <i class="fas fa-graduation-cap"></i>
+                <span>GradeFlow</span>
+            </div>
+            
+            <div class="nav-user">
+                <div class="user-info">
+                    <span class="user-name" id="user-name">Teacher Name</span>
+                    <span class="user-plan" id="user-plan">Pro Plan</span>
+                </div>
+                <div class="user-avatar" id="user-avatar">
+                    <i class="fas fa-user"></i>
+                </div>
+                <div class="dropdown-menu" id="user-dropdown">
+                    <a href="/pages/dashboard.html"><i class="fas fa-home"></i> Dashboard</a>
+                    <a href="/pages/settings.html"><i class="fas fa-cog"></i> Settings</a>
+                    <a href="#" id="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Sidebar -->
+    <aside class="dashboard-sidebar">
+        <nav class="sidebar-nav">
+            <a href="/pages/dashboard.html" class="nav-item">
+                <i class="fas fa-home"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="/pages/upload.html" class="nav-item">
+                <i class="fas fa-upload"></i>
+                <span>Upload</span>
+            </a>
+            <a href="/pages/grading.html" class="nav-item">
+                <i class="fas fa-check-double"></i>
+                <span>Grading</span>
+            </a>
+            <a href="/pages/analytics.html" class="nav-item">
+                <i class="fas fa-chart-line"></i>
+                <span>Analytics</span>
+            </a>
+            <a href="/pages/settings.html" class="nav-item active">
+                <i class="fas fa-cog"></i>
+                <span>Settings</span>
+            </a>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="dashboard-main">
+        <div class="main-header" style="text-align: center;">
+            <h1>Settings</h1>
+            <p>Manage your account preferences and grading settings</p>
+        </div>
+
+        <!-- Settings Content -->
+        <div class="settings-container">
+            <div class="settings-list">
+                <!-- Profile Settings -->
+                <div class="settings-section">
+                    <div class="section-header">
+                        <div class="section-title">
+                            <i class="fas fa-user"></i>
+                            Profile Information
+                        </div>
+                        <div class="section-description">Manage your personal and professional details</div>
+                    </div>
+                    <div class="settings-items">
+                        <div class="settings-item">
+                            <div class="item-content">
+                                <div class="item-title">Full Name</div>
+                                <div class="item-description">Your display name for the platform</div>
+                            </div>
+                            <div class="item-control">
+                                <input type="text" class="settings-input" value="Teacher Name" id="full-name">
+                            </div>
+                        </div>
+                        <div class="settings-item">
+                            <div class="item-content">
+                                <div class="item-title">Email Address</div>
+                                <div class="item-description">Contact support to change your email</div>
+                            </div>
+                            <div class="item-control">
+                                <input type="email" class="settings-input" value="teacher@school.edu" disabled>
+                            </div>
+                        </div>
+                        <div class="settings-item">
+                            <div class="item-content">
+                                <div class="item-title">School/Organization</div>
+                                <div class="item-description">Your educational institution</div>
+                            </div>
+                            <div class="item-control">
+                                <input type="text" class="settings-input" value="Lincoln Elementary School">
+                            </div>
+                        </div>
+                        <div class="settings-item">
+                            <div class="item-content">
+                                <div class="item-title">Profile Settings</div>
+                                <div class="item-description">Save your profile changes</div>
+                            </div>
+                            <div class="item-control">
+                                <button class="settings-button primary" onclick="saveProfile()">
+                                    <i class="fas fa-save"></i>
+                                    Save Profile
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Grading Preferences -->
+                <div class="settings-section">
+                    <div class="section-header">
+                        <div class="section-title">
+                            <i class="fas fa-check-double"></i>
+                            Grading Preferences
+                        </div>
+                        <div class="section-description">Customize how AI grades your worksheets</div>
+                    </div>
+                    <div class="settings-items">
+                        <div class="settings-item">
+                            <div class="item-content">
+                                <div class="item-title">Feedback Tone</div>
+                                <div class="item-description">How AI communicates with students</div>
+                            </div>
+                            <div class="item-control">
+                                <select class="settings-select" id="feedback-tone">
+                                    <option value="encouraging" selected>Encouraging</option>
+                                    <option value="strict">Strict</option>
+                                    <option value="funny">Funny</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="settings-item">
+                            <div class="item-content">
+                                <div class="item-title">Grade Display Format</div>
+                                <div class="item-description">How grades are shown to students</div>
+                            </div>
+                            <div class="item-control">
+                                <select class="settings-select" id="grade-display">
+                                    <option value="percentage" selected>Percentage (85%)</option>
+                                    <option value="letter">Letter Grade (B+)</option>
+                                    <option value="points">Points (85/100)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="settings-item">
+                            <div class="item-content">
+                                <div class="item-title">Show Work Steps</div>
+                                <div class="item-description">Include detailed solution steps in feedback</div>
+                            </div>
+                            <div class="item-control">
+                                <div class="toggle-switch active" onclick="toggleSwitch(this)" data-setting="showWorkSteps"></div>
+                            </div>
+                        </div>
+                        <div class="settings-item">
+                            <div class="item-content">
+                                <div class="item-title">Partial Credit</div>
+                                <div class="item-description">Award points for correct methodology</div>
+                            </div>
+                            <div class="item-control">
+                                <div class="toggle-switch active" onclick="toggleSwitch(this)" data-setting="partialCredit"></div>
+                            </div>
+                        </div>
+                        <div class="settings-item">
+                            <div class="item-content">
+                                <div class="item-title">Grading Settings</div>
+                                <div class="item-description">Save your grading preferences</div>
+                            </div>
+                            <div class="item-control">
+                                <button class="settings-button primary" onclick="saveGrading()">
+                                    <i class="fas fa-save"></i>
+                                    Save Preferences
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Notifications -->
+                <div class="settings-section">
+                    <div class="section-header">
+                        <div class="section-title">
+                            <i class="fas fa-bell"></i>
+                            Notifications
+                        </div>
+                        <div class="section-description">Control when and how you receive updates</div>
+                    </div>
+                    <div class="settings-items">
+                        <div class="settings-item">
+                            <div class="item-content">
+                                <div class="item-title">Email Notifications</div>
+                                <div class="item-description">Receive updates about processing and grades</div>
+                            </div>
+                            <div class="item-control">
+                                <div class="status-indicator">
+                                    <div class="status-dot active"></div>
+                                    <span>Active</span>
+                                </div>
+                                <div class="toggle-switch active" onclick="toggleSwitch(this)" data-setting="emailNotifications"></div>
+                            </div>
+                        </div>
+                        <div class="settings-item">
+                            <div class="item-content">
+                                <div class="item-title">Processing Updates</div>
+                                <div class="item-description">Get notified when worksheets finish processing</div>
+                            </div>
+                            <div class="item-control">
+                                <div class="toggle-switch active" onclick="toggleSwitch(this)" data-setting="processingUpdates"></div>
+                            </div>
+                        </div>
+                        <div class="settings-item">
+                            <div class="item-content">
+                                <div class="item-title">Weekly Reports</div>
+                                <div class="item-description">Receive weekly analytics and progress summaries</div>
+                            </div>
+                            <div class="item-control">
+                                <div class="toggle-switch" onclick="toggleSwitch(this)" data-setting="weeklyReports"></div>
+                            </div>
+                        </div>
+                        <div class="settings-item">
+                            <div class="item-content">
+                                <div class="item-title">Notification Settings</div>
+                                <div class="item-description">Save your notification preferences</div>
+                            </div>
+                            <div class="item-control">
+                                <button class="settings-button primary" onclick="saveNotifications()">
+                                    <i class="fas fa-save"></i>
+                                    Save Settings
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Plan & Billing -->
+                <div class="settings-section">
+                    <div class="section-header">
+                        <div class="section-title">
+                            <i class="fas fa-credit-card"></i>
+                            Plan & Billing
+                        </div>
+                        <div class="section-description">Manage your subscription and usage</div>
+                    </div>
+                    <div class="settings-items">
+                        <div class="settings-item">
+                            <div class="item-content">
+                                <div class="item-title">Current Plan</div>
+                                <div class="item-description">Freemium - 50 worksheets per month</div>
+                            </div>
+                            <div class="item-control">
+                                <div class="status-indicator">
+                                    <div class="status-dot active"></div>
+                                    <span>Active</span>
+                                </div>
+                                <button class="settings-button primary">
+                                    <i class="fas fa-arrow-up"></i>
+                                    Upgrade
+                                </button>
+                            </div>
+                        </div>
+                        <div class="settings-item">
+                            <div class="item-content">
+                                <div class="item-title">Monthly Usage</div>
+                                <div class="item-description">Track your worksheet usage this month</div>
+                            </div>
+                            <div class="item-control">
+                                <div class="progress-container">
+                                    <div class="progress-info">
+                                        <span class="progress-label">Worksheets Used</span>
+                                        <span class="progress-value">0 / 50</span>
+                                    </div>
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" style="width: 0%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="settings-item">
+                            <div class="item-content">
+                                <div class="item-title">Plan Features</div>
+                                <div class="item-description">✓ Basic AI grading ✓ Standard feedback ✗ Advanced analytics</div>
+                            </div>
+                            <div class="item-control">
+                                <button class="settings-button">
+                                    <i class="fas fa-list"></i>
+                                    Compare Plans
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Account Security -->
+                <div class="settings-section">
+                    <div class="section-header">
+                        <div class="section-title">
+                            <i class="fas fa-shield-alt"></i>
+                            Account Security
+                        </div>
+                        <div class="section-description">Keep your account safe and secure</div>
+                    </div>
+                    <div class="settings-items">
+                        <div class="settings-item">
+                            <div class="item-content">
+                                <div class="item-title">Password</div>
+                                <div class="item-description">Last changed 30 days ago</div>
+                            </div>
+                            <div class="item-control">
+                                <div class="status-indicator">
+                                    <div class="status-dot active"></div>
+                                    <span>Strong</span>
+                                </div>
+                                <button class="settings-button" onclick="changePassword()">
+                                    <i class="fas fa-key"></i>
+                                    Change
+                                </button>
+                            </div>
+                        </div>
+                        <div class="settings-item">
+                            <div class="item-content">
+                                <div class="item-title">Two-Factor Authentication</div>
+                                <div class="item-description">Add an extra layer of security</div>
+                            </div>
+                            <div class="item-control">
+                                <div class="status-indicator">
+                                    <div class="status-dot inactive"></div>
+                                    <span>Disabled</span>
+                                </div>
+                                <button class="settings-button primary">
+                                    <i class="fas fa-mobile-alt"></i>
+                                    Enable
+                                </button>
+                            </div>
+                        </div>
+                        <div class="settings-item">
+                            <div class="item-content">
+                                <div class="item-title">Last Login</div>
+                                <div class="item-description">Monitor your account activity</div>
+                            </div>
+                            <div class="item-control">
+                                <span style="color: var(--gray-400); font-size: var(--font-size-sm);">Today at 2:30 PM</span>
+                            </div>
+                        </div>
+                        <div class="settings-item">
+                            <div class="item-content">
+                                <div class="item-title">Account Created</div>
+                                <div class="item-description">Member since</div>
+                            </div>
+                            <div class="item-control">
+                                <span style="color: var(--gray-400); font-size: var(--font-size-sm);">March 15, 2024</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Data & Privacy -->
+                <div class="settings-section">
+                    <div class="section-header">
+                        <div class="section-title">
+                            <i class="fas fa-database"></i>
+                            Data & Privacy
+                        </div>
+                        <div class="section-description">Control your data and privacy settings</div>
+                    </div>
+                    <div class="settings-items">
+                        <div class="settings-item">
+                            <div class="item-content">
+                                <div class="item-title">Data Export</div>
+                                <div class="item-description">Download all your worksheets, grades, and analytics</div>
+                            </div>
+                            <div class="item-control">
+                                <button class="settings-button" onclick="exportData()">
+                                    <i class="fas fa-download"></i>
+                                    Export Data
+                                </button>
+                            </div>
+                        </div>
+                        <div class="settings-item">
+                            <div class="item-content">
+                                <div class="item-title">Data Retention</div>
+                                <div class="item-description">How long we keep your data</div>
+                            </div>
+                            <div class="item-control">
+                                <select class="settings-select">
+                                    <option value="1year" selected>1 Year</option>
+                                    <option value="2years">2 Years</option>
+                                    <option value="forever">Forever</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="settings-item">
+                            <div class="item-content">
+                                <div class="item-title">Analytics Tracking</div>
+                                <div class="item-description">Help improve the platform with usage data</div>
+                            </div>
+                            <div class="item-control">
+                                <div class="toggle-switch active" onclick="toggleSwitch(this)" data-setting="analytics"></div>
+                            </div>
+                        </div>
+                        <div class="settings-item">
+                            <div class="item-content">
+                                <div class="item-title">Delete Account</div>
+                                <div class="item-description">Permanently delete your account and all data</div>
+                            </div>
+                            <div class="item-control">
+                                <button class="settings-button danger" onclick="deleteAccount()">
+                                    <i class="fas fa-trash"></i>
+                                    Delete Account
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Scripts -->
+    <script src="/js/dashboard.js"></script>
+    <script>
+        function toggleDropdown() {
+            const dropdown = document.getElementById('userDropdown');
+            dropdown.classList.toggle('active');
+        }
+        
+        document.addEventListener('click', function(event) {
+            const userAvatar = document.querySelector('.user-avatar-liquid');
+            const dropdown = document.getElementById('userDropdown');
+            
+            if (!userAvatar.contains(event.target) && !dropdown.contains(event.target)) {
+                dropdown.classList.remove('active');
+            }
+        });
+        
+        // Toggle switch functionality
+        function toggleSwitch(element) {
+            element.classList.toggle('active');
+            const setting = element.dataset.setting;
+            const isActive = element.classList.contains('active');
+            console.log(`${setting} is now ${isActive ? 'enabled' : 'disabled'}`);
+        }
+        
+        // Settings functions
+        function saveProfile() {
+            const fullName = document.getElementById('full-name').value;
+            console.log('Saving profile:', fullName);
+            showNotification('Profile updated successfully!', 'success');
+        }
+        
+        function saveGrading() {
+            const feedbackTone = document.getElementById('feedback-tone').value;
+            const gradeDisplay = document.getElementById('grade-display').value;
+            console.log('Saving grading preferences:', { feedbackTone, gradeDisplay });
+            showNotification('Grading preferences saved!', 'success');
+        }
+        
+        function saveNotifications() {
+            showNotification('Notification settings saved!', 'success');
+        }
+        
+        function changePassword() {
+            showNotification('Password change modal would open here', 'info');
+        }
+        
+        function exportData() {
+            showNotification('Data export initiated', 'info');
+        }
+        
+        function deleteAccount() {
+            if (confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
+                showNotification('Account deletion process started', 'warning');
+            }
+        }
+        
+        // Notification system
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `notification notification-${type}`;
+            notification.style.cssText = `
+                position: fixed;
+                top: 100px;
+                right: 20px;
+                background: var(--glass-black);
+                backdrop-filter: var(--blur-xl);
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                border-radius: var(--radius-xl);
+                padding: var(--spacing-4) var(--spacing-6);
+                color: var(--white);
+                font-size: var(--font-size-sm);
+                z-index: 2000;
+                transform: translateX(100%);
+                transition: transform 0.3s ease;
+                box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            `;
+            
+            if (type === 'success') {
+                notification.style.borderColor = 'var(--success-color)';
+            } else if (type === 'warning') {
+                notification.style.borderColor = 'var(--warning-color)';
+            } else if (type === 'error') {
+                notification.style.borderColor = 'var(--error-color)';
+            }
+            
+            notification.innerHTML = `
+                <div style="display: flex; align-items: center; gap: var(--spacing-2);">
+                    <i class="fas fa-${type === 'success' ? 'check' : type === 'warning' ? 'exclamation' : 'info'}"></i>
+                    ${message}
+                </div>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.transform = 'translateX(0)';
+            }, 100);
+            
+            setTimeout(() => {
+                notification.style.transform = 'translateX(100%)';
+                setTimeout(() => {
+                    document.body.removeChild(notification);
+                }, 300);
+            }, 3000);
+        }
+    </script>
+    <!-- Floating Background Elements -->
+    <div class="floating-element floating-element-1"></div>
+    <div class="floating-element floating-element-2"></div>
+    <div class="floating-element floating-element-3"></div>
+</body>
+</html>

@@ -1,0 +1,352 @@
+/* Liquid Glass Navigation Bar */
+
+.liquid-nav {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1000;
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(32px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 60px;
+    padding: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 
+        0 12px 40px rgba(0, 0, 0, 0.4),
+        0 4px 12px rgba(0, 0, 0, 0.2),
+        inset 0 1px 2px rgba(255, 255, 255, 0.15),
+        inset 0 -1px 2px rgba(0, 0, 0, 0.1);
+    animation: fadeInDown 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.liquid-nav::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    background: linear-gradient(135deg, 
+        rgba(37, 99, 235, 0.4) 0%, 
+        rgba(99, 102, 241, 0.2) 25%,
+        rgba(0, 0, 0, 0.1) 50%, 
+        rgba(99, 102, 241, 0.2) 75%,
+        rgba(37, 99, 235, 0.4) 100%);
+    border-radius: 62px;
+    z-index: -1;
+    opacity: 0;
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    filter: blur(1px);
+}
+
+.liquid-nav:hover::before {
+    opacity: 1;
+    filter: blur(0px);
+}
+
+.nav-brand-liquid {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 20px;
+    color: var(--white);
+    font-weight: 700;
+    font-size: 18px;
+    text-decoration: none;
+    border-radius: 50px;
+    transition: all 0.3s ease;
+}
+
+.nav-brand-liquid i {
+    font-size: 20px;
+    color: var(--primary-color);
+}
+
+.nav-items {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.nav-item-liquid {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 12px 16px;
+    color: var(--gray-400);
+    text-decoration: none;
+    border-radius: 40px;
+    font-weight: 500;
+    font-size: 14px;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+    min-width: 85px;
+    text-align: center;
+    white-space: nowrap;
+    line-height: 1;
+}
+
+.nav-item-liquid i {
+    display: none;
+}
+
+.nav-item-liquid span {
+    display: block;
+    line-height: 1;
+    width: 100%;
+    text-align: center;
+    position: relative;
+    z-index: 1;
+}
+
+.nav-item-liquid::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, 
+        rgba(37, 99, 235, 0.3) 0%, 
+        rgba(99, 102, 241, 0.2) 100%);
+    border-radius: 40px;
+    opacity: 0;
+    transform: scale(0.7) rotateX(45deg);
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: -1;
+    backdrop-filter: blur(8px);
+}
+
+.nav-item-liquid:hover {
+    color: var(--white);
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 8px 25px rgba(37, 99, 235, 0.2);
+}
+
+.nav-item-liquid:hover::before {
+    opacity: 1;
+    transform: scale(1) rotateX(0deg);
+}
+
+
+.nav-item-liquid.active {
+    color: var(--white);
+    background: linear-gradient(135deg, 
+        var(--primary-color) 0%, 
+        rgba(37, 99, 235, 0.9) 100%);
+    box-shadow: 
+        0 6px 25px rgba(37, 99, 235, 0.4),
+        0 2px 8px rgba(37, 99, 235, 0.2),
+        inset 0 1px 2px rgba(255, 255, 255, 0.25),
+        inset 0 -1px 2px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(16px) saturate(150%);
+    transform: translateY(-1px);
+    text-align: center;
+    position: relative;
+}
+
+
+.nav-user-liquid {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 16px;
+    margin-left: 8px;
+    position: relative;
+}
+
+.user-avatar-liquid {
+    width: 36px;
+    height: 36px;
+    background: var(--primary-color);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--white);
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.user-avatar-liquid:hover {
+    transform: scale(1.1);
+    box-shadow: 0 4px 20px rgba(37, 99, 235, 0.4);
+}
+
+.user-info-liquid {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.user-name-liquid {
+    color: var(--white);
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1;
+}
+
+.user-plan-liquid {
+    color: var(--gray-400);
+    font-size: 10px;
+    line-height: 1;
+}
+
+.dropdown-liquid {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 8px;
+    background: var(--glass-black-strong);
+    backdrop-filter: var(--blur-xl);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    padding: 8px;
+    min-width: 180px;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+}
+
+.dropdown-liquid.active {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.dropdown-item-liquid {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    color: var(--gray-300);
+    text-decoration: none;
+    border-radius: 12px;
+    font-size: 14px;
+    transition: all 0.3s ease;
+}
+
+.dropdown-item-liquid:hover {
+    background: var(--glass-blue);
+    color: var(--white);
+}
+
+.dropdown-item-liquid i {
+    font-size: 16px;
+    color: var(--gray-400);
+    transition: color 0.3s ease;
+}
+
+.dropdown-item-liquid:hover i {
+    color: var(--primary-color);
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    .liquid-nav {
+        left: 10px;
+        right: 10px;
+        transform: none;
+        padding: 6px;
+    }
+    
+    .nav-item-liquid {
+        padding: 10px 12px;
+        font-size: 13px;
+    }
+    
+    .nav-item-liquid span {
+        display: none;
+    }
+    
+    .nav-brand-liquid span {
+        display: none;
+    }
+    
+    .user-info-liquid {
+        display: none;
+    }
+}
+
+@media (max-width: 480px) {
+    .liquid-nav {
+        gap: 2px;
+        padding: 4px;
+    }
+    
+    .nav-item-liquid {
+        padding: 8px 10px;
+    }
+}
+
+/* Animations */
+@keyframes fadeInDown {
+    from {
+        opacity: 0;
+        transform: translateX(-50%) translateY(-30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
+}
+
+/* Hover effects for the nav container */
+.liquid-nav:hover {
+    transform: translateX(-50%) translateY(-4px) scale(1.01);
+    box-shadow: 
+        0 16px 50px rgba(0, 0, 0, 0.5),
+        0 8px 20px rgba(37, 99, 235, 0.1),
+        inset 0 1px 3px rgba(255, 255, 255, 0.2),
+        inset 0 -1px 3px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(40px) saturate(200%);
+}
+
+/* Active page indicator animation */
+.nav-item-liquid.active::after {
+    content: '';
+    position: absolute;
+    bottom: 4px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 4px;
+    height: 4px;
+    background: var(--white);
+    border-radius: 50%;
+    box-shadow: 
+        0 0 8px rgba(255, 255, 255, 0.6),
+        0 0 16px rgba(255, 255, 255, 0.3);
+    animation: pulseGlow 2s ease-in-out infinite;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(-50%) scaleX(0);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(-50%) scaleX(1);
+        opacity: 1;
+    }
+}
+
+@keyframes pulseGlow {
+    0%, 100% {
+        opacity: 1;
+        transform: translateX(-50%) scale(1);
+    }
+    50% {
+        opacity: 0.7;
+        transform: translateX(-50%) scale(1.2);
+    }
+}

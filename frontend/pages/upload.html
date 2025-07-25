@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload Worksheets - GradeFlow</title>
+    
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="stylesheet" href="/css/dashboard.css">
+    <link rel="stylesheet" href="/css/dashboard-glass.css">
+    <link rel="stylesheet" href="/css/pages-glass.css">
+    <link rel="stylesheet" href="/css/liquid-nav.css">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="dashboard-body">
+    <!-- Liquid Glass Navigation -->
+    <nav class="liquid-nav">
+        <a href="/" class="nav-brand-liquid">
+            <i class="fas fa-graduation-cap"></i>
+            <span>GradeFlow</span>
+        </a>
+        
+        <div class="nav-items">
+            <a href="/pages/dashboard.html" class="nav-item-liquid">
+                <i class="fas fa-home"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="/pages/upload.html" class="nav-item-liquid active">
+                <i class="fas fa-upload"></i>
+                <span>Upload</span>
+            </a>
+            <a href="/pages/grading.html" class="nav-item-liquid">
+                <i class="fas fa-check-double"></i>
+                <span>Grading</span>
+            </a>
+            <a href="/pages/analytics.html" class="nav-item-liquid">
+                <i class="fas fa-chart-line"></i>
+                <span>Analytics</span>
+            </a>
+            <a href="/pages/settings.html" class="nav-item-liquid">
+                <i class="fas fa-cog"></i>
+                <span>Settings</span>
+            </a>
+        </div>
+        
+        <div class="nav-user-liquid">
+            <div class="user-info-liquid">
+                <div class="user-name-liquid">Teacher Name</div>
+                <div class="user-plan-liquid">Pro Plan</div>
+            </div>
+            <div class="user-avatar-liquid" onclick="toggleDropdown()">
+                <i class="fas fa-user"></i>
+            </div>
+            <div class="dropdown-liquid" id="userDropdown">
+                <a href="/pages/settings.html" class="dropdown-item-liquid">
+                    <i class="fas fa-cog"></i>
+                    Settings
+                </a>
+                <a href="/" class="dropdown-item-liquid">
+                    <i class="fas fa-sign-out-alt"></i>
+                    Logout
+                </a>
+            </div>
+        </div>
+    </nav>
+    
+    <!-- Old Navigation (Hidden) -->
+    <nav class="dashboard-nav" style="display: none;">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <i class="fas fa-graduation-cap"></i>
+                <span>GradeFlow</span>
+            </div>
+            
+            <div class="nav-user">
+                <div class="user-info">
+                    <span class="user-name" id="user-name">Teacher Name</span>
+                    <span class="user-plan" id="user-plan">Pro Plan</span>
+                </div>
+                <div class="user-avatar" id="user-avatar">
+                    <i class="fas fa-user"></i>
+                </div>
+                <div class="dropdown-menu" id="user-dropdown">
+                    <a href="/pages/dashboard.html"><i class="fas fa-home"></i> Dashboard</a>
+                    <a href="/pages/settings.html"><i class="fas fa-cog"></i> Settings</a>
+                    <a href="#" id="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Sidebar -->
+    <aside class="dashboard-sidebar">
+        <nav class="sidebar-nav">
+            <a href="/pages/dashboard.html" class="nav-item">
+                <i class="fas fa-home"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="/pages/upload.html" class="nav-item active">
+                <i class="fas fa-upload"></i>
+                <span>Upload</span>
+            </a>
+            <a href="/pages/grading.html" class="nav-item">
+                <i class="fas fa-check-double"></i>
+                <span>Grading</span>
+            </a>
+            <a href="/pages/analytics.html" class="nav-item">
+                <i class="fas fa-chart-line"></i>
+                <span>Analytics</span>
+            </a>
+            <a href="/pages/settings.html" class="nav-item">
+                <i class="fas fa-cog"></i>
+                <span>Settings</span>
+            </a>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="dashboard-main">
+        <div class="main-header">
+            <h1>Upload Worksheets</h1>
+            <p>Upload student worksheets for AI-powered grading and feedback</p>
+        </div>
+
+        <!-- Usage Stats -->
+        <div class="usage-card">
+            <div class="usage-info">
+                <div class="usage-stat">
+                    <span class="usage-number" id="worksheets-used">0</span>
+                    <span class="usage-label">Used this month</span>
+                </div>
+                <div class="usage-stat">
+                    <span class="usage-number" id="worksheets-remaining">50</span>
+                    <span class="usage-label">Remaining</span>
+                </div>
+            </div>
+            <div class="usage-bar">
+                <div class="usage-progress" id="usage-progress" style="width: 0%"></div>
+            </div>
+            <p class="usage-text">
+                <span id="usage-percentage">0%</span> of monthly limit used
+                <a href="/pages/settings.html#billing" class="upgrade-link">Upgrade Plan</a>
+            </p>
+        </div>
+
+        <!-- Upload Section -->
+        <div class="upload-section">
+            <div class="upload-card">
+                <div class="upload-header">
+                    <h2>Upload Files</h2>
+                    <p>Drag and drop worksheets or click to browse</p>
+                </div>
+
+                <!-- Drop Zone -->
+                <div class="drop-zone" id="drop-zone">
+                    <div class="drop-zone-content">
+                        <div class="drop-icon">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                        </div>
+                        <h3>Drop worksheets here</h3>
+                        <p>or <button class="browse-btn" id="browse-btn">browse files</button></p>
+                        <div class="file-info">
+                            <p>Supports PDF, JPG, PNG files up to 50MB each</p>
+                            <p>Maximum 50 files per upload</p>
+                        </div>
+                    </div>
+                    <input type="file" id="file-input" multiple accept=".pdf,.jpg,.jpeg,.png" style="display: none;">
+                </div>
+
+                <!-- Upload Options -->
+                <div class="upload-options" id="upload-options" style="display: none;">
+                    <div class="option-group">
+                        <label for="subject-select">Subject</label>
+                        <select id="subject-select" class="form-select">
+                            <option value="">Auto-detect</option>
+                            <option value="math">Mathematics</option>
+                            <option value="english">English/Language Arts</option>
+                            <option value="science">Science</option>
+                            <option value="history">History/Social Studies</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    
+                    <div class="option-group">
+                        <label for="grade-select">Grade Level</label>
+                        <select id="grade-select" class="form-select">
+                            <option value="">Auto-detect</option>
+                            <option value="K">Kindergarten</option>
+                            <option value="1">Grade 1</option>
+                            <option value="2">Grade 2</option>
+                            <option value="3">Grade 3</option>
+                            <option value="4">Grade 4</option>
+                            <option value="5">Grade 5</option>
+                            <option value="6">Grade 6</option>
+                            <option value="7">Grade 7</option>
+                            <option value="8">Grade 8</option>
+                            <option value="9">Grade 9</option>
+                            <option value="10">Grade 10</option>
+                            <option value="11">Grade 11</option>
+                            <option value="12">Grade 12</option>
+                        </select>
+                    </div>
+                    
+                    <div class="option-group">
+                        <label for="assignment-name">Assignment Name</label>
+                        <input type="text" id="assignment-name" class="form-input" placeholder="e.g., Chapter 5 Quiz">
+                    </div>
+                </div>
+
+                <!-- File List -->
+                <div class="file-list" id="file-list" style="display: none;">
+                    <div class="file-list-header">
+                        <h3>Selected Files</h3>
+                        <button class="btn btn-outline btn-sm" id="clear-files">Clear All</button>
+                    </div>
+                    <div class="files-container" id="files-container">
+                        <!-- File items will be added here dynamically -->
+                    </div>
+                </div>
+
+                <!-- Upload Actions -->
+                <div class="upload-actions" id="upload-actions" style="display: none;">
+                    <button class="btn btn-primary btn-large" id="upload-btn">
+                        <i class="fas fa-upload"></i>
+                        Upload & Process
+                    </button>
+                    <button class="btn btn-outline btn-large" id="cancel-btn">
+                        Cancel
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Processing Queue -->
+        <div class="queue-section" id="queue-section" style="display: none;">
+            <div class="queue-card">
+                <div class="queue-header">
+                    <h2>Processing Queue</h2>
+                    <div class="queue-stats">
+                        <span class="queue-stat">
+                            <span class="stat-number" id="processing-count">0</span>
+                            <span class="stat-label">Processing</span>
+                        </span>
+                        <span class="queue-stat">
+                            <span class="stat-number" id="completed-count">0</span>
+                            <span class="stat-label">Completed</span>
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="queue-list" id="queue-list">
+                    <!-- Processing items will be added here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Uploads -->
+        <div class="recent-section">
+            <div class="recent-card">
+                <div class="recent-header">
+                    <h2>Recent Uploads</h2>
+                    <a href="/pages/dashboard.html" class="view-all-link">View All</a>
+                </div>
+                
+                <div class="recent-list" id="recent-list">
+                    <div class="empty-state">
+                        <i class="fas fa-file-upload"></i>
+                        <p>No recent uploads</p>
+                        <span>Upload your first worksheet to get started</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Scripts -->
+    <script src="/js/upload.js"></script>
+    <script src="/js/dashboard.js"></script>
+    <script>
+        function toggleDropdown() {
+            const dropdown = document.getElementById('userDropdown');
+            dropdown.classList.toggle('active');
+        }
+        
+        document.addEventListener('click', function(event) {
+            const userAvatar = document.querySelector('.user-avatar-liquid');
+            const dropdown = document.getElementById('userDropdown');
+            
+            if (!userAvatar.contains(event.target) && !dropdown.contains(event.target)) {
+                dropdown.classList.remove('active');
+            }
+        });
+    </script>
+    <!-- Floating Background Elements -->
+    <div class="floating-element floating-element-1"></div>
+    <div class="floating-element floating-element-2"></div>
+    <div class="floating-element floating-element-3"></div>
+</body>
+</html>

@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="GradeFlow - AI-Powered Worksheet Grading Assistant for K-12 Teachers">
+    <title>GradeFlow - Grade 30 worksheets in 5 minutes</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="/assets/icons/favicon.ico">
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="/css/main.css">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <i class="fas fa-graduation-cap"></i>
+                <span>GradeFlow</span>
+            </div>
+            
+            <div class="nav-menu" id="nav-menu">
+                <a href="#features" class="nav-link">Features</a>
+                <a href="#how-it-works" class="nav-link">How It Works</a>
+                <a href="#pricing" class="nav-link">Pricing</a>
+                <button class="btn btn-primary" id="login-btn">
+                    <i class="fas fa-sign-in-alt"></i>
+                    Login
+                </button>
+            </div>
+            
+            <div class="nav-toggle" id="nav-toggle">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-container">
+            <div class="hero-content">
+                <h1 class="hero-title">
+                    Grade 30 worksheets in 
+                    <span class="highlight">5 minutes</span>
+                    instead of 2 hours
+                </h1>
+                <p class="hero-subtitle">
+                    AI-powered worksheet grading with personalized feedback for every student. 
+                    Save 10+ hours per week while providing better learning outcomes.
+                </p>
+                <div class="hero-actions">
+                    <button class="btn btn-primary btn-large" id="get-started-btn">
+                        <i class="fas fa-rocket"></i>
+                        Get Started Free
+                    </button>
+                    <button class="btn btn-secondary btn-large" id="demo-btn">
+                        <i class="fas fa-play"></i>
+                        Watch Demo
+                    </button>
+                </div>
+                <div class="hero-stats">
+                    <div class="stat">
+                        <span class="stat-number">3.2M+</span>
+                        <span class="stat-label">Teachers using AI tools</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-number">95%</span>
+                        <span class="stat-label">Time saved on grading</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-number">24/7</span>
+                        <span class="stat-label">Instant feedback</span>
+                    </div>
+                </div>
+            </div>
+            <div class="hero-visual">
+                <div class="demo-preview">
+                    <div class="worksheet-stack">
+                        <div class="worksheet worksheet-1">
+                            <div class="worksheet-header">Math Worksheet #1</div>
+                            <div class="worksheet-content">
+                                <div class="problem">2 + 3 = <span class="answer correct">5</span> <i class="fas fa-check-circle"></i></div>
+                                <div class="problem">7 - 4 = <span class="answer correct">3</span> <i class="fas fa-check-circle"></i></div>
+                                <div class="problem">5 × 2 = <span class="answer incorrect">12</span> <i class="fas fa-times-circle"></i></div>
+                            </div>
+                            <div class="feedback-bubble">
+                                Great work on addition! For multiplication, remember to count groups.
+                            </div>
+                        </div>
+                        <div class="worksheet worksheet-2">
+                            <div class="worksheet-header">Math Worksheet #2</div>
+                        </div>
+                        <div class="worksheet worksheet-3">
+                            <div class="worksheet-header">Math Worksheet #3</div>
+                        </div>
+                    </div>
+                    <div class="grading-progress">
+                        <div class="progress-bar">
+                            <div class="progress-fill"></div>
+                        </div>
+                        <span class="progress-text">Grading in progress... 30 worksheets</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features" id="features">
+        <div class="container">
+            <div class="section-header">
+                <h2>Everything you need to revolutionize grading</h2>
+                <p>Powered by advanced AI to understand handwriting, evaluate work shown, and provide personalized feedback</p>
+            </div>
+            
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-upload"></i>
+                    </div>
+                    <h3>Smart Upload & Processing</h3>
+                    <p>Drag-and-drop multiple worksheets (PDF, JPG, PNG). Auto-detects student names and batch processes entire class sets.</p>
+                    <div class="feature-list">
+                        <span class="feature-item"><i class="fas fa-check"></i> Bulk file upload</span>
+                        <span class="feature-item"><i class="fas fa-check"></i> Name recognition</span>
+                        <span class="feature-item"><i class="fas fa-check"></i> Batch processing</span>
+                    </div>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-brain"></i>
+                    </div>
+                    <h3>Intelligent Grading Engine</h3>
+                    <p>Advanced OCR and AI evaluate work shown, recognize multiple solution methods, and award partial credit appropriately.</p>
+                    <div class="feature-list">
+                        <span class="feature-item"><i class="fas fa-check"></i> Math, English, Science</span>
+                        <span class="feature-item"><i class="fas fa-check"></i> Work shown evaluation</span>
+                        <span class="feature-item"><i class="fas fa-check"></i> Partial credit scoring</span>
+                    </div>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-comments"></i>
+                    </div>
+                    <h3>Personalized Feedback</h3>
+                    <p>AI generates contextual comments based on specific errors, with customizable tone (encouraging, strict, or funny).</p>
+                    <div class="feature-list">
+                        <span class="feature-item"><i class="fas fa-check"></i> Contextual comments</span>
+                        <span class="feature-item"><i class="fas fa-check"></i> Learning suggestions</span>
+                        <span class="feature-item"><i class="fas fa-check"></i> Custom tone settings</span>
+                    </div>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-palette"></i>
+                    </div>
+                    <h3>Visual Markup System</h3>
+                    <p>Digital annotations overlay on original worksheets with color-coded corrections, comment bubbles, and emoji stamps.</p>
+                    <div class="feature-list">
+                        <span class="feature-item"><i class="fas fa-check"></i> Color-coded feedback</span>
+                        <span class="feature-item"><i class="fas fa-check"></i> Annotation tools</span>
+                        <span class="feature-item"><i class="fas fa-check"></i> Emoji stamps</span>
+                    </div>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <h3>Teacher Dashboard</h3>
+                    <p>Comprehensive analytics showing class performance, common mistakes, and individual student progress tracking.</p>
+                    <div class="feature-list">
+                        <span class="feature-item"><i class="fas fa-check"></i> Class analytics</span>
+                        <span class="feature-item"><i class="fas fa-check"></i> Progress tracking</span>
+                        <span class="feature-item"><i class="fas fa-check"></i> Export to gradebook</span>
+                    </div>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <h3>Secure & Compliant</h3>
+                    <p>FERPA compliant with secure authentication, data encryption, and privacy protection for all student information.</p>
+                    <div class="feature-list">
+                        <span class="feature-item"><i class="fas fa-check"></i> FERPA compliance</span>
+                        <span class="feature-item"><i class="fas fa-check"></i> Data encryption</span>
+                        <span class="feature-item"><i class="fas fa-check"></i> Secure authentication</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works Section -->
+    <section class="how-it-works" id="how-it-works">
+        <div class="container">
+            <div class="section-header">
+                <h2>How GradeFlow Works</h2>
+                <p>From upload to graded results in minutes, not hours</p>
+            </div>
+            
+            <div class="workflow-steps">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <h3>Upload Worksheets</h3>
+                        <p>Drag and drop your student worksheets (PDF, JPG, PNG) into GradeFlow</p>
+                    </div>
+                    <div class="step-icon">
+                        <i class="fas fa-file-upload"></i>
+                    </div>
+                </div>
+                
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <h3>AI Processing</h3>
+                        <p>OCR extracts text and handwriting, AI identifies questions and evaluates answers</p>
+                    </div>
+                    <div class="step-icon">
+                        <i class="fas fa-cog"></i>
+                    </div>
+                </div>
+                
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <h3>Intelligent Grading</h3>
+                        <p>Gemini API evaluates responses, awards partial credit, and generates personalized feedback</p>
+                    </div>
+                    <div class="step-icon">
+                        <i class="fas fa-check-double"></i>
+                    </div>
+                </div>
+                
+                <div class="step">
+                    <div class="step-number">4</div>
+                    <div class="step-content">
+                        <h3>Review & Export</h3>
+                        <p>Review graded worksheets with annotations, then export to your gradebook or LMS</p>
+                    </div>
+                    <div class="step-icon">
+                        <i class="fas fa-download"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing Section -->
+    <section class="pricing" id="pricing">
+        <div class="container">
+            <div class="section-header">
+                <h2>Choose Your Plan</h2>
+                <p>Start free, upgrade as you grow</p>
+            </div>
+            
+            <div class="pricing-grid">
+                <div class="pricing-card">
+                    <div class="pricing-header">
+                        <h3>Freemium</h3>
+                        <div class="price">
+                            <span class="price-amount">$0</span>
+                            <span class="price-period">/month</span>
+                        </div>
+                    </div>
+                    <div class="pricing-features">
+                        <div class="feature"><i class="fas fa-check"></i> 50 worksheets/month</div>
+                        <div class="feature"><i class="fas fa-check"></i> Basic grading</div>
+                        <div class="feature"><i class="fas fa-check"></i> Standard feedback</div>
+                        <div class="feature"><i class="fas fa-check"></i> Basic analytics</div>
+                    </div>
+                    <button class="btn btn-outline btn-large">Get Started</button>
+                </div>
+                
+                <div class="pricing-card featured">
+                    <div class="pricing-badge">Most Popular</div>
+                    <div class="pricing-header">
+                        <h3>Teacher Pro</h3>
+                        <div class="price">
+                            <span class="price-amount">$9.99</span>
+                            <span class="price-period">/month</span>
+                        </div>
+                    </div>
+                    <div class="pricing-features">
+                        <div class="feature"><i class="fas fa-check"></i> Unlimited worksheets</div>
+                        <div class="feature"><i class="fas fa-check"></i> Advanced AI grading</div>
+                        <div class="feature"><i class="fas fa-check"></i> Personalized feedback</div>
+                        <div class="feature"><i class="fas fa-check"></i> Advanced analytics</div>
+                        <div class="feature"><i class="fas fa-check"></i> Export to gradebook</div>
+                        <div class="feature"><i class="fas fa-check"></i> Priority support</div>
+                    </div>
+                    <button class="btn btn-primary btn-large">Start Free Trial</button>
+                </div>
+                
+                <div class="pricing-card">
+                    <div class="pricing-header">
+                        <h3>School License</h3>
+                        <div class="price">
+                            <span class="price-amount">$2,000</span>
+                            <span class="price-period">/year</span>
+                        </div>
+                    </div>
+                    <div class="pricing-features">
+                        <div class="feature"><i class="fas fa-check"></i> Unlimited teachers</div>
+                        <div class="feature"><i class="fas fa-check"></i> All Pro features</div>
+                        <div class="feature"><i class="fas fa-check"></i> Admin dashboard</div>
+                        <div class="feature"><i class="fas fa-check"></i> SSO integration</div>
+                        <div class="feature"><i class="fas fa-check"></i> Custom training</div>
+                        <div class="feature"><i class="fas fa-check"></i> Dedicated support</div>
+                    </div>
+                    <button class="btn btn-outline btn-large">Contact Sales</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <div class="nav-brand">
+                        <i class="fas fa-graduation-cap"></i>
+                        <span>GradeFlow</span>
+                    </div>
+                    <p>Transforming education through intelligent grading technology.</p>
+                </div>
+                
+                <div class="footer-links">
+                    <div class="footer-column">
+                        <h4>Product</h4>
+                        <a href="#features">Features</a>
+                        <a href="#pricing">Pricing</a>
+                        <a href="/demo">Demo</a>
+                        <a href="/api-docs">API</a>
+                    </div>
+                    
+                    <div class="footer-column">
+                        <h4>Support</h4>
+                        <a href="/help">Help Center</a>
+                        <a href="/contact">Contact</a>
+                        <a href="/status">Status</a>
+                        <a href="/community">Community</a>
+                    </div>
+                    
+                    <div class="footer-column">
+                        <h4>Company</h4>
+                        <a href="/about">About</a>
+                        <a href="/blog">Blog</a>
+                        <a href="/careers">Careers</a>
+                        <a href="/press">Press</a>
+                    </div>
+                    
+                    <div class="footer-column">
+                        <h4>Legal</h4>
+                        <a href="/privacy">Privacy</a>
+                        <a href="/terms">Terms</a>
+                        <a href="/security">Security</a>
+                        <a href="/compliance">FERPA</a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>&copy; 2024 GradeFlow. All rights reserved.</p>
+                <div class="social-links">
+                    <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+                    <a href="#" aria-label="LinkedIn"><i class="fab fa-linkedin"></i></a>
+                    <a href="#" aria-label="GitHub"><i class="fab fa-github"></i></a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script src="/js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grading - GradeFlow</title>
+    
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="stylesheet" href="/css/dashboard.css">
+    <link rel="stylesheet" href="/css/dashboard-glass.css">
+    <link rel="stylesheet" href="/css/pages-glass.css">
+    <link rel="stylesheet" href="/css/liquid-nav.css">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="dashboard-body">
+    <!-- Liquid Glass Navigation -->
+    <nav class="liquid-nav">
+        <a href="/" class="nav-brand-liquid">
+            <i class="fas fa-graduation-cap"></i>
+            <span>GradeFlow</span>
+        </a>
+        
+        <div class="nav-items">
+            <a href="/pages/dashboard.html" class="nav-item-liquid">
+                <i class="fas fa-home"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="/pages/upload.html" class="nav-item-liquid">
+                <i class="fas fa-upload"></i>
+                <span>Upload</span>
+            </a>
+            <a href="/pages/grading.html" class="nav-item-liquid active">
+                <i class="fas fa-check-double"></i>
+                <span>Grading</span>
+            </a>
+            <a href="/pages/analytics.html" class="nav-item-liquid">
+                <i class="fas fa-chart-line"></i>
+                <span>Analytics</span>
+            </a>
+            <a href="/pages/settings.html" class="nav-item-liquid">
+                <i class="fas fa-cog"></i>
+                <span>Settings</span>
+            </a>
+        </div>
+        
+        <div class="nav-user-liquid">
+            <div class="user-info-liquid">
+                <div class="user-name-liquid">Teacher Name</div>
+                <div class="user-plan-liquid">Pro Plan</div>
+            </div>
+            <div class="user-avatar-liquid" onclick="toggleDropdown()">
+                <i class="fas fa-user"></i>
+            </div>
+            <div class="dropdown-liquid" id="userDropdown">
+                <a href="/pages/settings.html" class="dropdown-item-liquid">
+                    <i class="fas fa-cog"></i>
+                    Settings
+                </a>
+                <a href="/" class="dropdown-item-liquid">
+                    <i class="fas fa-sign-out-alt"></i>
+                    Logout
+                </a>
+            </div>
+        </div>
+    </nav>
+    
+    <!-- Old Navigation (Hidden) -->
+    <nav class="dashboard-nav" style="display: none;">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <i class="fas fa-graduation-cap"></i>
+                <span>GradeFlow</span>
+            </div>
+            
+            <div class="nav-user">
+                <div class="user-info">
+                    <span class="user-name" id="user-name">Teacher Name</span>
+                    <span class="user-plan" id="user-plan">Pro Plan</span>
+                </div>
+                <div class="user-avatar" id="user-avatar">
+                    <i class="fas fa-user"></i>
+                </div>
+                <div class="dropdown-menu" id="user-dropdown">
+                    <a href="/pages/dashboard.html"><i class="fas fa-home"></i> Dashboard</a>
+                    <a href="/pages/settings.html"><i class="fas fa-cog"></i> Settings</a>
+                    <a href="/" id="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Sidebar -->
+    <aside class="dashboard-sidebar">
+        <nav class="sidebar-nav">
+            <a href="/pages/dashboard.html" class="nav-item">
+                <i class="fas fa-home"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="/pages/upload.html" class="nav-item">
+                <i class="fas fa-upload"></i>
+                <span>Upload</span>
+            </a>
+            <a href="/pages/grading.html" class="nav-item active">
+                <i class="fas fa-check-double"></i>
+                <span>Grading</span>
+            </a>
+            <a href="/pages/analytics.html" class="nav-item">
+                <i class="fas fa-chart-line"></i>
+                <span>Analytics</span>
+            </a>
+            <a href="/pages/settings.html" class="nav-item">
+                <i class="fas fa-cog"></i>
+                <span>Settings</span>
+            </a>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="dashboard-main">
+        <div class="main-header">
+            <h1>Grading Review</h1>
+            <p>Review and approve AI-graded worksheets</p>
+        </div>
+
+        <!-- Filter Controls -->
+        <div class="filter-section">
+            <div class="filter-card">
+                <div class="filter-controls">
+                    <div class="liquid-dropdown" id="status-dropdown">
+                        <button class="liquid-dropdown-button" data-dropdown="status-dropdown">
+                            <span id="status-selected">All Status</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                        <div class="liquid-dropdown-menu">
+                            <div class="liquid-dropdown-item" data-dropdown="status-dropdown" data-text="All Status" data-value="">All Status</div>
+                            <div class="liquid-dropdown-item" data-dropdown="status-dropdown" data-text="Graded" data-value="graded">Graded</div>
+                            <div class="liquid-dropdown-item" data-dropdown="status-dropdown" data-text="Completed" data-value="completed">Completed</div>
+                            <div class="liquid-dropdown-item" data-dropdown="status-dropdown" data-text="Processing" data-value="processing">Processing</div>
+                            <div class="liquid-dropdown-item" data-dropdown="status-dropdown" data-text="Error" data-value="error">Error</div>
+                        </div>
+                    </div>
+                    
+                    <div class="liquid-dropdown" id="subject-dropdown">
+                        <button class="liquid-dropdown-button" data-dropdown="subject-dropdown">
+                            <span id="subject-selected">All Subjects</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                        <div class="liquid-dropdown-menu">
+                            <div class="liquid-dropdown-item" data-dropdown="subject-dropdown" data-text="All Subjects" data-value="">All Subjects</div>
+                            <div class="liquid-dropdown-item" data-dropdown="subject-dropdown" data-text="Mathematics" data-value="math">Mathematics</div>
+                            <div class="liquid-dropdown-item" data-dropdown="subject-dropdown" data-text="English" data-value="english">English</div>
+                            <div class="liquid-dropdown-item" data-dropdown="subject-dropdown" data-text="Science" data-value="science">Science</div>
+                            <div class="liquid-dropdown-item" data-dropdown="subject-dropdown" data-text="History" data-value="history">History</div>
+                        </div>
+                    </div>
+                    
+                    <input type="text" id="student-search" class="liquid-input" placeholder="Search by student name...">
+                    
+                    <button class="liquid-button primary" id="export-grades">
+                        <i class="fas fa-download"></i>
+                        Export Grades
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Grading List -->
+        <div class="grading-section">
+            <div class="grading-card">
+                <div class="grading-header">
+                    <h2>Worksheets Ready for Review</h2>
+                    <div class="bulk-actions">
+                        <button class="liquid-button secondary" id="select-all">Select All</button>
+                        <button class="liquid-button primary" id="approve-selected">Approve Selected</button>
+                    </div>
+                </div>
+                
+                <div class="grading-list" id="grading-list">
+                    <!-- Sample graded worksheets -->
+                    <div class="grading-item">
+                        <div class="item-checkbox">
+                            <input type="checkbox" id="worksheet-1">
+                        </div>
+                        
+                        <div class="item-preview">
+                            <div class="preview-image">
+                                <i class="fas fa-file-pdf"></i>
+                            </div>
+                        </div>
+                        
+                        <div class="item-info">
+                            <div class="item-title">Math Worksheet #3</div>
+                            <div class="item-details">
+                                <span class="student-name">Sarah Johnson</span>
+                                <span class="subject-badge math">Mathematics</span>
+                                <span class="grade-level">Grade 5</span>
+                                <span class="upload-time">2 hours ago</span>
+                            </div>
+                        </div>
+                        
+                        <div class="item-score">
+                            <div class="score-display excellent">92%</div>
+                            <div class="score-details">23/25 points</div>
+                        </div>
+                        
+                        <div class="item-feedback">
+                            <div class="feedback-preview">
+                                <strong>Strengths:</strong> Excellent work on fractions...
+                                <button class="feedback-expand">Show More</button>
+                            </div>
+                        </div>
+                        
+                        <div class="item-actions">
+                            <button class="liquid-button secondary small" onclick="reviewWorksheet('1')">
+                                <i class="fas fa-eye"></i>
+                                Review
+                            </button>
+                            <button class="liquid-button primary small" onclick="approveWorksheet('1')">
+                                <i class="fas fa-check"></i>
+                                Approve
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="grading-item">
+                        <div class="item-checkbox">
+                            <input type="checkbox" id="worksheet-2">
+                        </div>
+                        
+                        <div class="item-preview">
+                            <div class="preview-image">
+                                <i class="fas fa-file-pdf"></i>
+                            </div>
+                        </div>
+                        
+                        <div class="item-info">
+                            <div class="item-title">English Essay - My Summer</div>
+                            <div class="item-details">
+                                <span class="student-name">Michael Chen</span>
+                                <span class="subject-badge english">English</span>
+                                <span class="grade-level">Grade 4</span>
+                                <span class="upload-time">3 hours ago</span>
+                            </div>
+                        </div>
+                        
+                        <div class="item-score">
+                            <div class="score-display good">78%</div>
+                            <div class="score-details">39/50 points</div>
+                        </div>
+                        
+                        <div class="item-feedback">
+                            <div class="feedback-preview">
+                                <strong>Strengths:</strong> Creative storytelling and good use of descriptive language...
+                                <button class="feedback-expand">Show More</button>
+                            </div>
+                        </div>
+                        
+                        <div class="item-actions">
+                            <button class="liquid-button secondary small" onclick="reviewWorksheet('2')">
+                                <i class="fas fa-eye"></i>
+                                Review
+                            </button>
+                            <button class="liquid-button primary small" onclick="approveWorksheet('2')">
+                                <i class="fas fa-check"></i>
+                                Approve
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="grading-item">
+                        <div class="item-checkbox">
+                            <input type="checkbox" id="worksheet-3">
+                        </div>
+                        
+                        <div class="item-preview">
+                            <div class="preview-image">
+                                <i class="fas fa-file-image"></i>
+                            </div>
+                        </div>
+                        
+                        <div class="item-info">
+                            <div class="item-title">Science Lab Report</div>
+                            <div class="item-details">
+                                <span class="student-name">Emma Rodriguez</span>
+                                <span class="subject-badge science">Science</span>
+                                <span class="grade-level">Grade 6</span>
+                                <span class="upload-time">5 hours ago</span>
+                            </div>
+                        </div>
+                        
+                        <div class="item-score">
+                            <div class="score-display fair">65%</div>
+                            <div class="score-details">13/20 points</div>
+                        </div>
+                        
+                        <div class="item-feedback">
+                            <div class="feedback-preview">
+                                <strong>Areas for improvement:</strong> Need more detailed observations...
+                                <button class="feedback-expand">Show More</button>
+                            </div>
+                        </div>
+                        
+                        <div class="item-actions">
+                            <button class="liquid-button secondary small" onclick="reviewWorksheet('3')">
+                                <i class="fas fa-eye"></i>
+                                Review
+                            </button>
+                            <button class="liquid-button primary small" onclick="approveWorksheet('3')">
+                                <i class="fas fa-check"></i>
+                                Approve
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Review Modal -->
+    <div id="review-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content large">
+            <div class="modal-header">
+                <h2>Review Worksheet</h2>
+                <button class="modal-close" onclick="closeReviewModal()">&times;</button>
+            </div>
+            
+            <div class="modal-body">
+                <div class="review-layout">
+                    <div class="worksheet-view">
+                        <div class="worksheet-preview">
+                            <div class="preview-placeholder">
+                                <i class="fas fa-file-alt"></i>
+                                <p>Worksheet preview would appear here</p>
+                                <p class="preview-note">With annotations and markup overlay</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="grading-panel">
+                        <div class="grade-summary">
+                            <h3>Grade Summary</h3>
+                            <div class="final-score">92%</div>
+                            <div class="score-breakdown">
+                                <div class="breakdown-item">
+                                    <span>Question 1:</span>
+                                    <span class="score">5/5</span>
+                                </div>
+                                <div class="breakdown-item">
+                                    <span>Question 2:</span>
+                                    <span class="score">4/5</span>
+                                </div>
+                                <div class="breakdown-item">
+                                    <span>Question 3:</span>
+                                    <span class="score">5/5</span>
+                                </div>
+                                <div class="breakdown-item">
+                                    <span>Question 4:</span>
+                                    <span class="score">4/5</span>
+                                </div>
+                                <div class="breakdown-item">
+                                    <span>Question 5:</span>
+                                    <span class="score">5/5</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="feedback-section">
+                            <h3>AI-Generated Feedback</h3>
+                            <div class="feedback-content">
+                                <div class="feedback-category">
+                                    <h4>Strengths</h4>
+                                    <ul>
+                                        <li>Excellent understanding of fraction concepts</li>
+                                        <li>Clear work shown for all problems</li>
+                                        <li>Neat handwriting and organization</li>
+                                    </ul>
+                                </div>
+                                
+                                <div class="feedback-category">
+                                    <h4>Areas for Improvement</h4>
+                                    <ul>
+                                        <li>Double-check arithmetic in word problems</li>
+                                        <li>Show more steps in complex calculations</li>
+                                    </ul>
+                                </div>
+                                
+                                <div class="feedback-category">
+                                    <h4>Next Steps</h4>
+                                    <ul>
+                                        <li>Practice more mixed number operations</li>
+                                        <li>Review fraction-to-decimal conversions</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="grade-actions">
+                            <button class="btn btn-outline">Edit Grade</button>
+                            <button class="btn btn-primary">Approve Grade</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="/js/dashboard.js"></script>
+    <script>
+        // Wait for DOM to load
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM loaded, setting up dropdowns...');
+            
+            // Global dropdown functions
+            window.toggleLiquidDropdown = function(dropdownId) {
+                console.log('toggleLiquidDropdown called with:', dropdownId);
+                const dropdown = document.getElementById(dropdownId);
+                if (!dropdown) {
+                    console.error('Dropdown not found:', dropdownId);
+                    return;
+                }
+                
+                const isActive = dropdown.classList.contains('active');
+                console.log('Current active state:', isActive);
+                
+                // Close all other dropdowns first
+                document.querySelectorAll('.liquid-dropdown').forEach(d => {
+                    if (d !== dropdown) {
+                        d.classList.remove('active');
+                    }
+                });
+                
+                // Toggle current dropdown
+                if (isActive) {
+                    dropdown.classList.remove('active');
+                    console.log('Dropdown closed');
+                } else {
+                    dropdown.classList.add('active');
+                    console.log('Dropdown opened');
+                }
+            };
+            
+            window.selectDropdownItem = function(dropdownId, displayText, value) {
+                console.log('selectDropdownItem called:', dropdownId, displayText, value);
+                const dropdown = document.getElementById(dropdownId);
+                if (!dropdown) {
+                    console.error('Dropdown not found:', dropdownId);
+                    return;
+                }
+                
+                // Try multiple ways to find the selected element
+                let selectedElement = dropdown.querySelector('[id$="-selected"]');
+                if (!selectedElement) {
+                    selectedElement = dropdown.querySelector('#' + dropdownId.replace('-dropdown', '-selected'));
+                }
+                if (!selectedElement) {
+                    selectedElement = dropdown.querySelector('span');
+                }
+                
+                if (selectedElement) {
+                    console.log('Found selected element:', selectedElement);
+                    selectedElement.textContent = displayText;
+                    selectedElement.innerHTML = displayText; // Backup method
+                    console.log('Updated text to:', displayText);
+                    console.log('Element now contains:', selectedElement.textContent);
+                } else {
+                    console.error('Selected element not found in dropdown:', dropdownId);
+                    console.log('Available elements in dropdown:', dropdown.innerHTML);
+                }
+                
+                dropdown.classList.remove('active');
+                console.log('Dropdown closed after selection');
+                
+                // Trigger filter update
+                if (typeof filterWorksheets === 'function') {
+                    filterWorksheets();
+                }
+            };
+            
+            // Add event listeners to all dropdown buttons
+            document.querySelectorAll('.liquid-dropdown-button').forEach(button => {
+                const dropdownId = button.getAttribute('data-dropdown');
+                if (dropdownId) {
+                    console.log('Setting up button for:', dropdownId);
+                    button.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        console.log('Button clicked via event listener:', dropdownId);
+                        window.toggleLiquidDropdown(dropdownId);
+                    });
+                }
+            });
+            
+            // Add event listeners to dropdown items using data attributes
+            document.querySelectorAll('.liquid-dropdown-item').forEach(item => {
+                item.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    const dropdownId = this.getAttribute('data-dropdown');
+                    const displayText = this.getAttribute('data-text');
+                    const value = this.getAttribute('data-value');
+                    
+                    console.log('Dropdown item clicked:', this.textContent);
+                    console.log('Data attributes:', { dropdownId, displayText, value });
+                    
+                    if (dropdownId && displayText !== null) {
+                        window.selectDropdownItem(dropdownId, displayText, value || '');
+                    } else {
+                        console.error('Missing data attributes on dropdown item');
+                    }
+                });
+            });
+        });
+        
+        // Close dropdowns when clicking outside
+        document.addEventListener('click', function(event) {
+            if (!event.target.closest('.liquid-dropdown')) {
+                document.querySelectorAll('.liquid-dropdown').forEach(d => d.classList.remove('active'));
+            }
+        });
+        
+        // Grading-specific JavaScript
+        function reviewWorksheet(id) {
+            document.getElementById('review-modal').style.display = 'flex';
+        }
+        
+        function closeReviewModal() {
+            document.getElementById('review-modal').style.display = 'none';
+        }
+        
+        function approveWorksheet(id) {
+            alert(`Worksheet ${id} approved and ready for return to student!`);
+        }
+        
+        // Filter functionality
+        document.addEventListener('DOMContentLoaded', () => {
+            const studentSearch = document.getElementById('student-search');
+            
+            studentSearch.addEventListener('input', filterWorksheets);
+        });
+        
+        function filterWorksheets() {
+            // Filter logic would go here
+            console.log('Filtering worksheets...');
+        }
+        
+        // Bulk actions
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('select-all').addEventListener('click', () => {
+                const checkboxes = document.querySelectorAll('.item-checkbox input[type="checkbox"]');
+                const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+                checkboxes.forEach(cb => cb.checked = !allChecked);
+            });
+            
+            document.getElementById('approve-selected').addEventListener('click', () => {
+                const checkedBoxes = document.querySelectorAll('.item-checkbox input[type="checkbox"]:checked');
+                alert(`${checkedBoxes.length} worksheets approved!`);
+            });
+            
+            document.getElementById('export-grades').addEventListener('click', () => {
+                alert('Exporting grades to CSV...');
+            });
+        });
+    </script>
+    <!-- Floating Background Elements -->
+    <div class="floating-element floating-element-1"></div>
+    <div class="floating-element floating-element-2"></div>
+    <div class="floating-element floating-element-3"></div>
+</body>
+</html>

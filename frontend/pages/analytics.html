@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analytics - GradeFlow</title>
+    
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="stylesheet" href="/css/dashboard.css">
+    <link rel="stylesheet" href="/css/dashboard-glass.css">
+    <link rel="stylesheet" href="/css/pages-glass.css">
+    <link rel="stylesheet" href="/css/liquid-nav.css">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="dashboard-body">
+    <!-- Liquid Glass Navigation -->
+    <nav class="liquid-nav">
+        <a href="/" class="nav-brand-liquid">
+            <i class="fas fa-graduation-cap"></i>
+            <span>GradeFlow</span>
+        </a>
+        
+        <div class="nav-items">
+            <a href="/pages/dashboard.html" class="nav-item-liquid">
+                <i class="fas fa-home"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="/pages/upload.html" class="nav-item-liquid">
+                <i class="fas fa-upload"></i>
+                <span>Upload</span>
+            </a>
+            <a href="/pages/grading.html" class="nav-item-liquid">
+                <i class="fas fa-check-double"></i>
+                <span>Grading</span>
+            </a>
+            <a href="/pages/analytics.html" class="nav-item-liquid active">
+                <i class="fas fa-chart-line"></i>
+                <span>Analytics</span>
+            </a>
+            <a href="/pages/settings.html" class="nav-item-liquid">
+                <i class="fas fa-cog"></i>
+                <span>Settings</span>
+            </a>
+        </div>
+        
+        <div class="nav-user-liquid">
+            <div class="user-info-liquid">
+                <div class="user-name-liquid">Teacher Name</div>
+                <div class="user-plan-liquid">Pro Plan</div>
+            </div>
+            <div class="user-avatar-liquid" onclick="toggleDropdown()">
+                <i class="fas fa-user"></i>
+            </div>
+            <div class="dropdown-liquid" id="userDropdown">
+                <a href="/pages/settings.html" class="dropdown-item-liquid">
+                    <i class="fas fa-cog"></i>
+                    Settings
+                </a>
+                <a href="/" class="dropdown-item-liquid">
+                    <i class="fas fa-sign-out-alt"></i>
+                    Logout
+                </a>
+            </div>
+        </div>
+    </nav>
+    
+    <!-- Old Navigation (Hidden) -->
+    <nav class="dashboard-nav" style="display: none;">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <i class="fas fa-graduation-cap"></i>
+                <span>GradeFlow</span>
+            </div>
+            
+            <div class="nav-user">
+                <div class="user-info">
+                    <span class="user-name" id="user-name">Teacher Name</span>
+                    <span class="user-plan" id="user-plan">Pro Plan</span>
+                </div>
+                <div class="user-avatar" id="user-avatar">
+                    <i class="fas fa-user"></i>
+                </div>
+                <div class="dropdown-menu" id="user-dropdown">
+                    <a href="/pages/dashboard.html"><i class="fas fa-home"></i> Dashboard</a>
+                    <a href="/pages/settings.html"><i class="fas fa-cog"></i> Settings</a>
+                    <a href="/" id="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Sidebar -->
+    <aside class="dashboard-sidebar">
+        <nav class="sidebar-nav">
+            <a href="/pages/dashboard.html" class="nav-item">
+                <i class="fas fa-home"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="/pages/upload.html" class="nav-item">
+                <i class="fas fa-upload"></i>
+                <span>Upload</span>
+            </a>
+            <a href="/pages/grading.html" class="nav-item">
+                <i class="fas fa-check-double"></i>
+                <span>Grading</span>
+            </a>
+            <a href="/pages/analytics.html" class="nav-item active">
+                <i class="fas fa-chart-line"></i>
+                <span>Analytics</span>
+            </a>
+            <a href="/pages/settings.html" class="nav-item">
+                <i class="fas fa-cog"></i>
+                <span>Settings</span>
+            </a>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="dashboard-main">
+        <div class="main-header">
+            <h1>Analytics & Insights</h1>
+            <p>Detailed performance analytics and class insights</p>
+        </div>
+
+        <!-- Analytics Controls -->
+        <div class="analytics-controls">
+            <div class="control-group">
+                <label>Time Period:</label>
+                <div class="liquid-dropdown" id="time-dropdown">
+                    <div class="liquid-dropdown-button" onclick="toggleLiquidDropdown('time-dropdown')">
+                        <span id="time-selected">Last 30 days</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="liquid-dropdown-menu">
+                        <div class="liquid-dropdown-item" onclick="selectDropdownItem('time-dropdown', 'Last 7 days', '7d')">Last 7 days</div>
+                        <div class="liquid-dropdown-item" onclick="selectDropdownItem('time-dropdown', 'Last 30 days', '30d')">Last 30 days</div>
+                        <div class="liquid-dropdown-item" onclick="selectDropdownItem('time-dropdown', 'Last 90 days', '90d')">Last 90 days</div>
+                        <div class="liquid-dropdown-item" onclick="selectDropdownItem('time-dropdown', 'Last year', '1y')">Last year</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="control-group">
+                <label>Subject Filter:</label>
+                <div class="liquid-dropdown" id="subject-dropdown">
+                    <div class="liquid-dropdown-button" onclick="toggleLiquidDropdown('subject-dropdown')">
+                        <span id="subject-selected">All Subjects</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="liquid-dropdown-menu">
+                        <div class="liquid-dropdown-item" onclick="selectDropdownItem('subject-dropdown', 'All Subjects', '')">All Subjects</div>
+                        <div class="liquid-dropdown-item" onclick="selectDropdownItem('subject-dropdown', 'Mathematics', 'math')">Mathematics</div>
+                        <div class="liquid-dropdown-item" onclick="selectDropdownItem('subject-dropdown', 'English', 'english')">English</div>
+                        <div class="liquid-dropdown-item" onclick="selectDropdownItem('subject-dropdown', 'Science', 'science')">Science</div>
+                        <div class="liquid-dropdown-item" onclick="selectDropdownItem('subject-dropdown', 'History', 'history')">History</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="control-group">
+                <label>Grade Level:</label>
+                <div class="liquid-dropdown" id="grade-dropdown">
+                    <div class="liquid-dropdown-button" onclick="toggleLiquidDropdown('grade-dropdown')">
+                        <span id="grade-selected">All Grades</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="liquid-dropdown-menu">
+                        <div class="liquid-dropdown-item" onclick="selectDropdownItem('grade-dropdown', 'All Grades', '')">All Grades</div>
+                        <div class="liquid-dropdown-item" onclick="selectDropdownItem('grade-dropdown', 'K-2', 'K-2')">K-2</div>
+                        <div class="liquid-dropdown-item" onclick="selectDropdownItem('grade-dropdown', '3-5', '3-5')">3-5</div>
+                        <div class="liquid-dropdown-item" onclick="selectDropdownItem('grade-dropdown', '6-8', '6-8')">6-8</div>
+                        <div class="liquid-dropdown-item" onclick="selectDropdownItem('grade-dropdown', '9-12', '9-12')">9-12</div>
+                    </div>
+                </div>
+            </div>
+            
+            <button class="btn btn-primary" id="export-report">
+                <i class="fas fa-download"></i>
+                Export Report
+            </button>
+        </div>
+
+        <!-- Key Metrics -->
+        <div class="metrics-grid">
+            <div class="metric-card">
+                <div class="metric-icon">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <div class="metric-info">
+                    <div class="metric-value">87.3%</div>
+                    <div class="metric-label">Average Class Score</div>
+                    <div class="metric-change positive">+2.1% vs last period</div>
+                </div>
+            </div>
+            
+            <div class="metric-card">
+                <div class="metric-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="metric-info">
+                    <div class="metric-value">24</div>
+                    <div class="metric-label">Active Students</div>
+                    <div class="metric-change neutral">Same as last period</div>
+                </div>
+            </div>
+            
+            <div class="metric-card">
+                <div class="metric-icon">
+                    <i class="fas fa-tasks"></i>
+                </div>
+                <div class="metric-info">
+                    <div class="metric-value">156</div>
+                    <div class="metric-label">Worksheets Graded</div>
+                    <div class="metric-change positive">+23% vs last period</div>
+                </div>
+            </div>
+            
+            <div class="metric-card">
+                <div class="metric-icon">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div class="metric-info">
+                    <div class="metric-value">26h</div>
+                    <div class="metric-label">Time Saved</div>
+                    <div class="metric-change positive">+31% vs last period</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Row 1 -->
+        <div class="charts-row">
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h3>Grade Distribution Over Time</h3>
+                    <div class="chart-legend">
+                        <span class="legend-item"><span class="legend-color" style="background: #ef4444;"></span> F (0-59%)</span>
+                        <span class="legend-item"><span class="legend-color" style="background: #f97316;"></span> D (60-69%)</span>
+                        <span class="legend-item"><span class="legend-color" style="background: #eab308;"></span> C (70-79%)</span>
+                        <span class="legend-item"><span class="legend-color" style="background: #22c55e;"></span> B (80-89%)</span>
+                        <span class="legend-item"><span class="legend-color" style="background: #3b82f6;"></span> A (90-100%)</span>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="gradeDistributionChart"></canvas>
+                </div>
+            </div>
+            
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h3>Subject Performance</h3>
+                    <div class="chart-info">Average scores by subject</div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="subjectPerformanceChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Row 2 -->
+        <div class="charts-row">
+            <div class="chart-card full-width">
+                <div class="chart-header">
+                    <h3>Class Performance Trends</h3>
+                    <div class="chart-controls">
+                        <button class="chart-toggle active" data-metric="average">Average Score</button>
+                        <button class="chart-toggle" data-metric="completion">Completion Rate</button>
+                        <button class="chart-toggle" data-metric="improvement">Improvement Rate</button>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="performanceTrendsChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Student Insights -->
+        <div class="insights-section">
+            <div class="insights-row">
+                <!-- Top Performers -->
+                <div class="insight-card">
+                    <div class="insight-header">
+                        <h3>Top Performers</h3>
+                        <span class="insight-subtitle">Students excelling across subjects</span>
+                    </div>
+                    <div class="student-list">
+                        <div class="student-item">
+                            <div class="student-rank">#1</div>
+                            <div class="student-info">
+                                <div class="student-name">Sarah Johnson</div>
+                                <div class="student-stats">15 worksheets • 94.2% avg</div>
+                            </div>
+                            <div class="student-trend positive">
+                                <i class="fas fa-arrow-up"></i>
+                                +3.1%
+                            </div>
+                        </div>
+                        
+                        <div class="student-item">
+                            <div class="student-rank">#2</div>
+                            <div class="student-info">
+                                <div class="student-name">Michael Chen</div>
+                                <div class="student-stats">12 worksheets • 91.8% avg</div>
+                            </div>
+                            <div class="student-trend positive">
+                                <i class="fas fa-arrow-up"></i>
+                                +1.7%
+                            </div>
+                        </div>
+                        
+                        <div class="student-item">
+                            <div class="student-rank">#3</div>
+                            <div class="student-info">
+                                <div class="student-name">Emily Davis</div>
+                                <div class="student-stats">14 worksheets • 89.3% avg</div>
+                            </div>
+                            <div class="student-trend neutral">
+                                <i class="fas fa-minus"></i>
+                                -0.2%
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Students Needing Support -->
+                <div class="insight-card">
+                    <div class="insight-header">
+                        <h3>Students Needing Support</h3>
+                        <span class="insight-subtitle">Focus areas for improvement</span>
+                    </div>
+                    <div class="student-list">
+                        <div class="student-item">
+                            <div class="student-info">
+                                <div class="student-name">Alex Rodriguez</div>
+                                <div class="student-stats">8 worksheets • 62.1% avg</div>
+                                <div class="student-needs">Struggling with: Math word problems</div>
+                            </div>
+                            <div class="student-trend negative">
+                                <i class="fas fa-arrow-down"></i>
+                                -2.3%
+                            </div>
+                        </div>
+                        
+                        <div class="student-item">
+                            <div class="student-info">
+                                <div class="student-name">Jordan Kim</div>
+                                <div class="student-stats">6 worksheets • 67.4% avg</div>
+                                <div class="student-needs">Struggling with: Reading comprehension</div>
+                            </div>
+                            <div class="student-trend negative">
+                                <i class="fas fa-arrow-down"></i>
+                                -1.8%
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Common Mistakes -->
+                <div class="insight-card">
+                    <div class="insight-header">
+                        <h3>Common Mistakes</h3>
+                        <span class="insight-subtitle">Class-wide areas for review</span>
+                    </div>
+                    <div class="mistakes-list">
+                        <div class="mistake-item">
+                            <div class="mistake-info">
+                                <div class="mistake-type">Fraction Operations</div>
+                                <div class="mistake-frequency">Affects 68% of students</div>
+                            </div>
+                            <div class="mistake-impact high">High Impact</div>
+                        </div>
+                        
+                        <div class="mistake-item">
+                            <div class="mistake-info">
+                                <div class="mistake-type">Sentence Structure</div>
+                                <div class="mistake-frequency">Affects 45% of students</div>
+                            </div>
+                            <div class="mistake-impact medium">Medium Impact</div>
+                        </div>
+                        
+                        <div class="mistake-item">
+                            <div class="mistake-info">
+                                <div class="mistake-type">Scientific Method Steps</div>
+                                <div class="mistake-frequency">Affects 32% of students</div>
+                            </div>
+                            <div class="mistake-impact low">Low Impact</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recommendations -->
+        <div class="recommendations-section">
+            <div class="recommendations-card">
+                <div class="recommendations-header">
+                    <h3>AI-Powered Recommendations</h3>
+                    <span class="recommendations-subtitle">Based on class performance analysis</span>
+                </div>
+                
+                <div class="recommendation-list">
+                    <div class="recommendation-item">
+                        <div class="recommendation-icon">
+                            <i class="fas fa-lightbulb"></i>
+                        </div>
+                        <div class="recommendation-content">
+                            <h4>Focus on Fraction Concepts</h4>
+                            <p>68% of students are struggling with fraction operations. Consider reviewing basic fraction concepts and providing additional practice problems.</p>
+                            <div class="recommendation-actions">
+                                <button class="btn btn-outline btn-sm">Create Practice Set</button>
+                                <button class="btn btn-outline btn-sm">View Resources</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="recommendation-item">
+                        <div class="recommendation-icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div class="recommendation-content">
+                            <h4>Small Group Support</h4>
+                            <p>Consider forming a small group with Alex Rodriguez and Jordan Kim for targeted reading comprehension support.</p>
+                            <div class="recommendation-actions">
+                                <button class="btn btn-outline btn-sm">Create Group</button>
+                                <button class="btn btn-outline btn-sm">Schedule Session</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="recommendation-item">
+                        <div class="recommendation-icon">
+                            <i class="fas fa-trophy"></i>
+                        </div>
+                        <div class="recommendation-content">
+                            <h4>Celebrate Success</h4>
+                            <p>Sarah Johnson and Michael Chen have shown consistent improvement. Consider recognizing their achievements to motivate the class.</p>
+                            <div class="recommendation-actions">
+                                <button class="btn btn-outline btn-sm">Send Certificate</button>
+                                <button class="btn btn-outline btn-sm">Share with Parents</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Scripts -->
+    <script src="/js/dashboard.js"></script>
+    <script>
+        // Liquid Dropdown Functions
+        function toggleLiquidDropdown(dropdownId) {
+            const dropdown = document.getElementById(dropdownId);
+            const isActive = dropdown.classList.contains('active');
+            
+            // Close all dropdowns
+            document.querySelectorAll('.liquid-dropdown').forEach(d => d.classList.remove('active'));
+            
+            // Toggle current dropdown
+            if (!isActive) {
+                dropdown.classList.add('active');
+            }
+        }
+        
+        function selectDropdownItem(dropdownId, displayText, value) {
+            const dropdown = document.getElementById(dropdownId);
+            const selectedElement = dropdown.querySelector('[id$="-selected"]');
+            selectedElement.textContent = displayText;
+            dropdown.classList.remove('active');
+            
+            // Trigger analytics update
+            updateAnalytics();
+        }
+        
+        // Close dropdowns when clicking outside
+        document.addEventListener('click', function(event) {
+            if (!event.target.closest('.liquid-dropdown')) {
+                document.querySelectorAll('.liquid-dropdown').forEach(d => d.classList.remove('active'));
+            }
+        });
+        
+        // Analytics-specific JavaScript
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeCharts();
+            setupAnalyticsControls();
+        });
+
+        function initializeCharts() {
+            // Grade Distribution Chart
+            const gradeCtx = document.getElementById('gradeDistributionChart').getContext('2d');
+            new Chart(gradeCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+                    datasets: [{
+                        label: 'A (90-100%)',
+                        data: [12, 15, 18, 20],
+                        borderColor: '#3b82f6',
+                        backgroundColor: '#3b82f6',
+                        fill: false
+                    }, {
+                        label: 'B (80-89%)',
+                        data: [8, 6, 4, 3],
+                        borderColor: '#22c55e',
+                        backgroundColor: '#22c55e',
+                        fill: false
+                    }, {
+                        label: 'C (70-79%)',
+                        data: [3, 2, 1, 1],
+                        borderColor: '#eab308',
+                        backgroundColor: '#eab308',
+                        fill: false
+                    }, {
+                        label: 'D (60-69%)',
+                        data: [1, 1, 1, 0],
+                        borderColor: '#f97316',
+                        backgroundColor: '#f97316',
+                        fill: false
+                    }, {
+                        label: 'F (0-59%)',
+                        data: [0, 0, 0, 0],
+                        borderColor: '#ef4444',
+                        backgroundColor: '#ef4444',
+                        fill: false
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+
+            // Subject Performance Chart
+            const subjectCtx = document.getElementById('subjectPerformanceChart').getContext('2d');
+            new Chart(subjectCtx, {
+                type: 'radar',
+                data: {
+                    labels: ['Mathematics', 'English', 'Science', 'History', 'Art'],
+                    datasets: [{
+                        label: 'Class Average',
+                        data: [87, 82, 89, 85, 91],
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        pointBackgroundColor: '#3b82f6'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        r: {
+                            beginAtZero: true,
+                            max: 100
+                        }
+                    }
+                }
+            });
+
+            // Performance Trends Chart
+            const trendsCtx = document.getElementById('performanceTrendsChart').getContext('2d');
+            new Chart(trendsCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                    datasets: [{
+                        label: 'Average Score',
+                        data: [78, 82, 85, 87, 89, 87],
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            min: 70,
+                            max: 100
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateAnalytics() {
+            console.log('Analytics updated based on filters');
+            // Update charts and data based on current filter selections
+        }
+        
+        function setupAnalyticsControls() {
+            // Chart toggles
+            document.querySelectorAll('.chart-toggle').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    document.querySelectorAll('.chart-toggle').forEach(btn => btn.classList.remove('active'));
+                    e.target.classList.add('active');
+                    console.log('Chart metric changed to:', e.target.dataset.metric);
+                    // Update performance trends chart
+                });
+            });
+
+            // Export report
+            document.getElementById('export-report').addEventListener('click', () => {
+                alert('Exporting analytics report...');
+            });
+        }
+    </script>
+    <!-- Floating Background Elements -->
+    <div class="floating-element floating-element-1"></div>
+    <div class="floating-element floating-element-2"></div>
+    <div class="floating-element floating-element-3"></div>
+</body>
+</html>
