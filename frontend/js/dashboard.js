@@ -1,4 +1,4 @@
-// Dashboard functionality for GradeFlow
+// Dashboard functionality for CheckMate
 class DashboardManager {
     constructor() {
         this.charts = {};

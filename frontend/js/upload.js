@@ -1,4 +1,4 @@
-// Upload functionality for GradeFlow
+// Upload functionality for CheckMate
 class UploadManager {
     constructor() {
         this.selectedFiles = [];

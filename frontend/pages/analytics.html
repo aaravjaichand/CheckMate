@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Analytics - GradeFlow</title>
+    <title>Analytics - CheckMate</title>
     
     <link rel="stylesheet" href="/css/main.css">
     <link rel="stylesheet" href="/css/dashboard.css">
@@ -23,7 +23,7 @@
     <nav class="liquid-nav">
         <a href="/" class="nav-brand-liquid">
             <i class="fas fa-graduation-cap"></i>
-            <span>GradeFlow</span>
+            <span>CheckMate</span>
         </a>
         
         <div class="nav-items">
@@ -75,7 +75,7 @@
         <div class="nav-container">
             <div class="nav-brand">
                 <i class="fas fa-graduation-cap"></i>
-                <span>GradeFlow</span>
+                <span>CheckMate</span>
             </div>
             
             <div class="nav-user">
@@ -180,7 +180,7 @@
                 </div>
             </div>
             
-            <button class="btn btn-primary" id="export-report">
+            <button class="liquid-button primary" id="export-report">
                 <i class="fas fa-download"></i>
                 Export Report
             </button>
@@ -289,40 +289,10 @@
                         <span class="insight-subtitle">Students excelling across subjects</span>
                     </div>
                     <div class="student-list">
-                        <div class="student-item">
-                            <div class="student-rank">#1</div>
-                            <div class="student-info">
-                                <div class="student-name">Sarah Johnson</div>
-                                <div class="student-stats">15 worksheets • 94.2% avg</div>
-                            </div>
-                            <div class="student-trend positive">
-                                <i class="fas fa-arrow-up"></i>
-                                +3.1%
-                            </div>
-                        </div>
-                        
-                        <div class="student-item">
-                            <div class="student-rank">#2</div>
-                            <div class="student-info">
-                                <div class="student-name">Michael Chen</div>
-                                <div class="student-stats">12 worksheets • 91.8% avg</div>
-                            </div>
-                            <div class="student-trend positive">
-                                <i class="fas fa-arrow-up"></i>
-                                +1.7%
-                            </div>
-                        </div>
-                        
-                        <div class="student-item">
-                            <div class="student-rank">#3</div>
-                            <div class="student-info">
-                                <div class="student-name">Emily Davis</div>
-                                <div class="student-stats">14 worksheets • 89.3% avg</div>
-                            </div>
-                            <div class="student-trend neutral">
-                                <i class="fas fa-minus"></i>
-                                -0.2%
-                            </div>
+                        <div class="empty-state">
+                            <i class="fas fa-trophy"></i>
+                            <p>No performance data available</p>
+                            <span>Grade more worksheets to see top performers</span>
                         </div>
                     </div>
                 </div>
@@ -334,28 +304,10 @@
                         <span class="insight-subtitle">Focus areas for improvement</span>
                     </div>
                     <div class="student-list">
-                        <div class="student-item">
-                            <div class="student-info">
-                                <div class="student-name">Alex Rodriguez</div>
-                                <div class="student-stats">8 worksheets • 62.1% avg</div>
-                                <div class="student-needs">Struggling with: Math word problems</div>
-                            </div>
-                            <div class="student-trend negative">
-                                <i class="fas fa-arrow-down"></i>
-                                -2.3%
-                            </div>
-                        </div>
-                        
-                        <div class="student-item">
-                            <div class="student-info">
-                                <div class="student-name">Jordan Kim</div>
-                                <div class="student-stats">6 worksheets • 67.4% avg</div>
-                                <div class="student-needs">Struggling with: Reading comprehension</div>
-                            </div>
-                            <div class="student-trend negative">
-                                <i class="fas fa-arrow-down"></i>
-                                -1.8%
-                            </div>
+                        <div class="empty-state">
+                            <i class="fas fa-hands-helping"></i>
+                            <p>No support data available</p>
+                            <span>AI will identify students needing support as you grade more worksheets</span>
                         </div>
                     </div>
                 </div>
@@ -367,28 +319,10 @@
                         <span class="insight-subtitle">Class-wide areas for review</span>
                     </div>
                     <div class="mistakes-list">
-                        <div class="mistake-item">
-                            <div class="mistake-info">
-                                <div class="mistake-type">Fraction Operations</div>
-                                <div class="mistake-frequency">Affects 68% of students</div>
-                            </div>
-                            <div class="mistake-impact high">High Impact</div>
-                        </div>
-                        
-                        <div class="mistake-item">
-                            <div class="mistake-info">
-                                <div class="mistake-type">Sentence Structure</div>
-                                <div class="mistake-frequency">Affects 45% of students</div>
-                            </div>
-                            <div class="mistake-impact medium">Medium Impact</div>
-                        </div>
-                        
-                        <div class="mistake-item">
-                            <div class="mistake-info">
-                                <div class="mistake-type">Scientific Method Steps</div>
-                                <div class="mistake-frequency">Affects 32% of students</div>
-                            </div>
-                            <div class="mistake-impact low">Low Impact</div>
+                        <div class="empty-state">
+                            <i class="fas fa-search"></i>
+                            <p>No common mistakes identified</p>
+                            <span>AI will analyze patterns and identify common mistakes as you grade worksheets</span>
                         </div>
                     </div>
                 </div>
@@ -404,46 +338,10 @@
                 </div>
                 
                 <div class="recommendation-list">
-                    <div class="recommendation-item">
-                        <div class="recommendation-icon">
-                            <i class="fas fa-lightbulb"></i>
-                        </div>
-                        <div class="recommendation-content">
-                            <h4>Focus on Fraction Concepts</h4>
-                            <p>68% of students are struggling with fraction operations. Consider reviewing basic fraction concepts and providing additional practice problems.</p>
-                            <div class="recommendation-actions">
-                                <button class="btn btn-outline btn-sm">Create Practice Set</button>
-                                <button class="btn btn-outline btn-sm">View Resources</button>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="recommendation-item">
-                        <div class="recommendation-icon">
-                            <i class="fas fa-users"></i>
-                        </div>
-                        <div class="recommendation-content">
-                            <h4>Small Group Support</h4>
-                            <p>Consider forming a small group with Alex Rodriguez and Jordan Kim for targeted reading comprehension support.</p>
-                            <div class="recommendation-actions">
-                                <button class="btn btn-outline btn-sm">Create Group</button>
-                                <button class="btn btn-outline btn-sm">Schedule Session</button>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="recommendation-item">
-                        <div class="recommendation-icon">
-                            <i class="fas fa-trophy"></i>
-                        </div>
-                        <div class="recommendation-content">
-                            <h4>Celebrate Success</h4>
-                            <p>Sarah Johnson and Michael Chen have shown consistent improvement. Consider recognizing their achievements to motivate the class.</p>
-                            <div class="recommendation-actions">
-                                <button class="btn btn-outline btn-sm">Send Certificate</button>
-                                <button class="btn btn-outline btn-sm">Share with Parents</button>
-                            </div>
-                        </div>
+                    <div class="empty-state">
+                        <i class="fas fa-robot"></i>
+                        <p>No AI recommendations yet</p>
+                        <span>AI will provide personalized teaching recommendations based on class performance analysis</span>
                     </div>
                 </div>
             </div>

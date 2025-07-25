@@ -1,6 +1,6 @@
-# GradeFlow - AI-Powered Worksheet Grading Assistant
+# CheckMate - AI-Powered Worksheet Grading Assistant
 
-GradeFlow is an intelligent grading platform that helps K-12 teachers grade worksheets 10x faster using advanced AI and OCR technology. Upload student worksheets and get personalized feedback for each student in minutes, not hours.
+CheckMate is an intelligent grading platform that helps K-12 teachers grade worksheets 10x faster using advanced AI and OCR technology. Upload student worksheets and get personalized feedback for each student in minutes, not hours.
 
 ## Features
 

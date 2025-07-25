@@ -84,7 +84,7 @@ app.use((err, req, res, next) => {
 
 // Start server
 app.listen(PORT, () => {
-  console.log(`🚀 GradeFlow server running on port ${PORT}`);
+  console.log(`🚀 CheckMate server running on port ${PORT}`);
   console.log(`📱 Frontend: http://localhost:${PORT}`);
   console.log(`🔌 API: http://localhost:${PORT}/api`);
 });

@@ -24,7 +24,7 @@ export async function connectToDatabase() {
         await client.connect();
         console.log('Connected to MongoDB Atlas');
 
-        db = client.db('gradeflow');
+        db = client.db('checkmate');
 
         // Create indexes for better performance
         await createIndexes();

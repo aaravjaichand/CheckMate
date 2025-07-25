@@ -1,5 +1,5 @@
-// Main JavaScript for GradeFlow
-class GradeFlow {
+// Main JavaScript for CheckMate
+class CheckMate {
     constructor() {
         this.init();
     }
@@ -525,7 +525,7 @@ class GradeFlow {
         modal.innerHTML = `
             <div class="demo-modal">
                 <div class="demo-modal-header">
-                    <h2>GradeFlow Demo</h2>
+                    <h2>CheckMate Demo</h2>
                     <button class="demo-modal-close">&times;</button>
                 </div>
                 <div class="demo-modal-content">
@@ -533,7 +533,7 @@ class GradeFlow {
                         <div class="demo-placeholder">
                             <i class="fas fa-play-circle"></i>
                             <p>Demo video would play here</p>
-                            <p class="demo-description">See how GradeFlow grades 30 worksheets in under 5 minutes with personalized feedback for each student.</p>
+                            <p class="demo-description">See how CheckMate grades 30 worksheets in under 5 minutes with personalized feedback for each student.</p>
                         </div>
                     </div>
                     <div class="demo-actions">
@@ -752,10 +752,10 @@ class GradeFlow {
     }
 }
 
-// Initialize GradeFlow when DOM is loaded
+// Initialize CheckMate when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
-    window.gradeflow = new GradeFlow();
+    window.gradeflow = new CheckMate();
 });
 
 // Export for use in other modules
-export default GradeFlow;
+export default CheckMate;

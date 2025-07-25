@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Grading - GradeFlow</title>
+    <title>Grading - CheckMate</title>
     
     <link rel="stylesheet" href="/css/main.css">
     <link rel="stylesheet" href="/css/dashboard.css">
@@ -22,7 +22,7 @@
     <nav class="liquid-nav">
         <a href="/" class="nav-brand-liquid">
             <i class="fas fa-graduation-cap"></i>
-            <span>GradeFlow</span>
+            <span>CheckMate</span>
         </a>
         
         <div class="nav-items">
@@ -74,7 +74,7 @@
         <div class="nav-container">
             <div class="nav-brand">
                 <i class="fas fa-graduation-cap"></i>
-                <span>GradeFlow</span>
+                <span>CheckMate</span>
             </div>
             
             <div class="nav-user">
@@ -181,140 +181,10 @@
                 </div>
                 
                 <div class="grading-list" id="grading-list">
-                    <!-- Sample graded worksheets -->
-                    <div class="grading-item">
-                        <div class="item-checkbox">
-                            <input type="checkbox" id="worksheet-1">
-                        </div>
-                        
-                        <div class="item-preview">
-                            <div class="preview-image">
-                                <i class="fas fa-file-pdf"></i>
-                            </div>
-                        </div>
-                        
-                        <div class="item-info">
-                            <div class="item-title">Math Worksheet #3</div>
-                            <div class="item-details">
-                                <span class="student-name">Sarah Johnson</span>
-                                <span class="subject-badge math">Mathematics</span>
-                                <span class="grade-level">Grade 5</span>
-                                <span class="upload-time">2 hours ago</span>
-                            </div>
-                        </div>
-                        
-                        <div class="item-score">
-                            <div class="score-display excellent">92%</div>
-                            <div class="score-details">23/25 points</div>
-                        </div>
-                        
-                        <div class="item-feedback">
-                            <div class="feedback-preview">
-                                <strong>Strengths:</strong> Excellent work on fractions...
-                                <button class="feedback-expand">Show More</button>
-                            </div>
-                        </div>
-                        
-                        <div class="item-actions">
-                            <button class="liquid-button secondary small" onclick="reviewWorksheet('1')">
-                                <i class="fas fa-eye"></i>
-                                Review
-                            </button>
-                            <button class="liquid-button primary small" onclick="approveWorksheet('1')">
-                                <i class="fas fa-check"></i>
-                                Approve
-                            </button>
-                        </div>
-                    </div>
-
-                    <div class="grading-item">
-                        <div class="item-checkbox">
-                            <input type="checkbox" id="worksheet-2">
-                        </div>
-                        
-                        <div class="item-preview">
-                            <div class="preview-image">
-                                <i class="fas fa-file-pdf"></i>
-                            </div>
-                        </div>
-                        
-                        <div class="item-info">
-                            <div class="item-title">English Essay - My Summer</div>
-                            <div class="item-details">
-                                <span class="student-name">Michael Chen</span>
-                                <span class="subject-badge english">English</span>
-                                <span class="grade-level">Grade 4</span>
-                                <span class="upload-time">3 hours ago</span>
-                            </div>
-                        </div>
-                        
-                        <div class="item-score">
-                            <div class="score-display good">78%</div>
-                            <div class="score-details">39/50 points</div>
-                        </div>
-                        
-                        <div class="item-feedback">
-                            <div class="feedback-preview">
-                                <strong>Strengths:</strong> Creative storytelling and good use of descriptive language...
-                                <button class="feedback-expand">Show More</button>
-                            </div>
-                        </div>
-                        
-                        <div class="item-actions">
-                            <button class="liquid-button secondary small" onclick="reviewWorksheet('2')">
-                                <i class="fas fa-eye"></i>
-                                Review
-                            </button>
-                            <button class="liquid-button primary small" onclick="approveWorksheet('2')">
-                                <i class="fas fa-check"></i>
-                                Approve
-                            </button>
-                        </div>
-                    </div>
-
-                    <div class="grading-item">
-                        <div class="item-checkbox">
-                            <input type="checkbox" id="worksheet-3">
-                        </div>
-                        
-                        <div class="item-preview">
-                            <div class="preview-image">
-                                <i class="fas fa-file-image"></i>
-                            </div>
-                        </div>
-                        
-                        <div class="item-info">
-                            <div class="item-title">Science Lab Report</div>
-                            <div class="item-details">
-                                <span class="student-name">Emma Rodriguez</span>
-                                <span class="subject-badge science">Science</span>
-                                <span class="grade-level">Grade 6</span>
-                                <span class="upload-time">5 hours ago</span>
-                            </div>
-                        </div>
-                        
-                        <div class="item-score">
-                            <div class="score-display fair">65%</div>
-                            <div class="score-details">13/20 points</div>
-                        </div>
-                        
-                        <div class="item-feedback">
-                            <div class="feedback-preview">
-                                <strong>Areas for improvement:</strong> Need more detailed observations...
-                                <button class="feedback-expand">Show More</button>
-                            </div>
-                        </div>
-                        
-                        <div class="item-actions">
-                            <button class="liquid-button secondary small" onclick="reviewWorksheet('3')">
-                                <i class="fas fa-eye"></i>
-                                Review
-                            </button>
-                            <button class="liquid-button primary small" onclick="approveWorksheet('3')">
-                                <i class="fas fa-check"></i>
-                                Approve
-                            </button>
-                        </div>
+                    <div class="empty-state">
+                        <i class="fas fa-clipboard-check"></i>
+                        <p>No worksheets ready for review</p>
+                        <span>Upload and process worksheets to see them here for grading review</span>
                     </div>
                 </div>
             </div>
