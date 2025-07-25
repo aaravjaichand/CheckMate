@@ -9,7 +9,7 @@ router.get('/auth0', (req, res) => {
             domain: process.env.AUTH0_DOMAIN,
             clientId: process.env.AUTH0_CLIENT_ID,
             audience: process.env.AUTH0_AUDIENCE,
-            redirectUri: `${req.protocol}://${req.get('host')}/pages/dashboard.html`,
+            redirectUri: `https://${req.get('host')}/pages/dashboard.html`,
             connections: {
                 google: 'google-oauth2',
                 database: 'Username-Password-Authentication',
