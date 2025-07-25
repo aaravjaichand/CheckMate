@@ -355,11 +355,6 @@
                 if (isAuthenticated) {
                     window.location.href = '/pages/dashboard.html';
                 }
-
-                // Handle redirect callback
-                if (window.location.search.includes('code=')) {
-                    await handleCallback();
-                }
             } catch (error) {
                 console.error('Error initializing Auth0:', error);
                 alert('Authentication service is not available. Please try again later.');
@@ -404,7 +399,10 @@
                 localStorage.setItem('token', authData.token);
                 console.log('Stored user data in localStorage');
                 
-                window.location.href = '/pages/dashboard.html';
+                // Add a small delay to ensure localStorage is written
+                setTimeout(() => {
+                    window.location.href = '/pages/dashboard.html';
+                }, 500);
             } catch (error) {
                 console.error('Error handling callback:', error);
                 alert('Login failed. Please try again.');
