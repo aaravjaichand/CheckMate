@@ -78,6 +78,14 @@ class CustomDropdown {
             </div>
         `;
 
+        // Copy over important attributes from original element
+        if (this.element.id) {
+            dropdown.id = this.element.id;
+        }
+        if (this.element.className && !dropdown.className.includes(this.element.className)) {
+            dropdown.className += ' ' + this.element.className;
+        }
+        
         // Replace the original element
         this.element.parentNode.replaceChild(dropdown, this.element);
         this.element = dropdown;
@@ -434,7 +442,10 @@ class CustomDropdown {
         this.element.dispatchEvent(changeEvent);
         
         // Debug alert for any selection
-        alert(`DROPDOWN SELECTION: "${option.label}" selected in ${this.element.id || 'unknown'} dropdown`);
+        const dropdownType = this.element.id === 'student-dropdown' ? 'Student' : 
+                            this.element.id === 'class-dropdown' ? 'Class' : 
+                            (this.element.id || 'Unknown');
+        alert(`DROPDOWN SELECTION: "${option.label}" selected in ${dropdownType} dropdown`);
     }
 
     handleAddNew() {

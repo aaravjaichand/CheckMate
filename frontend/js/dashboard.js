@@ -160,6 +160,9 @@ class DashboardManager {
 
     updateStatChange(elementId, changePercent) {
         const element = document.getElementById(elementId);
+        if (!element) {
+            return; // Element doesn't exist on this page, skip
+        }
         const parent = element.closest('.stat-change');
         
         element.textContent = `${changePercent > 0 ? '+' : ''}${changePercent}%`;

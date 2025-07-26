@@ -2,17 +2,22 @@ import { promises as fs } from 'fs';
 import path from 'path';
 
 // OCR Service - Google Vision API Integration
-export async function processOCR(filePath, mimeType) {
+export async function processOCR(filePathOrBuffer, mimeType) {
     try {
         // Check if Google Vision API key is available
         const apiKey = process.env.GOOGLE_VISION_API_KEY;
         if (!apiKey) {
             console.warn('Google Vision API key not found, using fallback OCR');
-            return await fallbackOCR(filePath, mimeType);
+            return await fallbackOCR(filePathOrBuffer, mimeType);
         }
 
-        // Read file and convert to base64
-        const fileBuffer = await fs.readFile(filePath);
+        // Handle both file paths and buffers (for Vercel compatibility)
+        let fileBuffer;
+        if (Buffer.isBuffer(filePathOrBuffer)) {
+            fileBuffer = filePathOrBuffer;
+        } else {
+            fileBuffer = await fs.readFile(filePathOrBuffer);
+        }
         const base64Image = fileBuffer.toString('base64');
 
         // Prepare request for Google Vision API
@@ -93,17 +98,17 @@ export async function processOCR(filePath, mimeType) {
         
         // Fallback to basic OCR if Google Vision fails
         console.warn('Falling back to basic OCR processing');
-        return await fallbackOCR(filePath, mimeType);
+        return await fallbackOCR(filePathOrBuffer, mimeType);
     }
 }
 
 // Fallback OCR using Tesseract.js (for development/testing)
-async function fallbackOCR(filePath, mimeType) {
+async function fallbackOCR(filePathOrBuffer, mimeType) {
     try {
         // For development purposes, return mock OCR results
         // In production, you could integrate Tesseract.js here
         
-        const fileName = path.basename(filePath);
+        const fileName = Buffer.isBuffer(filePathOrBuffer) ? 'uploaded-file' : path.basename(filePathOrBuffer);
         
         // Mock OCR results based on file type and name
         const mockText = generateMockOCRText(fileName, mimeType);

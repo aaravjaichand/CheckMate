@@ -16,6 +16,7 @@ import configRoutes from './backend/api/config.js';
 import debugRoutes from './backend/api/debug.js';
 import studentsRoutes from './backend/api/students.js';
 import classesRoutes from './backend/api/classes.js';
+import testApisRoutes from './backend/api/test-apis.js';
 
 // Load environment variables
 dotenv.config();
@@ -54,10 +55,7 @@ app.use(cors());
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
-// Serve static files
-app.use(express.static(path.join(__dirname, 'frontend')));
-
-// API Routes
+// API Routes (MUST come before static files)
 app.use('/api/auth', authRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/grading', gradingRoutes);
@@ -66,6 +64,7 @@ app.use('/api/config', configRoutes);
 app.use('/api/debug', debugRoutes);
 app.use('/api/students', studentsRoutes);
 app.use('/api/classes', classesRoutes);
+app.use('/api/test-apis', testApisRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
@@ -76,8 +75,15 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// Serve frontend for all other routes (SPA routing)
-app.get('*', (req, res) => {
+// Serve static files
+app.use(express.static(path.join(__dirname, 'frontend')));
+
+// Serve frontend for all non-API routes (SPA routing)
+app.get('*', (req, res, next) => {
+  // Don't catch API routes
+  if (req.path.startsWith('/api/')) {
+    return next();
+  }
   res.sendFile(path.join(__dirname, 'frontend', 'index.html'));
 });
 

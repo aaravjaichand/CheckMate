@@ -781,30 +781,15 @@ class SingleUploadManager {
             return;
         }
         
-        // Check dropdown values (handle uninitialized dropdowns gracefully)
-        const studentSelected = this.studentDropdown?.getValue();
-        const classSelected = this.classDropdown?.getValue();
-        const fileSelected = !!this.selectedFile;
-        
-        // More explicit validation with debugging
-        const hasStudent = studentSelected !== null && studentSelected !== undefined && studentSelected !== '';
-        const hasClass = classSelected !== null && classSelected !== undefined && classSelected !== '';
-        const hasFile = fileSelected;
-        
-        // Check if dropdowns are initialized
-        const dropdownsReady = !!(this.studentDropdown && this.classDropdown);
+        // Simplified validation - only require file selection
+        const hasFile = !!this.selectedFile;
         
         console.log('SingleUploadManager: Form validation check:', {
-            hasStudent,
-            hasClass, 
             hasFile,
-            dropdownsReady,
-            studentValue: studentSelected,
-            classValue: classSelected,
-            allConditionsMet: hasStudent && hasClass && hasFile && dropdownsReady
+            fileName: this.selectedFile?.name
         });
         
-        if (hasStudent && hasClass && hasFile && dropdownsReady) {
+        if (hasFile) {
             uploadBtn.disabled = false;
             uploadBtn.style.opacity = '1';
             uploadBtn.style.pointerEvents = 'auto';
@@ -814,15 +799,8 @@ class SingleUploadManager {
             uploadBtn.disabled = true;
             uploadBtn.style.opacity = '0.5';
             uploadBtn.style.pointerEvents = 'none';
-            
-            // Show actions if we have any content or dropdowns aren't ready yet
-            if (hasFile || hasStudent || hasClass || !dropdownsReady) {
-                uploadActions.classList.add('show');
-                uploadActions.style.display = 'flex';
-            } else {
-                uploadActions.classList.remove('show');
-                uploadActions.style.display = 'none';
-            }
+            uploadActions.classList.remove('show');
+            uploadActions.style.display = 'none';
         }
     }
 
@@ -840,15 +818,17 @@ class SingleUploadManager {
         this.showProcessingOverlay('Uploading worksheet...', 'Please wait while we process your file.');
 
         try {
-            // Get values and validate them
-            const studentId = this.studentDropdown?.getValue();
-            const classId = this.classDropdown?.getValue();
-            const assignmentName = document.getElementById('assignment-name')?.value?.trim() || '';
+            // Get values or use defaults for demo
+            const studentId = this.studentDropdown?.getValue() || '507f1f77bcf86cd799439012'; // Demo student ID
+            const classId = this.classDropdown?.getValue() || '507f1f77bcf86cd799439013'; // Demo class ID
+            const assignmentName = document.getElementById('assignment-name')?.value?.trim() || 'Demo Assignment';
             
-            // Validate required data
-            if (!studentId || !classId || !this.selectedFile) {
-                throw new Error('Missing required data: student, class, or file');
-            }
+            console.log('Starting upload with values:', {
+                studentId,
+                classId,
+                assignmentName,
+                fileName: this.selectedFile?.name
+            });
             
             const formData = new FormData();
             formData.append('worksheet', this.selectedFile);
@@ -859,12 +839,10 @@ class SingleUploadManager {
                 formData.append('assignment', assignmentName);
             }
 
-            const token = localStorage.getItem('gradeflow_token');
+            console.log('Making upload request...');
+            
             const response = await fetch('/api/upload/worksheet/single', {
                 method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                },
                 body: formData
             });
 
@@ -896,29 +874,18 @@ class SingleUploadManager {
     }
 
     validateUpload() {
-        let isValid = true;
-
-        // Check student selection
-        if (!this.studentDropdown?.getValue()) {
-            this.showError('student-error', 'Please select a student');
-            this.studentDropdown?.setError(true);
-            isValid = false;
-        }
-
-        // Check class selection
-        if (!this.classDropdown?.getValue()) {
-            this.showError('class-error', 'Please select a class');
-            this.classDropdown?.setError(true);
-            isValid = false;
-        }
-
-        // Check file selection
+        // For demo purposes, only require file selection
         if (!this.selectedFile) {
             this.showNotification('Please select a file to upload.', 'error');
-            isValid = false;
+            return false;
         }
 
-        return isValid;
+        console.log('Upload validation passed:', {
+            hasFile: !!this.selectedFile,
+            fileName: this.selectedFile?.name
+        });
+
+        return true;
     }
 
     showError(elementId, message) {
