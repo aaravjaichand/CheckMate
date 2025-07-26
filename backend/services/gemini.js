@@ -17,9 +17,9 @@ export async function gradeWithGemini({ text, subject, gradeLevel, rubric, stude
             studentName
         });
 
-        // Call Gemini API
+        // Call Gemini API - Using Gemini 2.5 Flash (stable, best price-performance)
         const response = await fetch(
-            `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`,
+            `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
             {
                 method: 'POST',
                 headers: {
@@ -32,10 +32,10 @@ export async function gradeWithGemini({ text, subject, gradeLevel, rubric, stude
                         }]
                     }],
                     generationConfig: {
-                        temperature: 0.3,
-                        topK: 40,
-                        topP: 0.95,
-                        maxOutputTokens: 2048
+                        temperature: 0.2, // Lower for more consistent grading
+                        topK: 32,
+                        topP: 0.9,
+                        maxOutputTokens: 4096 // Increased for complex grading tasks
                     },
                     safetySettings: [
                         {
@@ -89,7 +89,7 @@ export async function generateFeedback({ gradingResults, studentName, subject, t
         });
 
         const response = await fetch(
-            `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`,
+            `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
             {
                 method: 'POST',
                 headers: {
@@ -102,10 +102,10 @@ export async function generateFeedback({ gradingResults, studentName, subject, t
                         }]
                     }],
                     generationConfig: {
-                        temperature: 0.7,
-                        topK: 40,
-                        topP: 0.95,
-                        maxOutputTokens: 1024
+                        temperature: 0.4, // Slightly higher for creative feedback
+                        topK: 32,
+                        topP: 0.9,
+                        maxOutputTokens: 2048 // Adequate for feedback generation
                     }
                 })
             }

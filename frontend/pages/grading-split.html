@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grading Interface - CheckMate</title>
+    
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="stylesheet" href="/css/dashboard.css">
+    <link rel="stylesheet" href="/css/dashboard-glass.css">
+    <link rel="stylesheet" href="/css/pages-glass.css">
+    <link rel="stylesheet" href="/css/liquid-nav.css">
+    <link rel="stylesheet" href="/css/split-screen.css">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- PDF.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+</head>
+<body class="dashboard-body split-screen-body">
+    <!-- Liquid Glass Navigation -->
+    <nav class="liquid-nav">
+        <a href="/" class="nav-brand-liquid">
+            <i class="fas fa-graduation-cap"></i>
+            <span>CheckMate</span>
+        </a>
+        
+        <div class="nav-items">
+            <a href="/pages/dashboard.html" class="nav-item-liquid">
+                <i class="fas fa-home"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="/pages/upload.html" class="nav-item-liquid">
+                <i class="fas fa-upload"></i>
+                <span>Upload</span>
+            </a>
+            <a href="/pages/grading.html" class="nav-item-liquid active">
+                <i class="fas fa-check-double"></i>
+                <span>Grading</span>
+            </a>
+            <a href="/pages/analytics.html" class="nav-item-liquid">
+                <i class="fas fa-chart-line"></i>
+                <span>Analytics</span>
+            </a>
+            <a href="/pages/settings.html" class="nav-item-liquid">
+                <i class="fas fa-cog"></i>
+                <span>Settings</span>
+            </a>
+        </div>
+        
+        <div class="nav-user-liquid">
+            <div class="user-info-liquid">
+                <div class="user-name-liquid">Teacher Name</div>
+                <div class="user-plan-liquid">Pro Plan</div>
+            </div>
+            <div class="user-avatar-liquid" onclick="toggleDropdown()">
+                <i class="fas fa-user"></i>
+            </div>
+            <div class="dropdown-liquid" id="userDropdown">
+                <a href="/pages/settings.html" class="dropdown-item-liquid">
+                    <i class="fas fa-cog"></i>
+                    Settings
+                </a>
+                <a href="/" class="dropdown-item-liquid">
+                    <i class="fas fa-sign-out-alt"></i>
+                    Logout
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="split-screen-main">
+        <!-- Header -->
+        <header class="grading-header">
+            <div class="header-left">
+                <button class="back-btn" onclick="history.back()">
+                    <i class="fas fa-arrow-left"></i>
+                    Back
+                </button>
+                <div class="worksheet-info">
+                    <h1 id="worksheet-title">Loading...</h1>
+                    <div class="worksheet-meta">
+                        <span id="student-name">Student Name</span> • 
+                        <span id="class-name">Class Name</span> • 
+                        <span id="assignment-name">Assignment</span>
+                    </div>
+                </div>
+            </div>
+            <div class="header-right">
+                <div class="grading-status" id="grading-status">
+                    <div class="status-indicator processing">
+                        <i class="fas fa-spinner fa-spin"></i>
+                        Processing...
+                    </div>
+                </div>
+                <button class="btn btn-primary" id="grade-worksheet-btn" style="display: none;">
+                    <i class="fas fa-robot"></i>
+                    Grade Worksheet
+                </button>
+                <button class="btn btn-outline" id="save-btn" style="display: none;">
+                    <i class="fas fa-save"></i>
+                    Save Changes
+                </button>
+            </div>
+        </header>
+
+        <!-- Split Screen Container -->
+        <div class="split-container">
+            <!-- Left Panel - PDF Viewer -->
+            <div class="split-panel left-panel">
+                <div class="panel-header">
+                    <h3>Worksheet</h3>
+                    <div class="panel-controls">
+                        <button class="control-btn" id="zoom-out">
+                            <i class="fas fa-search-minus"></i>
+                        </button>
+                        <span class="zoom-level" id="zoom-level">100%</span>
+                        <button class="control-btn" id="zoom-in">
+                            <i class="fas fa-search-plus"></i>
+                        </button>
+                        <div class="divider"></div>
+                        <button class="control-btn" id="prev-page" disabled>
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                        <span class="page-info">
+                            <span id="current-page">1</span> / <span id="total-pages">1</span>
+                        </span>
+                        <button class="control-btn" id="next-page" disabled>
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="pdf-container">
+                    <div class="pdf-loading" id="pdf-loading">
+                        <div class="loading-spinner"></div>
+                        <p>Loading worksheet...</p>
+                    </div>
+                    <canvas id="pdf-canvas" style="display: none;"></canvas>
+                    <div class="pdf-error" id="pdf-error" style="display: none;">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <p>Failed to load worksheet</p>
+                        <button class="btn btn-outline btn-sm" onclick="location.reload()">Retry</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Resize Handle -->
+            <div class="resize-handle"></div>
+
+            <!-- Right Panel - Grading Results -->
+            <div class="split-panel right-panel">
+                <div class="panel-header">
+                    <h3>Grading Results</h3>
+                    <div class="overall-score" id="overall-score" style="display: none;">
+                        <span class="score-label">Score:</span>
+                        <span class="score-value" id="score-value">0%</span>
+                    </div>
+                </div>
+                
+                <div class="grading-content">
+                    <!-- Loading State -->
+                    <div class="grading-loading" id="grading-loading">
+                        <div class="loading-animation">
+                            <div class="loading-spinner"></div>
+                            <h3>Grading in Progress</h3>
+                            <p>AI is analyzing the worksheet...</p>
+                            <div class="progress-steps">
+                                <div class="step active" id="step-ocr">
+                                    <i class="fas fa-eye"></i>
+                                    Reading Text
+                                </div>
+                                <div class="step" id="step-grading">
+                                    <i class="fas fa-brain"></i>
+                                    Analyzing Answers
+                                </div>
+                                <div class="step" id="step-feedback">
+                                    <i class="fas fa-comment"></i>
+                                    Generating Feedback
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Results Content -->
+                    <div class="grading-results" id="grading-results" style="display: none;">
+                        <!-- Summary Section -->
+                        <div class="results-section summary-section">
+                            <div class="section-header">
+                                <h4>Summary</h4>
+                                <div class="section-actions">
+                                    <button class="collapse-btn" data-target="summary-content">
+                                        <i class="fas fa-chevron-up"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="section-content" id="summary-content">
+                                <div class="summary-grid">
+                                    <div class="summary-card correct">
+                                        <div class="summary-icon">
+                                            <i class="fas fa-check"></i>
+                                        </div>
+                                        <div class="summary-info">
+                                            <span class="summary-number" id="correct-count">0</span>
+                                            <span class="summary-label">Correct</span>
+                                        </div>
+                                    </div>
+                                    <div class="summary-card incorrect">
+                                        <div class="summary-icon">
+                                            <i class="fas fa-times"></i>
+                                        </div>
+                                        <div class="summary-info">
+                                            <span class="summary-number" id="incorrect-count">0</span>
+                                            <span class="summary-label">Incorrect</span>
+                                        </div>
+                                    </div>
+                                    <div class="summary-card partial">
+                                        <div class="summary-icon">
+                                            <i class="fas fa-minus"></i>
+                                        </div>
+                                        <div class="summary-info">
+                                            <span class="summary-number" id="partial-count">0</span>
+                                            <span class="summary-label">Partial</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="feedback-summary" id="feedback-summary">
+                                    <!-- AI-generated summary feedback will go here -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Questions Section -->
+                        <div class="results-section questions-section">
+                            <div class="section-header">
+                                <h4>Questions</h4>
+                                <div class="section-actions">
+                                    <button class="expand-all-btn" id="expand-all">
+                                        <i class="fas fa-expand-alt"></i>
+                                        Expand All
+                                    </button>
+                                    <button class="collapse-all-btn" id="collapse-all" style="display: none;">
+                                        <i class="fas fa-compress-alt"></i>
+                                        Collapse All
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="section-content questions-list" id="questions-list">
+                                <!-- Questions will be populated here -->
+                            </div>
+                        </div>
+
+                        <!-- Feedback Section -->
+                        <div class="results-section feedback-section">
+                            <div class="section-header">
+                                <h4>Personalized Feedback</h4>
+                                <div class="section-actions">
+                                    <button class="collapse-btn" data-target="feedback-content">
+                                        <i class="fas fa-chevron-up"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="section-content" id="feedback-content">
+                                <div class="feedback-tabs">
+                                    <button class="tab-btn active" data-tab="praise">
+                                        <i class="fas fa-star"></i>
+                                        Praise
+                                    </button>
+                                    <button class="tab-btn" data-tab="improvements">
+                                        <i class="fas fa-arrow-up"></i>
+                                        Improvements
+                                    </button>
+                                    <button class="tab-btn" data-tab="next-steps">
+                                        <i class="fas fa-route"></i>
+                                        Next Steps
+                                    </button>
+                                </div>
+                                <div class="tab-content">
+                                    <div class="tab-panel active" id="praise-panel">
+                                        <!-- Praise content -->
+                                    </div>
+                                    <div class="tab-panel" id="improvements-panel">
+                                        <!-- Improvements content -->
+                                    </div>
+                                    <div class="tab-panel" id="next-steps-panel">
+                                        <!-- Next steps content -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Error State -->
+                    <div class="grading-error" id="grading-error" style="display: none;">
+                        <div class="error-content">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <h3>Grading Failed</h3>
+                            <p id="error-message">An error occurred while grading the worksheet.</p>
+                            <button class="btn btn-primary" onclick="location.reload()">
+                                <i class="fas fa-redo"></i>
+                                Retry Grading
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Scripts -->
+    <script src="/js/grading-interface.js"></script>
+    <script src="/js/dashboard.js"></script>
+    <script>
+        function toggleDropdown() {
+            const dropdown = document.getElementById('userDropdown');
+            dropdown.classList.toggle('active');
+        }
+        
+        document.addEventListener('click', function(event) {
+            const userAvatar = document.querySelector('.user-avatar-liquid');
+            const dropdown = document.getElementById('userDropdown');
+            
+            if (!userAvatar.contains(event.target) && !dropdown.contains(event.target)) {
+                dropdown.classList.remove('active');
+            }
+        });
+    </script>
+    
+    <!-- User Management Script -->
+    <script src="/js/user.js"></script>
+</body>
+</html>

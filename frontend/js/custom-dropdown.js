@@ -64,7 +64,6 @@ class CustomDropdown {
                         <input type="text" class="dropdown-search-input" placeholder="${this.options.searchPlaceholder}">
                     </div>
                 ` : ''}
-                <div class="dropdown-options"></div>
                 ${this.options.addNew ? `
                     <div class="dropdown-add-new">
                         <button type="button" class="dropdown-add-button">
@@ -75,6 +74,7 @@ class CustomDropdown {
                         </button>
                     </div>
                 ` : ''}
+                <div class="dropdown-options"></div>
             </div>
         `;
 
@@ -177,7 +177,6 @@ class CustomDropdown {
                 this.filteredOptions = [...this.allOptions];
                 this.renderOptions();
             } catch (error) {
-                console.error('Error loading options:', error);
                 this.showError('Failed to load options');
             } finally {
                 this.setLoading(false);
@@ -188,21 +187,30 @@ class CustomDropdown {
     }
 
     async loadOptionsFromAPI(searchTerm = '') {
-        if (!this.options.apiEndpoint) return;
+        if (!this.options.apiEndpoint) {
+            console.warn('CustomDropdown: No API endpoint configured');
+            return;
+        }
 
+        console.log(`CustomDropdown: Loading options from ${this.options.apiEndpoint}`, { searchTerm });
         this.setLoading(true);
+        
         try {
             const token = localStorage.getItem('gradeflow_token');
             if (!token) {
+                console.warn('CustomDropdown: No authentication token found');
                 this.showError('Please log in to load options.');
+                this.setLoading(false);
                 return;
             }
 
             const url = new URL(this.options.apiEndpoint, window.location.origin);
             if (searchTerm) url.searchParams.set('q', searchTerm);
 
+            console.log(`CustomDropdown: Making request to ${url.toString()}`);
+
             const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+            const timeoutId = setTimeout(() => controller.abort(), 15000); // Increased timeout
 
             const response = await fetch(url.toString(), {
                 headers: {
@@ -214,6 +222,8 @@ class CustomDropdown {
 
             clearTimeout(timeoutId);
 
+            console.log(`CustomDropdown: Response status: ${response.status}`);
+
             if (!response.ok) {
                 if (response.status === 401) {
                     throw new Error('Please log in again.');
@@ -222,16 +232,21 @@ class CustomDropdown {
                 } else if (response.status >= 500) {
                     throw new Error('Server error. Please try again later.');
                 } else {
-                    throw new Error(`Error ${response.status}: ${response.statusText}`);
+                    const errorText = await response.text();
+                    throw new Error(`Error ${response.status}: ${errorText || response.statusText}`);
                 }
             }
 
             const data = await response.json();
+            console.log('CustomDropdown: Received data:', data);
+            
             this.allOptions = Array.isArray(data.options) ? data.options : [];
             this.filteredOptions = [...this.allOptions];
+            console.log(`CustomDropdown: Loaded ${this.allOptions.length} options`);
+            
             this.renderOptions();
         } catch (error) {
-            console.error('Error loading options from API:', error);
+            console.error('CustomDropdown: API load error:', error);
             
             if (error.name === 'AbortError') {
                 this.showError('Request timed out. Please try again.');
@@ -379,9 +394,21 @@ class CustomDropdown {
         // Update display
         const label = option[this.options.displayKey] || '';
         const meta = option[this.options.metaKey] || '';
+        const badge = option[this.options.badgeKey] || '';
 
         this.selectedText.textContent = label;
-        this.selectedMeta.textContent = meta;
+        
+        // Show meta information with badge if available
+        if (meta || badge) {
+            let metaText = meta;
+            if (badge && meta !== badge) {
+                metaText = badge; // Prefer badge over meta for display
+            }
+            this.selectedMeta.textContent = metaText;
+            this.selectedMeta.style.display = 'inline-block';
+        } else {
+            this.selectedMeta.style.display = 'none';
+        }
         
         this.placeholder.style.display = 'none';
         this.selected.style.display = 'flex';
@@ -395,6 +422,9 @@ class CustomDropdown {
         // Callback
         if (this.options.onSelect) {
             this.options.onSelect(option);
+        } else {
+            // Fallback alert if no callback is set
+            console.log('CustomDropdown: Option selected but no callback:', option);
         }
 
         // Dispatch change event
@@ -402,18 +432,292 @@ class CustomDropdown {
             detail: { value: this.selectedValue, option: this.selectedOption }
         });
         this.element.dispatchEvent(changeEvent);
+        
+        // Debug alert for any selection
+        alert(`DROPDOWN SELECTION: "${option.label}" selected in ${this.element.id || 'unknown'} dropdown`);
     }
 
     handleAddNew() {
         const searchTerm = this.searchInput ? this.searchInput.value.trim() : '';
         
-        if (this.options.onAddNew) {
-            this.options.onAddNew(searchTerm);
-        } else if (this.options.addNewCallback) {
-            this.options.addNewCallback(searchTerm);
+        // Show inline add form instead of modal
+        this.showInlineAddForm(searchTerm);
+    }
+
+    showInlineAddForm(prefillValue = '') {
+        // Determine if this is for students or classes based on endpoint
+        const isStudent = this.options.apiEndpoint && this.options.apiEndpoint.includes('students');
+        const isClass = this.options.apiEndpoint && this.options.apiEndpoint.includes('classes');
+        
+        if (isStudent) {
+            this.showInlineStudentForm(prefillValue);
+        } else if (isClass) {
+            this.showInlineClassForm(prefillValue);
+        }
+    }
+
+    showInlineStudentForm(prefillValue = '') {
+        this.optionsContainer.innerHTML = `
+            <div class="dropdown-inline-form">
+                <div class="inline-form-header">
+                    <span>Add New Student</span>
+                    <button class="inline-form-cancel" type="button">×</button>
+                </div>
+                <div class="inline-form-content">
+                    <div class="inline-form-row">
+                        <input type="text" class="inline-form-input" id="inline-student-name" 
+                               placeholder="Full Name (e.g., John Doe)" value="${this.escapeHtml(prefillValue)}">
+                    </div>
+                    <div class="inline-form-row">
+                        <select class="inline-form-select" id="inline-student-grade">
+                            <option value="K">Kindergarten</option>
+                            <option value="1">Grade 1</option>
+                            <option value="2">Grade 2</option>
+                            <option value="3">Grade 3</option>
+                            <option value="4">Grade 4</option>
+                            <option value="5">Grade 5</option>
+                            <option value="6">Grade 6</option>
+                            <option value="7">Grade 7</option>
+                            <option value="8">Grade 8</option>
+                            <option value="9">Grade 9</option>
+                            <option value="10">Grade 10</option>
+                            <option value="11">Grade 11</option>
+                            <option value="12">Grade 12</option>
+                        </select>
+                        <button class="inline-form-save" type="button">✓</button>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        this.bindInlineFormEvents();
+    }
+
+    showInlineClassForm(prefillValue = '') {
+        this.optionsContainer.innerHTML = `
+            <div class="dropdown-inline-form">
+                <div class="inline-form-header">
+                    <span>Add New Class</span>
+                    <button class="inline-form-cancel" type="button">×</button>
+                </div>
+                <div class="inline-form-content">
+                    <div class="inline-form-row">
+                        <input type="text" class="inline-form-input" id="inline-class-name" 
+                               placeholder="Class Name (e.g., Math 101)" value="${this.escapeHtml(prefillValue)}">
+                    </div>
+                    <div class="inline-form-row">
+                        <select class="inline-form-select" id="inline-class-subject">
+                            <option value="math">Mathematics</option>
+                            <option value="english">English/Language Arts</option>
+                            <option value="science">Science</option>
+                            <option value="history">History/Social Studies</option>
+                            <option value="art">Art</option>
+                            <option value="other">Other</option>
+                        </select>
+                        <select class="inline-form-select" id="inline-class-grade">
+                            <option value="K">Kindergarten</option>
+                            <option value="1">Grade 1</option>
+                            <option value="2">Grade 2</option>
+                            <option value="3">Grade 3</option>
+                            <option value="4">Grade 4</option>
+                            <option value="5">Grade 5</option>
+                            <option value="6">Grade 6</option>
+                            <option value="7">Grade 7</option>
+                            <option value="8">Grade 8</option>
+                            <option value="9">Grade 9</option>
+                            <option value="10">Grade 10</option>
+                            <option value="11">Grade 11</option>
+                            <option value="12">Grade 12</option>
+                        </select>
+                        <button class="inline-form-save" type="button">✓</button>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        this.bindInlineFormEvents();
+    }
+
+    bindInlineFormEvents() {
+        const saveBtn = this.optionsContainer.querySelector('.inline-form-save');
+        const cancelBtn = this.optionsContainer.querySelector('.inline-form-cancel');
+        const nameInput = this.optionsContainer.querySelector('.inline-form-input');
+
+        // Save button
+        if (saveBtn) {
+            saveBtn.addEventListener('click', () => {
+                this.handleInlineFormSave();
+            });
+        }
+
+        // Cancel button
+        if (cancelBtn) {
+            cancelBtn.addEventListener('click', () => {
+                this.renderOptions(); // Go back to normal view
+            });
+        }
+
+        // Enter key on name input
+        if (nameInput) {
+            nameInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    this.handleInlineFormSave();
+                }
+            });
+            
+            // Focus the input
+            setTimeout(() => nameInput.focus(), 100);
+        }
+    }
+
+    async handleInlineFormSave() {
+        const isStudent = this.options.apiEndpoint && this.options.apiEndpoint.includes('students');
+        
+        if (isStudent) {
+            await this.saveInlineStudent();
+        } else {
+            await this.saveInlineClass();
+        }
+    }
+
+    async saveInlineStudent() {
+        const nameInput = this.optionsContainer.querySelector('#inline-student-name');
+        const gradeSelect = this.optionsContainer.querySelector('#inline-student-grade');
+        
+        const name = nameInput.value.trim();
+        const grade = gradeSelect.value;
+        
+        if (!name) {
+            this.showInlineError('Student name is required');
+            nameInput.focus();
+            return;
         }
         
-        this.close();
+        try {
+            const token = localStorage.getItem('gradeflow_token');
+            const response = await fetch('/api/students', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ name, grade })
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                // Add to options and select it
+                const newOption = {
+                    value: result.student._id,
+                    label: result.student.name,
+                    grade: result.student.grade
+                };
+                
+                this.allOptions.unshift(newOption);
+                this.filteredOptions = [...this.allOptions];
+                this.selectOption(newOption);
+                
+                // Show success briefly
+                this.showInlineSuccess('Student added successfully!');
+                setTimeout(() => {
+                    this.close();
+                }, 1000);
+            } else {
+                this.showInlineError(result.error || 'Failed to create student');
+            }
+        } catch (error) {
+            this.showInlineError('Failed to create student');
+        }
+    }
+
+    async saveInlineClass() {
+        const nameInput = this.optionsContainer.querySelector('#inline-class-name');
+        const subjectSelect = this.optionsContainer.querySelector('#inline-class-subject');
+        const gradeSelect = this.optionsContainer.querySelector('#inline-class-grade');
+        
+        const name = nameInput.value.trim();
+        const subject = subjectSelect.value;
+        const gradeLevel = gradeSelect.value;
+        
+        if (!name) {
+            this.showInlineError('Class name is required');
+            nameInput.focus();
+            return;
+        }
+        
+        try {
+            const token = localStorage.getItem('gradeflow_token');
+            const response = await fetch('/api/classes', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ name, subject, gradeLevel })
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                // Add to options and select it
+                const newOption = {
+                    value: result.class._id,
+                    label: result.class.name,
+                    subject: result.class.subject,
+                    subjectDisplayName: result.class.subjectDisplayName,
+                    gradeLevel: result.class.gradeLevel,
+                    gradeDisplayName: result.class.gradeDisplayName
+                };
+                
+                this.allOptions.unshift(newOption);
+                this.filteredOptions = [...this.allOptions];
+                this.selectOption(newOption);
+                
+                // Show success briefly
+                this.showInlineSuccess('Class added successfully!');
+                setTimeout(() => {
+                    this.close();
+                }, 1000);
+            } else {
+                this.showInlineError(result.error || 'Failed to create class');
+            }
+        } catch (error) {
+            this.showInlineError('Failed to create class');
+        }
+    }
+
+    showInlineError(message) {
+        const formContent = this.optionsContainer.querySelector('.inline-form-content');
+        let errorDiv = formContent.querySelector('.inline-form-error');
+        
+        if (!errorDiv) {
+            errorDiv = document.createElement('div');
+            errorDiv.className = 'inline-form-error';
+            formContent.appendChild(errorDiv);
+        }
+        
+        errorDiv.textContent = message;
+        errorDiv.style.display = 'block';
+        
+        setTimeout(() => {
+            if (errorDiv) errorDiv.style.display = 'none';
+        }, 3000);
+    }
+
+    showInlineSuccess(message) {
+        const formContent = this.optionsContainer.querySelector('.inline-form-content');
+        let successDiv = formContent.querySelector('.inline-form-success');
+        
+        if (!successDiv) {
+            successDiv = document.createElement('div');
+            successDiv.className = 'inline-form-success';
+            formContent.appendChild(successDiv);
+        }
+        
+        successDiv.textContent = message;
+        successDiv.style.display = 'block';
     }
 
     open() {
@@ -441,26 +745,44 @@ class CustomDropdown {
             this.loadInitialOptions();
         }
         
-        // Check if dropdown goes off screen and adjust
-        this.adjustMenuPosition();
+        // Keep dropdown positioned below trigger
+        // this.adjustMenuPosition(); // Disabled for now
     }
 
     adjustMenuPosition() {
         if (!this.isOpen) return;
         
         setTimeout(() => {
+            const triggerRect = this.trigger.getBoundingClientRect();
             const menuRect = this.menu.getBoundingClientRect();
             const viewportHeight = window.innerHeight;
             const viewportWidth = window.innerWidth;
             
-            // If menu goes off bottom of screen, show it above trigger
-            if (menuRect.bottom > viewportHeight - 20) {
-                this.menu.style.transform = 'translateY(-100%) translateY(-8px)';
+            // Reset any previous positioning
+            this.menu.style.transform = '';
+            this.menu.style.top = '';
+            this.menu.style.bottom = '';
+            
+            // Check if there's enough space below
+            const spaceBelow = viewportHeight - triggerRect.bottom;
+            const menuHeight = menuRect.height || 300; // fallback to max height
+            
+            // Only position above if there's clearly not enough space below
+            // AND there's more space above than below
+            if (spaceBelow < menuHeight && triggerRect.top > spaceBelow) {
                 this.menu.style.top = 'auto';
                 this.menu.style.bottom = '100%';
+                this.menu.style.marginTop = '0';
+                this.menu.style.marginBottom = '4px';
+            } else {
+                // Keep default positioning below
+                this.menu.style.top = '100%';
+                this.menu.style.bottom = 'auto';
+                this.menu.style.marginTop = '4px';
+                this.menu.style.marginBottom = '0';
             }
             
-            // If menu goes off right side, align to right edge
+            // Handle horizontal overflow
             if (menuRect.right > viewportWidth - 20) {
                 this.menu.style.left = 'auto';
                 this.menu.style.right = '0';
@@ -475,12 +797,7 @@ class CustomDropdown {
         this.trigger.classList.remove('active');
         this.menu.classList.remove('open');
 
-        // Reset menu positioning
-        this.menu.style.transform = '';
-        this.menu.style.top = '';
-        this.menu.style.bottom = '';
-        this.menu.style.left = '';
-        this.menu.style.right = '';
+        // No need to reset positioning since we use CSS only
 
         // Clear search
         if (this.searchInput) {
@@ -532,9 +849,7 @@ class CustomDropdown {
 
     setLoading(loading) {
         this.loading = loading;
-        if (loading) {
-            this.renderOptions();
-        }
+        this.renderOptions();
     }
 
     showError(message) {
@@ -627,9 +942,40 @@ CustomDropdown.closeAllOthers = function(currentDropdown) {
 
 // Auto-initialize dropdowns with data attributes
 document.addEventListener('DOMContentLoaded', () => {
-    document.querySelectorAll('[data-dropdown]').forEach(element => {
-        const options = JSON.parse(element.dataset.dropdown || '{}');
-        const dropdown = new CustomDropdown(element, options);
-        window.activeDropdowns.add(dropdown);
-    });
+    console.log('CustomDropdown: DOM ready, initializing dropdowns...');
+    
+    // Wait a brief moment to ensure all other scripts have loaded
+    setTimeout(() => {
+        const dropdownElements = document.querySelectorAll('[data-dropdown]');
+        console.log(`CustomDropdown: Found ${dropdownElements.length} dropdown elements to initialize`);
+        
+        dropdownElements.forEach((element, index) => {
+            try {
+                const options = JSON.parse(element.dataset.dropdown || '{}');
+                console.log(`CustomDropdown: Initializing dropdown ${index + 1}/${dropdownElements.length}`, {
+                    id: element.id,
+                    endpoint: options.apiEndpoint
+                });
+                
+                const dropdown = new CustomDropdown(element, options);
+                window.activeDropdowns.add(dropdown);
+                
+                // Mark as successfully initialized
+                element.setAttribute('data-dropdown-initialized', 'true');
+                console.log(`CustomDropdown: Successfully initialized ${element.id}`);
+                
+            } catch (error) {
+                console.error(`CustomDropdown: Failed to initialize dropdown ${element.id}:`, error);
+                element.setAttribute('data-dropdown-error', error.message);
+            }
+        });
+        
+        console.log('CustomDropdown: All dropdowns initialized');
+        
+        // Dispatch custom event to notify other scripts
+        document.dispatchEvent(new CustomEvent('dropdownsInitialized', {
+            detail: { count: dropdownElements.length }
+        }));
+        
+    }, 50); // Small delay to ensure other scripts are ready
 });

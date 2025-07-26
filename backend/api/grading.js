@@ -42,8 +42,29 @@ router.post('/grade/:worksheetId', verifyToken, async (req, res) => {
             return res.status(404).json({ error: 'Worksheet not found' });
         }
 
-        if (worksheet.status !== 'completed' || !worksheet.ocrResults) {
-            return res.status(400).json({ error: 'Worksheet must be processed first' });
+        // Check if worksheet needs OCR processing
+        if (!worksheet.ocrResults) {
+            // Need to process OCR first, then grade
+            startFullProcessingAsync(worksheetId, worksheet, req.user);
+            
+            await worksheets.updateOne(
+                { _id: worksheetId },
+                { 
+                    $set: { 
+                        status: 'processing',
+                        processingStage: 'ocr',
+                        progress: 20,
+                        updatedAt: new Date()
+                    }
+                }
+            );
+            
+            return res.json({
+                success: true,
+                message: 'Processing and grading started',
+                worksheetId,
+                status: 'processing'
+            });
         }
 
         // Update status to grading
@@ -63,6 +84,7 @@ router.post('/grade/:worksheetId', verifyToken, async (req, res) => {
         gradeWorksheetAsync(worksheetId, worksheet, rubric, subject, gradeLevel, req.user);
 
         res.json({
+            success: true,
             message: 'Grading started',
             worksheetId,
             status: 'grading'
@@ -376,6 +398,68 @@ async function gradeWorksheetAsync(worksheetId, worksheet, rubric, subject, grad
                 $set: { 
                     status: 'error',
                     error: `Grading failed: ${error.message}`,
+                    updatedAt: new Date()
+                }
+            }
+        );
+    }
+}
+
+// Full processing workflow (OCR + Grading)
+async function startFullProcessingAsync(worksheetId, worksheet, user) {
+    try {
+        const db = await getDb();
+        const worksheets = db.collection('worksheets');
+        
+        // Import OCR service
+        const { processOCR } = await import('../services/ocr.js');
+        
+        // Update status to processing OCR
+        await worksheets.updateOne(
+            { _id: worksheetId },
+            { 
+                $set: { 
+                    processingStage: 'ocr',
+                    progress: 20,
+                    updatedAt: new Date()
+                }
+            }
+        );
+        
+        // Process OCR
+        const ocrResults = await processOCR(worksheet.filePath, worksheet.mimeType);
+        
+        // Update with OCR results
+        await worksheets.updateOne(
+            { _id: worksheetId },
+            { 
+                $set: { 
+                    processingStage: 'grading',
+                    progress: 60,
+                    ocrResults,
+                    updatedAt: new Date()
+                }
+            }
+        );
+        
+        // Get updated worksheet with OCR results
+        const updatedWorksheet = await worksheets.findOne({ _id: worksheetId });
+        
+        // Start grading
+        await gradeWorksheetAsync(worksheetId, updatedWorksheet, null, null, null, user);
+        
+    } catch (error) {
+        console.error(`Full processing error for worksheet ${worksheetId}:`, error);
+        
+        const db = await getDb();
+        const worksheets = db.collection('worksheets');
+        
+        await worksheets.updateOne(
+            { _id: worksheetId },
+            { 
+                $set: { 
+                    status: 'error',
+                    error: `Processing failed: ${error.message}`,
                     updatedAt: new Date()
                 }
             }

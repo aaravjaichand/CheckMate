@@ -1,11 +1,36 @@
 import express from 'express';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
+import { ObjectId } from 'mongodb';
 import { getDb } from '../services/database.js';
 import { validateEmail, validatePassword } from '../utils/helpers.js';
 import { createUserDocument, validateUserCreation, sanitizeUserForResponse } from '../models/user.js';
+import admin from 'firebase-admin';
 
 const router = express.Router();
+
+// Initialize Firebase Admin SDK (only if service account keys are available)
+let firebaseAdminInitialized = false;
+try {
+    if (!admin.apps.length && process.env.FIREBASE_PROJECT_ID && process.env.FIREBASE_PRIVATE_KEY && process.env.FIREBASE_CLIENT_EMAIL) {
+        const serviceAccount = {
+            projectId: process.env.FIREBASE_PROJECT_ID,
+            privateKey: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n'),
+            clientEmail: process.env.FIREBASE_CLIENT_EMAIL
+        };
+
+        admin.initializeApp({
+            credential: admin.credential.cert(serviceAccount),
+            projectId: process.env.FIREBASE_PROJECT_ID
+        });
+        firebaseAdminInitialized = true;
+        console.log('Firebase Admin SDK initialized successfully');
+    } else {
+        console.log('Firebase Admin SDK not initialized - missing service account credentials');
+    }
+} catch (error) {
+    console.error('Failed to initialize Firebase Admin SDK:', error);
+}
 
 // Register new user
 router.post('/signup', async (req, res) => {
@@ -75,7 +100,7 @@ router.post('/signup', async (req, res) => {
         // Generate JWT token
         const token = jwt.sign(
             { 
-                userId: result.insertedId,
+                userId: result.insertedId.toString(),
                 email: email.toLowerCase(),
                 role: 'teacher'
             },
@@ -147,7 +172,7 @@ router.post('/login', async (req, res) => {
         // Generate JWT token
         const token = jwt.sign(
             { 
-                userId: user._id,
+                userId: user._id.toString(),
                 email: user.email,
                 role: user.role
             },
@@ -186,7 +211,7 @@ router.post('/validate', async (req, res) => {
         const users = db.collection('users');
 
         const user = await users.findOne(
-            { _id: decoded.userId },
+            { _id: new ObjectId(decoded.userId) },
             { projection: { password: 0 } }
         );
 
@@ -216,7 +241,7 @@ router.post('/refresh', async (req, res) => {
         // Generate new token
         const newToken = jwt.sign(
             { 
-                userId: decoded.userId,
+                userId: decoded.userId.toString(),
                 email: decoded.email,
                 role: decoded.role
             },
@@ -247,7 +272,7 @@ router.get('/profile', async (req, res) => {
         const users = db.collection('users');
         
         const user = await users.findOne(
-            { _id: decoded.userId },
+            { _id: new ObjectId(decoded.userId) },
             { projection: { password: 0 } }
         );
 
@@ -283,12 +308,12 @@ router.put('/profile', async (req, res) => {
         if (preferences) updateData.preferences = { ...preferences };
 
         await users.updateOne(
-            { _id: decoded.userId },
+            { _id: new ObjectId(decoded.userId) },
             { $set: updateData }
         );
 
         const updatedUser = await users.findOne(
-            { _id: decoded.userId },
+            { _id: new ObjectId(decoded.userId) },
             { projection: { password: 0 } }
         );
 
@@ -303,22 +328,41 @@ router.put('/profile', async (req, res) => {
     }
 });
 
-// Auth0 authentication handler
-router.post('/auth0', async (req, res) => {
+// Firebase authentication handler
+router.post('/firebase', async (req, res) => {
     try {
-        const { auth0Id, email, name, picture } = req.body;
+        const { firebaseUid, email, name, school, isNewUser } = req.body;
         
-        if (!auth0Id || !email || !name) {
+        if (!firebaseUid || !email) {
             return res.status(400).json({ 
-                error: 'Auth0 ID, email, and name are required' 
+                error: 'Firebase UID and email are required' 
             });
+        }
+
+        // Verify Firebase token (only if admin SDK is initialized)
+        if (firebaseAdminInitialized) {
+            try {
+                const decodedToken = await admin.auth().getUser(firebaseUid);
+                if (decodedToken.email !== email) {
+                    return res.status(400).json({ 
+                        error: 'Email mismatch with Firebase user' 
+                    });
+                }
+            } catch (firebaseError) {
+                console.error('Firebase verification error:', firebaseError);
+                return res.status(401).json({ 
+                    error: 'Invalid Firebase user' 
+                });
+            }
+        } else {
+            console.log('Skipping Firebase verification - Admin SDK not initialized');
         }
 
         const db = await getDb();
         const users = db.collection('users');
 
         // Check if user already exists
-        let user = await users.findOne({ auth0Id });
+        let user = await users.findOne({ firebaseUid });
         
         if (user) {
             // Update last login
@@ -327,41 +371,70 @@ router.post('/auth0', async (req, res) => {
                 { $set: { lastLogin: new Date() } }
             );
         } else {
-            // Create new user
-            const userData = {
-                auth0Id,
-                email: email.toLowerCase(),
-                name,
-                picture: picture || null
-            };
-
-            const errors = validateUserCreation(userData);
-            if (errors.length > 0) {
+            // Create new user with validation
+            if (!name || name.trim().length === 0) {
                 return res.status(400).json({ 
-                    error: 'Validation failed',
-                    details: errors 
+                    error: 'Full name is required for new accounts' 
                 });
             }
 
-            const newUserDoc = createUserDocument(userData);
-            const result = await users.insertOne(newUserDoc);
-            
+            // Validate email format
+            if (!validateEmail(email)) {
+                return res.status(400).json({ 
+                    error: 'Please provide a valid email address' 
+                });
+            }
+
+            // Check if email is already used by another user
+            const existingEmailUser = await users.findOne({ email: email.toLowerCase() });
+            if (existingEmailUser) {
+                return res.status(409).json({ 
+                    error: 'An account with this email already exists' 
+                });
+            }
+
+            const userData = {
+                firebaseUid,
+                email: email.toLowerCase(),
+                name: name.trim(),
+                school: school ? school.trim() : '',
+                role: 'teacher',
+                plan: 'freemium',
+                worksheetsProcessed: 0,
+                monthlyLimit: 50,
+                createdAt: new Date(),
+                lastLogin: new Date(),
+                isActive: true,
+                preferences: {
+                    feedbackTone: 'encouraging',
+                    gradeDisplay: 'percentage',
+                    notifications: {
+                        email: true,
+                        processing: true,
+                        weekly: false
+                    }
+                }
+            };
+
+            const result = await users.insertOne(userData);
             user = await users.findOne({ _id: result.insertedId });
         }
 
         // Generate JWT token
         const token = jwt.sign(
             { 
-                userId: user._id,
+                userId: user._id.toString(),
                 email: user.email,
                 role: user.role,
-                auth0Id: user.auth0Id
+                firebaseUid: user.firebaseUid
             },
             process.env.JWT_SECRET,
             { expiresIn: '7d' }
         );
 
-        const sanitizedUser = sanitizeUserForResponse(user);
+        // Remove sensitive data from response
+        const sanitizedUser = { ...user };
+        delete sanitizedUser.firebaseUid;
 
         res.json({
             message: 'Authentication successful',
@@ -370,7 +443,7 @@ router.post('/auth0', async (req, res) => {
         });
 
     } catch (error) {
-        console.error('Auth0 authentication error:', error);
+        console.error('Firebase authentication error:', error);
         res.status(500).json({ 
             error: 'Authentication failed. Please try again.' 
         });

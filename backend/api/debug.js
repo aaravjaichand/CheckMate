@@ -1,4 +1,6 @@
 import express from 'express';
+import jwt from 'jsonwebtoken';
+import { ObjectId } from 'mongodb';
 import { getDb } from '../services/database.js';
 
 const router = express.Router();
@@ -54,6 +56,54 @@ router.post('/test-auth', async (req, res) => {
         });
     } catch (error) {
         res.status(500).json({
+            error: error.message,
+            stack: error.stack
+        });
+    }
+});
+
+// Debug JWT token verification
+router.post('/verify-token', async (req, res) => {
+    try {
+        const { token } = req.body;
+        
+        if (!token) {
+            return res.status(400).json({ error: 'Token is required' });
+        }
+
+        console.log('Debugging token verification...');
+        console.log('Token received:', token.substring(0, 50) + '...');
+        
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        console.log('Token decoded successfully:', decoded);
+        
+        // Test database lookup
+        const db = await getDb();
+        const users = db.collection('users');
+        
+        console.log('Looking up user with ID:', decoded.userId);
+        console.log('ID type:', typeof decoded.userId);
+        
+        const user = await users.findOne(
+            { _id: new ObjectId(decoded.userId) },
+            { projection: { password: 0 } }
+        );
+        
+        console.log('User found:', !!user);
+        if (user) {
+            console.log('User details:', { _id: user._id, email: user.email, name: user.name });
+        }
+
+        res.json({
+            decoded,
+            userFound: !!user,
+            user: user ? { _id: user._id, email: user.email, name: user.name } : null,
+            timestamp: new Date().toISOString()
+        });
+        
+    } catch (error) {
+        console.error('Token verification debug error:', error);
+        res.status(400).json({
             error: error.message,
             stack: error.stack
         });

@@ -14,6 +14,8 @@ import gradingRoutes from './backend/api/grading.js';
 import dashboardRoutes from './backend/api/dashboard.js';
 import configRoutes from './backend/api/config.js';
 import debugRoutes from './backend/api/debug.js';
+import studentsRoutes from './backend/api/students.js';
+import classesRoutes from './backend/api/classes.js';
 
 // Load environment variables
 dotenv.config();
@@ -62,6 +64,8 @@ app.use('/api/grading', gradingRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/config', configRoutes);
 app.use('/api/debug', debugRoutes);
+app.use('/api/students', studentsRoutes);
+app.use('/api/classes', classesRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {

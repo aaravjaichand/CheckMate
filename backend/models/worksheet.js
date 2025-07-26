@@ -52,7 +52,18 @@ export const WorksheetSchema = {
         default: 0
     },
     error: String,
+    studentId: {
+        type: 'ObjectId',
+        ref: 'Student',
+        required: true
+    },
     studentName: String,
+    classId: {
+        type: 'ObjectId',
+        ref: 'Class',
+        required: true
+    },
+    className: String,
     metadata: {
         subject: {
             type: String,
@@ -173,7 +184,7 @@ export function validateWorksheetMetadata(metadata) {
 }
 
 // Helper functions
-export function createWorksheetDocument(teacherId, fileData, metadata = {}) {
+export function createWorksheetDocument(teacherId, fileData, studentId, classId, studentName, className, metadata = {}) {
     return {
         teacherId,
         originalName: fileData.originalname,
@@ -185,6 +196,10 @@ export function createWorksheetDocument(teacherId, fileData, metadata = {}) {
         status: 'processing',
         processingStage: 'uploaded',
         progress: 0,
+        studentId,
+        studentName,
+        classId,
+        className,
         metadata: {
             subject: metadata.subject || 'unknown',
             grade: metadata.grade || 'unknown',
@@ -232,6 +247,16 @@ export function getWorksheetsByStatus(worksheets, status) {
 export function getWorksheetsBySubject(worksheets, subject) {
     if (!subject) return worksheets;
     return worksheets.filter(w => w.metadata?.subject === subject);
+}
+
+export function getWorksheetsByStudent(worksheets, studentId) {
+    if (!studentId) return worksheets;
+    return worksheets.filter(w => w.studentId?.toString() === studentId.toString());
+}
+
+export function getWorksheetsByClass(worksheets, classId) {
+    if (!classId) return worksheets;
+    return worksheets.filter(w => w.classId?.toString() === classId.toString());
 }
 
 export function calculateWorksheetStats(worksheets) {

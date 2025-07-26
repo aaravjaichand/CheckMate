@@ -13,28 +13,43 @@ class DashboardManager {
     }
 
     setupEventListeners() {
-        // Filter controls
-        document.getElementById('activity-filter').addEventListener('change', () => {
-            this.loadRecentActivity();
-        });
+        // Filter controls - only add listeners if elements exist
+        const activityFilter = document.getElementById('activity-filter');
+        if (activityFilter) {
+            activityFilter.addEventListener('change', () => {
+                this.loadRecentActivity();
+            });
+        }
 
-        document.getElementById('grade-period').addEventListener('change', () => {
-            this.loadGradeDistribution();
-        });
+        const gradePeriod = document.getElementById('grade-period');
+        if (gradePeriod) {
+            gradePeriod.addEventListener('change', () => {
+                this.loadGradeDistribution();
+            });
+        }
 
-        document.getElementById('trends-subject').addEventListener('change', () => {
-            this.loadPerformanceTrends();
-        });
+        const trendsSubject = document.getElementById('trends-subject');
+        if (trendsSubject) {
+            trendsSubject.addEventListener('change', () => {
+                this.loadPerformanceTrends();
+            });
+        }
 
-        document.getElementById('trends-period').addEventListener('change', () => {
-            this.loadPerformanceTrends();
-        });
+        const trendsPeriod = document.getElementById('trends-period');
+        if (trendsPeriod) {
+            trendsPeriod.addEventListener('change', () => {
+                this.loadPerformanceTrends();
+            });
+        }
 
         // Logout
-        document.getElementById('logout-btn').addEventListener('click', (e) => {
-            e.preventDefault();
-            this.logout();
-        });
+        const logoutBtn = document.getElementById('logout-btn');
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.logout();
+            });
+        }
     }
 
     setupUserDropdown() {
@@ -57,13 +72,23 @@ class DashboardManager {
 
     async loadDashboardData() {
         try {
+            // Check authentication first
+            const userData = localStorage.getItem('user');
+            const token = localStorage.getItem('gradeflow_token');
+            
+            if (!userData || !token) {
+                console.log('No authentication found, redirecting to login with clear flag');
+                window.location.href = '/pages/login.html?clear=true';
+                return;
+            }
+
             // Load user profile and overview data in parallel
             const [profileResponse, overviewResponse] = await Promise.all([
                 this.fetchWithAuth('/api/auth/profile'),
                 this.fetchWithAuth('/api/dashboard/overview')
             ]);
 
-            if (profileResponse.ok && overviewResponse.ok) {
+            if (profileResponse && overviewResponse && profileResponse.ok && overviewResponse.ok) {
                 const profileData = await profileResponse.json();
                 const overviewData = await overviewResponse.json();
 
@@ -78,35 +103,55 @@ class DashboardManager {
                 this.loadPerformanceTrends();
                 this.loadClassPerformance();
             } else {
-                throw new Error('Failed to load dashboard data');
+                // Handle cases where API endpoints return 404 but user is authenticated
+                console.warn('Dashboard API endpoints not available, showing limited functionality');
+                this.showLimitedDashboard();
             }
         } catch (error) {
             console.error('Dashboard load error:', error);
+            // If it's an auth error, redirect to login
+            if (error.message.includes('401') || error.message.includes('unauthorized')) {
+                localStorage.removeItem('user');
+                localStorage.removeItem('gradeflow_token');
+                window.location.href = '/pages/login.html';
+                return;
+            }
             this.showError('Failed to load dashboard data');
         }
     }
 
     updateUserInfo(user) {
-        document.getElementById('user-name').textContent = user.name;
-        document.getElementById('user-plan').textContent = `${user.plan} Plan`;
-        document.getElementById('current-plan').textContent = `${user.plan} Plan`;
+        const userNameEl = document.getElementById('user-name');
+        const userPlanEl = document.getElementById('user-plan');
+        const currentPlanEl = document.getElementById('current-plan');
+        
+        if (userNameEl) userNameEl.textContent = user.name;
+        if (userPlanEl) userPlanEl.textContent = `${user.plan} Plan`;
+        if (currentPlanEl) currentPlanEl.textContent = `${user.plan} Plan`;
     }
 
     updateStats(stats) {
         const thisMonth = stats.thisMonth || {};
         const thisWeek = stats.thisWeek || {};
 
-        // Update stat values
-        document.getElementById('total-worksheets').textContent = thisMonth.uploaded || 0;
-        document.getElementById('graded-worksheets').textContent = thisMonth.graded || 0;
-        document.getElementById('average-score').textContent = `${thisMonth.averageScore || 0}%`;
+        // Update stat values with null checks
+        const totalWorksheetsEl = document.getElementById('total-worksheets');
+        const gradedWorksheetsEl = document.getElementById('graded-worksheets');
+        const averageScoreEl = document.getElementById('average-score');
+        const timeSavedEl = document.getElementById('time-saved');
+        
+        if (totalWorksheetsEl) totalWorksheetsEl.textContent = thisMonth.uploaded || 0;
+        if (gradedWorksheetsEl) gradedWorksheetsEl.textContent = thisMonth.graded || 0;
+        if (averageScoreEl) averageScoreEl.textContent = `${thisMonth.averageScore || 0}%`;
         
         // Calculate time saved (assuming 10 minutes per worksheet manually)
-        const timeSavedMinutes = (thisMonth.graded || 0) * 10;
-        const timeSavedHours = Math.floor(timeSavedMinutes / 60);
-        document.getElementById('time-saved').textContent = `${timeSavedHours}h`;
+        if (timeSavedEl) {
+            const timeSavedMinutes = (thisMonth.graded || 0) * 10;
+            const timeSavedHours = Math.floor(timeSavedMinutes / 60);
+            timeSavedEl.textContent = `${timeSavedHours}h`;
+        }
 
-        // Update change indicators (placeholder logic)
+        // Update change indicators (placeholder logic) with null checks
         this.updateStatChange('worksheets-change', 12);
         this.updateStatChange('graded-change', 8);
         this.updateStatChange('score-change', 0);
@@ -431,11 +476,26 @@ class DashboardManager {
     // Utility methods
     async fetchWithAuth(url) {
         const token = localStorage.getItem('gradeflow_token');
-        return fetch(url, {
+        if (!token) {
+            window.location.href = '/pages/login.html';
+            return null;
+        }
+        
+        const response = await fetch(url, {
             headers: {
                 'Authorization': `Bearer ${token}`
             }
         });
+        
+        // If unauthorized, redirect to login
+        if (response.status === 401) {
+            localStorage.removeItem('user');
+            localStorage.removeItem('gradeflow_token');
+            window.location.href = '/pages/login.html';
+            return null;
+        }
+        
+        return response;
     }
 
     getStatusIcon(status) {
@@ -478,9 +538,54 @@ class DashboardManager {
         window.location.href = `/pages/grading.html?worksheet=${worksheetId}`;
     }
 
-    logout() {
+    async logout() {
+        // Clear localStorage
         localStorage.removeItem('gradeflow_token');
-        window.location.href = '/';
+        localStorage.removeItem('user');
+        
+        // Sign out from Firebase if available
+        try {
+            if (window.auth) {
+                await window.auth.signOut();
+            }
+        } catch (error) {
+            console.log('Firebase signout not available or failed:', error);
+        }
+        
+        // Redirect to login
+        window.location.href = '/pages/login.html';
+    }
+
+    showLimitedDashboard() {
+        // Show basic dashboard with limited functionality when APIs are unavailable
+        const userData = localStorage.getItem('user');
+        if (userData) {
+            const user = JSON.parse(userData);
+            
+            // Update user info from localStorage
+            const userNameEl = document.getElementById('user-name');
+            const userPlanEl = document.getElementById('user-plan');
+            
+            if (userNameEl) userNameEl.textContent = user.name || 'User';
+            if (userPlanEl) userPlanEl.textContent = user.plan || 'Unknown Plan';
+            
+            // Show default values
+            const elements = {
+                'worksheets-used': '0',
+                'worksheets-remaining': '50', 
+                'usage-percentage': '0%'
+            };
+            
+            Object.entries(elements).forEach(([id, value]) => {
+                const el = document.getElementById(id);
+                if (el) el.textContent = value;
+            });
+            
+            const progressEl = document.getElementById('usage-progress');
+            if (progressEl) progressEl.style.width = '0%';
+            
+            console.log('Limited dashboard mode activated - API endpoints unavailable');
+        }
     }
 
     showError(message) {
@@ -491,14 +596,9 @@ class DashboardManager {
 
 // Initialize dashboard when DOM loads
 document.addEventListener('DOMContentLoaded', () => {
-    // Check authentication
-    const token = localStorage.getItem('gradeflow_token');
-    if (!token) {
-        window.location.href = '/';
-        return;
-    }
-
+    // No authentication check here - user.js handles all auth
+    console.log('Initializing dashboard (auth handled by user.js)');
     window.dashboardManager = new DashboardManager();
 });
 
-export default DashboardManager;
+// Export removed for browser compatibility

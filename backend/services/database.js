@@ -67,9 +67,33 @@ async function createIndexes() {
             { key: { teacherId: 1, status: 1 } },
             { key: { teacherId: 1, 'metadata.subject': 1 } },
             { key: { studentName: 1 } },
+            { key: { studentId: 1 } },
+            { key: { classId: 1 } },
+            { key: { teacherId: 1, studentId: 1 } },
+            { key: { teacherId: 1, classId: 1 } },
             { key: { status: 1 } },
             { key: { uploadDate: 1 } },
             { key: { completedAt: 1 } }
+        ]);
+
+        // Students collection indexes
+        await db.collection('students').createIndexes([
+            { key: { teacherId: 1, name: 1 } },
+            { key: { teacherId: 1, isActive: 1 } },
+            { key: { teacherId: 1, grade: 1 } },
+            { key: { classes: 1 } },
+            { key: { createdAt: 1 } },
+            { key: { email: 1 }, sparse: true }
+        ]);
+
+        // Classes collection indexes
+        await db.collection('classes').createIndexes([
+            { key: { teacherId: 1, name: 1 } },
+            { key: { teacherId: 1, isActive: 1 } },
+            { key: { teacherId: 1, subject: 1 } },
+            { key: { teacherId: 1, gradeLevel: 1 } },
+            { key: { students: 1 } },
+            { key: { createdAt: 1 } }
         ]);
 
         // Analytics collection indexes (for future use)

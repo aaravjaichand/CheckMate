@@ -1,22 +1,14 @@
-// Auth0 Configuration
-// These values should be replaced with your actual Auth0 settings
-// or loaded from environment variables in production
-
-const AUTH0_CONFIG = {
-    domain: 'YOUR_AUTH0_DOMAIN', // e.g., 'dev-dxzw4g7dlmwdbgeg.us.auth0.com'
-    clientId: 'YOUR_AUTH0_CLIENT_ID',
-    audience: 'YOUR_AUTH0_AUDIENCE', // e.g., 'https://checkmate-api'
-    redirectUri: window.location.origin + '/pages/dashboard.html',
-    
-    // Connection names for different login methods
-    connections: {
-        google: 'google-oauth2',
-        database: 'Username-Password-Authentication',
-        passwordless: 'email'
-    }
+// Firebase Configuration
+const FIREBASE_CONFIG = {
+    apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+    authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+    projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+    storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+    messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+    appId: import.meta.env.VITE_FIREBASE_APP_ID
 };
 
 // Export for use in other files
 if (typeof module !== 'undefined' && module.exports) {
-    module.exports = AUTH0_CONFIG;
+    module.exports = FIREBASE_CONFIG;
 }

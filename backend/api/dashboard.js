@@ -1,5 +1,6 @@
 import express from 'express';
 import jwt from 'jsonwebtoken';
+import { ObjectId } from 'mongodb';
 import { getDb } from '../services/database.js';
 
 const router = express.Router();
@@ -31,7 +32,7 @@ router.get('/overview', verifyToken, async (req, res) => {
         const userId = req.user.userId;
 
         // Get user data
-        const user = await users.findOne({ _id: userId });
+        const user = await users.findOne({ _id: new ObjectId(userId) });
         if (!user) {
             return res.status(404).json({ error: 'User not found' });
         }

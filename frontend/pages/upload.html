@@ -41,7 +41,7 @@
             flex-direction: column;
             gap: 8px;
             position: relative;
-            z-index: 100;
+            z-index: 10;
         }
 
         .form-group label {
@@ -442,6 +442,14 @@
                     <p>Upload a single worksheet and assign it to a student</p>
                 </div>
 
+                <!-- Assignment Name -->
+                <div class="selection-section" id="assignment-section">
+                    <div class="form-group">
+                        <label for="assignment-name">Assignment Name</label>
+                        <input type="text" id="assignment-name" class="form-input" placeholder="e.g., Chapter 5 Quiz, Math Homework #3">
+                    </div>
+                </div>
+
                 <!-- Student and Class Selection -->
                 <div class="selection-section" id="selection-section">
                     <div class="selection-grid">
@@ -480,11 +488,6 @@
                             <div class="form-error" id="class-error"></div>
                         </div>
                     </div>
-
-                    <div class="form-group">
-                        <label for="assignment-name">Assignment Name</label>
-                        <input type="text" id="assignment-name" class="form-input" placeholder="e.g., Chapter 5 Quiz, Math Homework #3">
-                    </div>
                 </div>
 
                 <!-- Drop Zone -->
@@ -515,13 +518,21 @@
                 </div>
 
                 <!-- Upload Actions -->
-                <div class="upload-actions" id="upload-actions" style="display: none;">
+                <div class="upload-actions" id="upload-actions">
                     <button class="btn btn-primary btn-large" id="upload-btn" disabled>
                         <i class="fas fa-upload"></i>
                         Upload & Grade
                     </button>
                     <button class="btn btn-outline btn-large" id="cancel-btn">
                         Clear All
+                    </button>
+                    <button class="btn btn-outline btn-sm" id="debug-btn" style="margin-left: 8px;">
+                        <i class="fas fa-bug"></i>
+                        Debug Dropdowns
+                    </button>
+                    <button class="btn btn-outline btn-sm" id="force-enable-btn" style="margin-left: 8px;">
+                        <i class="fas fa-bolt"></i>
+                        Force Enable
                     </button>
                 </div>
             </div>
@@ -660,10 +671,10 @@
         </div>
     </div>
 
-    <!-- Scripts -->
+    <!-- Scripts (Order is important for proper initialization) -->
     <script src="/js/custom-dropdown.js"></script>
-    <script src="/js/upload-single.js"></script>
     <script src="/js/dashboard.js"></script>
+    <script src="/js/upload-single.js"></script>
     <script>
         function toggleDropdown() {
             const dropdown = document.getElementById('userDropdown');

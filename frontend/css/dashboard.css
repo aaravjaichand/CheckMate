@@ -101,7 +101,7 @@
     visibility: hidden;
     transform: translateY(-10px);
     transition: all var(--transition-fast);
-    z-index: 1001;
+    z-index: 99999999998;
 }
 
 .dropdown-menu.active {
@@ -346,12 +346,31 @@
 }
 
 .browse-btn {
-    background: none;
-    border: none;
+    background: rgba(37, 99, 235, 0.1);
+    border: 1px solid var(--primary-color);
     color: var(--primary-color);
     font-weight: 600;
     cursor: pointer;
-    text-decoration: underline;
+    text-decoration: none;
+    padding: var(--spacing-2) var(--spacing-4);
+    border-radius: var(--radius-md);
+    transition: all var(--transition-fast);
+    position: relative;
+    z-index: 10;
+    pointer-events: auto;
+    display: inline-block;
+    font-size: 14px;
+}
+
+.browse-btn:hover {
+    background: var(--primary-color);
+    color: white;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+}
+
+.browse-btn:active {
+    transform: translateY(0);
 }
 
 .file-info {
@@ -1346,7 +1365,7 @@
 .liquid-dropdown {
     position: relative;
     display: inline-block;
-    z-index: 99999;
+    z-index: 50;
 }
 
 .liquid-dropdown-button {
@@ -1518,7 +1537,7 @@
     visibility: hidden;
     transform: translateY(-10px) scale(0.95);
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    z-index: 99999999;
+    z-index: 100;
     box-shadow: 
         0 12px 40px rgba(0, 0, 0, 0.8),
         0 4px 12px rgba(0, 0, 0, 0.6),
@@ -1641,7 +1660,7 @@
 .filter-section {
     margin-bottom: var(--spacing-8);
     position: relative;
-    z-index: 10000;
+    z-index: 30;
 }
 
 .filter-card {
@@ -1827,7 +1846,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 10000;
+    z-index: 30;
 }
 
 .modal-content {
