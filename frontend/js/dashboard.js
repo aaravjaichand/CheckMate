@@ -150,7 +150,7 @@ class DashboardManager {
         const thisMonth = stats.thisMonth || {};
         const thisWeek = stats.thisWeek || {};
 
-        // Update stat values with null checks
+        // Update stat values with null checks - only for visible elements
         const totalWorksheetsEl = document.getElementById('total-worksheets');
         const gradedWorksheetsEl = document.getElementById('graded-worksheets');
         const averageScoreEl = document.getElementById('average-score');
@@ -158,20 +158,30 @@ class DashboardManager {
         
         if (totalWorksheetsEl) totalWorksheetsEl.textContent = thisMonth.uploaded || 0;
         if (gradedWorksheetsEl) gradedWorksheetsEl.textContent = thisMonth.graded || 0;
-        if (averageScoreEl) averageScoreEl.textContent = `${thisMonth.averageScore || 0}%`;
         
-        // Calculate time saved (assuming 10 minutes per worksheet manually)
-        if (timeSavedEl) {
+        // Only update hidden elements if they're visible
+        if (averageScoreEl && averageScoreEl.closest('.stat-card').style.display !== 'none') {
+            averageScoreEl.textContent = `${thisMonth.averageScore || 0}%`;
+        }
+
+        // Calculate time saved (assuming 10 minutes per worksheet manually) - only if visible
+        if (timeSavedEl && timeSavedEl.closest('.stat-card').style.display !== 'none') {
             const timeSavedMinutes = (thisMonth.graded || 0) * 10;
             const timeSavedHours = Math.floor(timeSavedMinutes / 60);
             timeSavedEl.textContent = `${timeSavedHours}h`;
         }
 
-        // Update change indicators (placeholder logic) with null checks
-        this.updateStatChange('worksheets-change', 12);
-        this.updateStatChange('graded-change', 8);
-        this.updateStatChange('score-change', 0);
-        this.updateStatChange('time-change', 15);
+        // Update change indicators (placeholder logic) with null checks - only for visible elements
+        // Removed percentage change indicators as requested
+        // this.updateStatChange('worksheets-change', 12);
+        // this.updateStatChange('graded-change', 8);
+        // Skip updating hidden analytics changes
+        if (averageScoreEl && averageScoreEl.closest('.stat-card').style.display !== 'none') {
+            this.updateStatChange('score-change', 0);
+        }
+        if (timeSavedEl && timeSavedEl.closest('.stat-card').style.display !== 'none') {
+            this.updateStatChange('time-change', 15);
+        }
     }
 
     updateStatChange(elementId, changePercent) {

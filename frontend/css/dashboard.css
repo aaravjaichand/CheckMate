@@ -180,6 +180,7 @@
 
 .main-header {
     margin-bottom: var(--spacing-8);
+    text-align: center;
 }
 
 .main-header h1 {
@@ -780,9 +781,12 @@
 /* Stats Grid */
 .stats-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    grid-template-columns: repeat(2, 1fr);
     gap: var(--spacing-6);
     margin-bottom: var(--spacing-8);
+    max-width: 800px;
+        margin-left: auto;
+        margin-right: auto;
 }
 
 .stat-card {
@@ -905,15 +909,16 @@
 
 /* Dashboard Row Layout */
 .dashboard-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: var(--spacing-8);
+    display: flex;
+        justify-content: center;
     margin-bottom: var(--spacing-8);
 }
 
 /* Activity Section */
 .activity-section {
     min-width: 0;
+    max-width: 800px;
+        width: 100%;
 }
 
 .activity-card {

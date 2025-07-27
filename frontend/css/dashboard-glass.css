@@ -137,9 +137,8 @@
 
 /* Dashboard Row */
 .dashboard-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: var(--spacing-8);
+    display: flex;
+        justify-content: center;
     margin-bottom: var(--spacing-8);
 }
 
