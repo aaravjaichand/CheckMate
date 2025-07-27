@@ -273,6 +273,22 @@
         document.addEventListener('DOMContentLoaded', function() {
             console.log('DOM loaded, initializing grading page...');
             
+            // Check authentication first
+            const token = localStorage.getItem('gradeflow_token');
+            const userData = localStorage.getItem('user');
+            
+            console.log('Authentication check:', {
+                hasToken: !!token,
+                hasUserData: !!userData,
+                tokenLength: token ? token.length : 0
+            });
+            
+            if (!token || !userData) {
+                console.error('No authentication found, redirecting to login');
+                window.location.href = '/pages/login.html';
+                return;
+            }
+            
             setupDropdowns();
             setupEventListeners();
             loadInitialData();
@@ -374,12 +390,7 @@
                     applyFilters();
                 });
 
-            // Export button
-            document.getElementById('export-grades').addEventListener('click', exportGrades);
 
-            // Bulk actions
-            document.getElementById('select-all').addEventListener('click', toggleSelectAll);
-            document.getElementById('approve-selected').addEventListener('click', approveSelected);
 
         // Close dropdowns when clicking outside
             document.addEventListener('click', function (event) {
@@ -406,13 +417,23 @@
                 allClasses = classesData || [];
                 currentWorksheets = worksheetsData || [];
                 
+                console.log('Data loaded successfully:', {
+                    classCount: allClasses.length,
+                    worksheetCount: currentWorksheets.length
+                });
+                
                 populateClassDropdown();
                 populateSubjectDropdown();
                 applyFilters();
                 
+                // Show helpful message if no data
+                if (allClasses.length === 0 && currentWorksheets.length === 0) {
+                    showError('No data found. Try uploading some worksheets first, or check if you are logged in correctly.');
+                }
+                
             } catch (error) {
                 console.error('Error loading initial data:', error);
-                showError('Failed to load data. Please refresh the page.');
+                showError(`Failed to load data: ${error.message}. Please check your connection and refresh the page.`);
             } finally {
                 showLoading(false);
             }
@@ -463,17 +484,35 @@
                     async function fetchWorksheets() {
                         try {
                             const token = localStorage.getItem('gradeflow_token');
+                            
+                            if (!token) {
+                                console.error('No authentication token found for worksheets');
+                                return [];
+                            }
+
+                            console.log('Fetching worksheets with token:', token ? 'Present' : 'Missing'); // Debug log
+                            
                             const response = await fetch('/api/upload/worksheets?limit=100', {
                                 headers: {
                                     'Authorization': `Bearer ${token}`
                                 }
                             });
 
+                            console.log('Worksheets API response status:', response.status); // Debug log
+
                             if (response.ok) {
                                 const data = await response.json();
+                                console.log('Worksheets API response:', data); // Debug log
                                 return data.worksheets || [];
                             } else {
-                                console.error('Failed to fetch worksheets:', response.status);
+                                const errorText = await response.text();
+                                console.error('Failed to fetch worksheets:', response.status, errorText);
+                                
+                                if (response.status === 401) {
+                                    console.error('Authentication failed for worksheets - redirecting to login');
+                                    window.location.href = '/pages/login.html';
+                                }
+                                
                                 return [];
                             }
                         } catch (error) {
@@ -770,32 +809,7 @@
                 window.open(`/api/upload/file/${worksheetId}?token=${token}`, '_blank');
             }
 
-            function toggleSelectAll() {
-                const checkboxes = document.querySelectorAll('.item-checkbox input[type="checkbox"]');
-                const allChecked = Array.from(checkboxes).every(cb => cb.checked);
 
-                checkboxes.forEach(cb => cb.checked = !allChecked);
-            
-                    const approveBtn = document.getElementById('approve-selected');
-                    const checkedCount = document.querySelectorAll('.item-checkbox input[type="checkbox"]:checked').length;
-                    approveBtn.style.display = checkedCount > 0 ? 'inline-block' : 'none';
-                }
-
-                function approveSelected() {
-                const checkedBoxes = document.querySelectorAll('.item-checkbox input[type="checkbox"]:checked');
-                    const worksheetIds = Array.from(checkedBoxes).map(cb =>
-                        cb.closest('.grading-item').getAttribute('data-worksheet-id')
-                    );
-
-                    if (worksheetIds.length > 0) {
-                        alert(`${worksheetIds.length} worksheets would be approved (feature not implemented yet)`);
-                    }
-                }
-
-                function exportGrades() {
-                    const token = localStorage.getItem('gradeflow_token');
-                    window.open(`/api/dashboard/export/csv?token=${token}`, '_blank');
-                }
 
                 // Modal functions
                 function closeReviewModal() {

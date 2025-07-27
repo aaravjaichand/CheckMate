@@ -128,6 +128,22 @@ class DashboardManager {
         if (userNameEl) userNameEl.textContent = user.name;
         if (userPlanEl) userPlanEl.textContent = `${user.plan} Plan`;
         if (currentPlanEl) currentPlanEl.textContent = `${user.plan} Plan`;
+        
+        // Update liquid glass navigation elements
+        const userNameLiquidElements = document.querySelectorAll('.user-name-liquid');
+        const userPlanLiquidElements = document.querySelectorAll('.user-plan-liquid');
+        
+        userNameLiquidElements.forEach(element => {
+            if (user.name) {
+                element.textContent = user.name;
+            }
+        });
+        
+        userPlanLiquidElements.forEach(element => {
+            if (user.plan) {
+                element.textContent = `${user.plan} Plan`;
+            }
+        });
     }
 
     updateStats(stats) {
