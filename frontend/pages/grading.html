@@ -124,7 +124,7 @@
     <main class="dashboard-main">
         <div class="main-header">
             <h1>Grading Review</h1>
-            <p>Review and approve AI-graded worksheets</p>
+            <p>Review and manage graded worksheets</p>
         </div>
 
         <!-- Filter Controls -->
@@ -139,7 +139,6 @@
                         <div class="liquid-dropdown-menu">
                             <div class="liquid-dropdown-item" data-dropdown="status-dropdown" data-text="All Status" data-value="">All Status</div>
                             <div class="liquid-dropdown-item" data-dropdown="status-dropdown" data-text="Graded" data-value="graded">Graded</div>
-                            <div class="liquid-dropdown-item" data-dropdown="status-dropdown" data-text="Completed" data-value="completed">Completed</div>
                             <div class="liquid-dropdown-item" data-dropdown="status-dropdown" data-text="Processing" data-value="processing">Processing</div>
                             <div class="liquid-dropdown-item" data-dropdown="status-dropdown" data-text="Error" data-value="error">Error</div>
                         </div>
@@ -150,12 +149,21 @@
                             <span id="subject-selected">All Subjects</span>
                             <i class="fas fa-chevron-down"></i>
                         </button>
-                        <div class="liquid-dropdown-menu">
+                        <div class="liquid-dropdown-menu" id="subject-dropdown-menu">
                             <div class="liquid-dropdown-item" data-dropdown="subject-dropdown" data-text="All Subjects" data-value="">All Subjects</div>
-                            <div class="liquid-dropdown-item" data-dropdown="subject-dropdown" data-text="Mathematics" data-value="math">Mathematics</div>
-                            <div class="liquid-dropdown-item" data-dropdown="subject-dropdown" data-text="English" data-value="english">English</div>
-                            <div class="liquid-dropdown-item" data-dropdown="subject-dropdown" data-text="Science" data-value="science">Science</div>
-                            <div class="liquid-dropdown-item" data-dropdown="subject-dropdown" data-text="History" data-value="history">History</div>
+                            <!-- Subject options will be populated dynamically -->
+                            </div>
+                            </div>
+                            
+                            <div class="liquid-dropdown" id="class-dropdown">
+                                <button class="liquid-dropdown-button" data-dropdown="class-dropdown">
+                                    <span id="class-selected">All Classes</span>
+                                    <i class="fas fa-chevron-down"></i>
+                                </button>
+                                <div class="liquid-dropdown-menu" id="class-dropdown-menu">
+                                    <div class="liquid-dropdown-item" data-dropdown="class-dropdown" data-text="All Classes" data-value="">All
+                                        Classes</div>
+                                    <!-- Class options will be populated dynamically -->
                         </div>
                     </div>
                     
@@ -169,22 +177,38 @@
             </div>
         </div>
 
-        <!-- Grading List -->
-        <div class="grading-section">
+        <!-- Loading State -->
+        <div id="loading-state" class="grading-section" style="display: none;">
             <div class="grading-card">
                 <div class="grading-header">
-                    <h2>Worksheets Ready for Review</h2>
+                    <h2>Loading...</h2>
+                </div>
+                <div class="grading-list">
+                    <div class="empty-state">
+                        <i class="fas fa-spinner fa-spin"></i>
+                        <p>Loading graded worksheets...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Grading List -->
+        <div class="grading-section" id="grading-section">
+            <div class="grading-card">
+                <div class="grading-header">
+                    <h2>Graded Worksheets</h2>
                     <div class="bulk-actions">
+                        <span class="results-count" id="results-count">0 worksheets</span>
                         <button class="liquid-button secondary" id="select-all">Select All</button>
-                        <button class="liquid-button primary" id="approve-selected">Approve Selected</button>
+                        <button class="liquid-button primary" id="approve-selected" style="display: none;">Approve Selected</button>
                     </div>
                 </div>
                 
                 <div class="grading-list" id="grading-list">
                     <div class="empty-state">
                         <i class="fas fa-clipboard-check"></i>
-                        <p>No worksheets ready for review</p>
-                        <span>Upload and process worksheets to see them here for grading review</span>
+                        <p>No graded worksheets found</p>
+                        <span>Upload and grade worksheets to see them here</span>
                     </div>
                 </div>
             </div>
@@ -214,64 +238,22 @@
                     <div class="grading-panel">
                         <div class="grade-summary">
                             <h3>Grade Summary</h3>
-                            <div class="final-score">92%</div>
-                            <div class="score-breakdown">
-                                <div class="breakdown-item">
-                                    <span>Question 1:</span>
-                                    <span class="score">5/5</span>
-                                </div>
-                                <div class="breakdown-item">
-                                    <span>Question 2:</span>
-                                    <span class="score">4/5</span>
-                                </div>
-                                <div class="breakdown-item">
-                                    <span>Question 3:</span>
-                                    <span class="score">5/5</span>
-                                </div>
-                                <div class="breakdown-item">
-                                    <span>Question 4:</span>
-                                    <span class="score">4/5</span>
-                                </div>
-                                <div class="breakdown-item">
-                                    <span>Question 5:</span>
-                                    <span class="score">5/5</span>
-                                </div>
+                            <div class="final-score" id="modal-score">0%</div>
+                            <div class="score-breakdown" id="modal-breakdown">
+                                <!-- Breakdown will be populated dynamically -->
                             </div>
                         </div>
                         
                         <div class="feedback-section">
                             <h3>AI-Generated Feedback</h3>
-                            <div class="feedback-content">
-                                <div class="feedback-category">
-                                    <h4>Strengths</h4>
-                                    <ul>
-                                        <li>Excellent understanding of fraction concepts</li>
-                                        <li>Clear work shown for all problems</li>
-                                        <li>Neat handwriting and organization</li>
-                                    </ul>
-                                </div>
-                                
-                                <div class="feedback-category">
-                                    <h4>Areas for Improvement</h4>
-                                    <ul>
-                                        <li>Double-check arithmetic in word problems</li>
-                                        <li>Show more steps in complex calculations</li>
-                                    </ul>
-                                </div>
-                                
-                                <div class="feedback-category">
-                                    <h4>Next Steps</h4>
-                                    <ul>
-                                        <li>Practice more mixed number operations</li>
-                                        <li>Review fraction-to-decimal conversions</li>
-                                    </ul>
-                                </div>
+                            <div class="feedback-content" id="modal-feedback">
+                                <!-- Feedback will be populated dynamically -->
                             </div>
                         </div>
                         
                         <div class="grade-actions">
-                            <button class="btn btn-outline">Edit Grade</button>
-                            <button class="btn btn-primary">Approve Grade</button>
+                            <button class="btn btn-outline" onclick="editGrade()">Edit Grade</button>
+                            <button class="btn btn-primary" onclick="approveGrade()">Approve Grade</button>
                         </div>
                     </div>
                 </div>
@@ -282,10 +264,29 @@
     <!-- Scripts -->
     <script src="/js/dashboard.js"></script>
     <script>
+            // Global state for grading page
+            let currentWorksheets = [];
+            let filteredWorksheets = [];
+            let currentFilters = {
+                status: '',
+                subject: '',
+                class: '',
+                search: ''
+            };
+            let allClasses = [];
+            let allSubjects = [];
+
         // Wait for DOM to load
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('DOM loaded, setting up dropdowns...');
+            console.log('DOM loaded, initializing grading page...');
             
+            setupDropdowns();
+            setupEventListeners();
+            loadInitialData();
+        });
+
+                // Setup dropdown functionality
+                function setupDropdowns() {
             // Global dropdown functions
             window.toggleLiquidDropdown = function(dropdownId) {
                 console.log('toggleLiquidDropdown called with:', dropdownId);
@@ -296,7 +297,6 @@
                 }
                 
                 const isActive = dropdown.classList.contains('active');
-                console.log('Current active state:', isActive);
                 
                 // Close all other dropdowns first
                 document.querySelectorAll('.liquid-dropdown').forEach(d => {
@@ -308,10 +308,8 @@
                 // Toggle current dropdown
                 if (isActive) {
                     dropdown.classList.remove('active');
-                    console.log('Dropdown closed');
                 } else {
                     dropdown.classList.add('active');
-                    console.log('Dropdown opened');
                 }
             };
             
@@ -323,32 +321,25 @@
                     return;
                 }
                 
-                // Try multiple ways to find the selected element
+                // Find and update the selected element
                 let selectedElement = dropdown.querySelector('[id$="-selected"]');
                 if (!selectedElement) {
                     selectedElement = dropdown.querySelector('#' + dropdownId.replace('-dropdown', '-selected'));
                 }
-                if (!selectedElement) {
-                    selectedElement = dropdown.querySelector('span');
-                }
                 
                 if (selectedElement) {
-                    console.log('Found selected element:', selectedElement);
                     selectedElement.textContent = displayText;
-                    selectedElement.innerHTML = displayText; // Backup method
-                    console.log('Updated text to:', displayText);
-                    console.log('Element now contains:', selectedElement.textContent);
                 } else {
                     console.error('Selected element not found in dropdown:', dropdownId);
-                    console.log('Available elements in dropdown:', dropdown.innerHTML);
                 }
                 
                 dropdown.classList.remove('active');
-                console.log('Dropdown closed after selection');
                 
-                // Trigger filter update
-                if (typeof filterWorksheets === 'function') {
-                    filterWorksheets();
+                // Update filters based on dropdown type
+                const filterType = dropdownId.replace('-dropdown', '');
+                if (currentFilters.hasOwnProperty(filterType)) {
+                    currentFilters[filterType] = value || '';
+                    applyFilters();
                 }
             };
             
@@ -356,88 +347,686 @@
             document.querySelectorAll('.liquid-dropdown-button').forEach(button => {
                 const dropdownId = button.getAttribute('data-dropdown');
                 if (dropdownId) {
-                    console.log('Setting up button for:', dropdownId);
                     button.addEventListener('click', function(e) {
                         e.preventDefault();
                         e.stopPropagation();
-                        console.log('Button clicked via event listener:', dropdownId);
                         window.toggleLiquidDropdown(dropdownId);
                     });
                 }
             });
             
-            // Add event listeners to dropdown items using data attributes
-            document.querySelectorAll('.liquid-dropdown-item').forEach(item => {
-                item.addEventListener('click', function(e) {
+            // Add event listeners to dropdown items using event delegation
+            document.addEventListener('click', function (e) {
+                if (e.target.classList.contains('liquid-dropdown-item')) {
                     e.preventDefault();
                     e.stopPropagation();
                     
-                    const dropdownId = this.getAttribute('data-dropdown');
-                    const displayText = this.getAttribute('data-text');
-                    const value = this.getAttribute('data-value');
-                    
-                    console.log('Dropdown item clicked:', this.textContent);
-                    console.log('Data attributes:', { dropdownId, displayText, value });
+                    const dropdownId = e.target.getAttribute('data-dropdown');
+                    const displayText = e.target.getAttribute('data-text');
+                    const value = e.target.getAttribute('data-value');
                     
                     if (dropdownId && displayText !== null) {
                         window.selectDropdownItem(dropdownId, displayText, value || '');
-                    } else {
-                        console.error('Missing data attributes on dropdown item');
                     }
-                });
+                }
             });
-        });
-        
+            }
+
+            // Setup event listeners
+            function setupEventListeners() {
+                // Search input
+                const studentSearch = document.getElementById('student-search');
+                studentSearch.addEventListener('input', function (e) {
+                    currentFilters.search = e.target.value.trim();
+                    applyFilters();
+                });
+
+            // Export button
+            document.getElementById('export-grades').addEventListener('click', exportGrades);
+
+            // Bulk actions
+            document.getElementById('select-all').addEventListener('click', toggleSelectAll);
+            document.getElementById('approve-selected').addEventListener('click', approveSelected);
+
         // Close dropdowns when clicking outside
-        document.addEventListener('click', function(event) {
+            document.addEventListener('click', function (event) {
             if (!event.target.closest('.liquid-dropdown')) {
                 document.querySelectorAll('.liquid-dropdown').forEach(d => d.classList.remove('active'));
             }
         });
-        
-        // Grading-specific JavaScript
-        function reviewWorksheet(id) {
-            document.getElementById('review-modal').style.display = 'flex';
-        }
-        
-        function closeReviewModal() {
-            document.getElementById('review-modal').style.display = 'none';
-        }
-        
-        function approveWorksheet(id) {
-            alert(`Worksheet ${id} approved and ready for return to student!`);
-        }
-        
-        // Filter functionality
-        document.addEventListener('DOMContentLoaded', () => {
-            const studentSearch = document.getElementById('student-search');
+            }
+
+                    // Load initial data
+        async function loadInitialData() {
+            showLoading(true);
             
-            studentSearch.addEventListener('input', filterWorksheets);
-        });
-        
-        function filterWorksheets() {
-            // Filter logic would go here
-            console.log('Filtering worksheets...');
+            try {
+                // Load classes and worksheets in parallel
+                const [classesData, worksheetsData] = await Promise.all([
+                    fetchClasses(),
+                    fetchWorksheets()
+                ]);
+
+                console.log('Loaded classes:', classesData); // Debug log
+                console.log('Loaded worksheets:', worksheetsData); // Debug log
+
+                allClasses = classesData || [];
+                currentWorksheets = worksheetsData || [];
+                
+                populateClassDropdown();
+                populateSubjectDropdown();
+                applyFilters();
+                
+            } catch (error) {
+                console.error('Error loading initial data:', error);
+                showError('Failed to load data. Please refresh the page.');
+            } finally {
+                showLoading(false);
+            }
         }
-        
-        // Bulk actions
-        document.addEventListener('DOMContentLoaded', () => {
-            document.getElementById('select-all').addEventListener('click', () => {
+
+                    // Fetch classes from API
+        async function fetchClasses() {
+            try {
+                const token = localStorage.getItem('gradeflow_token');
+                
+                if (!token) {
+                    console.error('No authentication token found');
+                    return [];
+                }
+
+                console.log('Fetching classes with token:', token ? 'Present' : 'Missing'); // Debug log
+                
+                const response = await fetch('/api/classes/', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                console.log('Classes API response status:', response.status); // Debug log
+
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('Classes API response:', data); // Debug log
+                    return data.classes || [];
+                } else {
+                    const errorText = await response.text();
+                    console.error('Failed to fetch classes:', response.status, errorText);
+                    
+                    if (response.status === 401) {
+                        console.error('Authentication failed - redirecting to login');
+                        window.location.href = '/pages/login.html';
+                    }
+                    
+                    return [];
+                }
+            } catch (error) {
+                console.error('Error fetching classes:', error);
+                return [];
+            }
+        }
+
+                    // Fetch worksheets from API
+                    async function fetchWorksheets() {
+                        try {
+                            const token = localStorage.getItem('gradeflow_token');
+                            const response = await fetch('/api/upload/worksheets?limit=100', {
+                                headers: {
+                                    'Authorization': `Bearer ${token}`
+                                }
+                            });
+
+                            if (response.ok) {
+                                const data = await response.json();
+                                return data.worksheets || [];
+                            } else {
+                                console.error('Failed to fetch worksheets:', response.status);
+                                return [];
+                            }
+                        } catch (error) {
+                            console.error('Error fetching worksheets:', error);
+                            return [];
+                        }
+                    }
+
+                            // Populate class dropdown
+        function populateClassDropdown() {
+            console.log('Populating class dropdown with:', allClasses); // Debug log
+            const menu = document.getElementById('class-dropdown-menu');
+            
+            if (!menu) {
+                console.error('Class dropdown menu not found!');
+                return;
+            }
+            
+            // Keep the "All Classes" option
+            const allOption = menu.querySelector('[data-value=""]');
+            menu.innerHTML = '';
+            if (allOption) {
+                menu.appendChild(allOption);
+            } else {
+                menu.innerHTML = '<div class="liquid-dropdown-item" data-dropdown="class-dropdown" data-text="All Classes" data-value="">All Classes</div>';
+            }
+
+            // Add class options
+            if (allClasses && allClasses.length > 0) {
+                allClasses.forEach(classObj => {
+                    console.log('Adding class:', classObj); // Debug log
+                    const option = document.createElement('div');
+                    option.className = 'liquid-dropdown-item';
+                    option.setAttribute('data-dropdown', 'class-dropdown');
+                    option.setAttribute('data-text', classObj.name || 'Unnamed Class');
+                    option.setAttribute('data-value', classObj._id || classObj.id);
+                    option.textContent = classObj.name || 'Unnamed Class';
+                    menu.appendChild(option);
+                });
+                console.log(`Added ${allClasses.length} class options to dropdown`);
+            } else {
+                console.log('No classes found to populate dropdown');
+            }
+        }
+
+                    // Populate subject dropdown
+                    function populateSubjectDropdown() {
+                        const menu = document.getElementById('subject-dropdown-menu');
+
+                        // Extract unique subjects from worksheets
+                        const subjects = new Set();
+                        currentWorksheets.forEach(worksheet => {
+                            if (worksheet.metadata?.subject) {
+                                subjects.add(worksheet.metadata.subject);
+                            }
+                        });
+
+                        allSubjects = Array.from(subjects).sort();
+
+                        // Keep the "All Subjects" option
+                        const allOption = menu.querySelector('[data-value=""]');
+                        menu.innerHTML = '';
+                        if (allOption) {
+                            menu.appendChild(allOption);
+                        } else {
+                            menu.innerHTML = '<div class="liquid-dropdown-item" data-dropdown="subject-dropdown" data-text="All Subjects" data-value="">All Subjects</div>';
+                        }
+
+                        // Add subject options
+                        allSubjects.forEach(subject => {
+                            const option = document.createElement('div');
+                            option.className = 'liquid-dropdown-item';
+                            option.setAttribute('data-dropdown', 'subject-dropdown');
+                            option.setAttribute('data-text', subject);
+                            option.setAttribute('data-value', subject);
+                            option.textContent = subject;
+                            menu.appendChild(option);
+                        });
+                    }
+
+                    // Apply current filters
+                    function applyFilters() {
+                        filteredWorksheets = currentWorksheets.filter(worksheet => {
+                            // Status filter
+                            if (currentFilters.status && worksheet.status !== currentFilters.status) {
+                                return false;
+                            }
+
+                // Subject filter
+                if (currentFilters.subject && worksheet.metadata?.subject !== currentFilters.subject) {
+                    return false;
+                }
+
+                // Class filter
+                if (currentFilters.class && worksheet.classId !== currentFilters.class) {
+                    return false;
+                }
+
+                // Search filter
+                if (currentFilters.search) {
+                    const searchTerm = currentFilters.search.toLowerCase();
+                    const studentName = (worksheet.studentName || '').toLowerCase();
+                    const fileName = (worksheet.originalName || '').toLowerCase();
+
+                    if (!studentName.includes(searchTerm) && !fileName.includes(searchTerm)) {
+                        return false;
+                    }
+                }
+
+                return true;
+            });
+
+                    displayWorksheets();
+                    updateResultsCount();
+                }
+
+                // Display worksheets in the list
+                function displayWorksheets() {
+                    const gradingList = document.getElementById('grading-list');
+
+                    if (filteredWorksheets.length === 0) {
+                        gradingList.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-clipboard-check"></i>
+                        <p>No worksheets found</p>
+                        <span>Try adjusting your filters or search terms</span>
+                    </div>
+                `;
+                        return;
+                    }
+
+                    gradingList.innerHTML = filteredWorksheets.map(worksheet => {
+                        const score = worksheet.gradingResults?.totalScore || 0;
+                        const statusClass = getStatusClass(worksheet.status);
+                        const statusIcon = getStatusIcon(worksheet.status);
+                        const className = getClassNameById(worksheet.classId);
+
+                        return `
+                    <div class="grading-item" data-worksheet-id="${worksheet._id}">
+                        <div class="item-checkbox">
+                            <input type="checkbox" id="cb-${worksheet._id}">
+                        </div>
+                        
+                        <div class="item-info">
+                            <div class="item-header">
+                                <h3 class="worksheet-name">${escapeHtml(worksheet.originalName || 'Unnamed Worksheet')}</h3>
+                                <div class="status-badge ${statusClass}">
+                                    <i class="${statusIcon}"></i>
+                                    ${worksheet.status}
+                                </div>
+                            </div>
+                            
+                            <div class="item-details">
+                                <div class="detail-item">
+                                    <i class="fas fa-user"></i>
+                                    <span>Student: ${escapeHtml(worksheet.studentName || 'Unknown')}</span>
+                                </div>
+                                <div class="detail-item">
+                                    <i class="fas fa-users"></i>
+                                    <span>Class: ${escapeHtml(className)}</span>
+                                </div>
+                                <div class="detail-item">
+                                    <i class="fas fa-book"></i>
+                                    <span>Subject: ${escapeHtml(worksheet.metadata?.subject || 'Unknown')}</span>
+                                </div>
+                                <div class="detail-item">
+                                    <i class="fas fa-calendar"></i>
+                                    <span>Completed: ${formatDate(worksheet.completedAt)}</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="item-score">
+                            <div class="score-display ${getScoreClass(score)}">
+                                ${score}%
+                            </div>
+                        </div>
+                        
+                        <div class="item-actions">
+                            <button class="btn-action" onclick="reviewWorksheet('${worksheet._id}')" title="Review">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button class="btn-action" onclick="editWorksheet('${worksheet._id}')" title="Edit">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn-action" onclick="downloadWorksheet('${worksheet._id}')" title="Download">
+                                <i class="fas fa-download"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+                    }).join('');
+        }
+
+            // Helper functions
+            function getStatusClass(status) {
+                switch (status) {
+                    case 'graded': return 'status-completed';
+                    case 'processing': return 'status-processing';
+                    case 'error': return 'status-error';
+                    default: return 'status-pending';
+                }
+            }
+
+            function getStatusIcon(status) {
+                switch (status) {
+                    case 'graded': return 'fas fa-check';
+                    case 'processing': return 'fas fa-spinner fa-spin';
+                    case 'error': return 'fas fa-exclamation-triangle';
+                    default: return 'fas fa-clock';
+                }
+            }
+
+            function getScoreClass(score) {
+                if (score >= 90) return 'score-a';
+                if (score >= 80) return 'score-b';
+                if (score >= 70) return 'score-c';
+                if (score >= 60) return 'score-d';
+                return 'score-f';
+            }
+
+            function getClassNameById(classId) {
+                if (!classId) return 'No Class';
+                const classObj = allClasses.find(c => c._id === classId);
+                return classObj ? classObj.name : 'Unknown Class';
+            }
+
+            function formatDate(dateString) {
+                if (!dateString) return 'Unknown';
+                const date = new Date(dateString);
+                return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            }
+
+            function escapeHtml(text) {
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+
+            function updateResultsCount() {
+                const count = filteredWorksheets.length;
+                const countElement = document.getElementById('results-count');
+                countElement.textContent = `${count} worksheet${count !== 1 ? 's' : ''}`;
+            }
+
+            function showLoading(show) {
+                const loadingState = document.getElementById('loading-state');
+                const gradingSection = document.getElementById('grading-section');
+
+                if (show) {
+                    loadingState.style.display = 'block';
+                    gradingSection.style.display = 'none';
+                } else {
+                    loadingState.style.display = 'none';
+                    gradingSection.style.display = 'block';
+                }
+            }
+
+                    function showError(message) {
+            console.error(message);
+            
+            // Show error in the grading list
+            const gradingList = document.getElementById('grading-list');
+            if (gradingList) {
+                gradingList.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-exclamation-triangle" style="color: #dc2626;"></i>
+                        <p style="color: #dc2626;">Error Loading Data</p>
+                        <span>${message}</span>
+                        <button onclick="location.reload()" style="margin-top: 12px; padding: 8px 16px; background: #3b82f6; color: white; border: none; border-radius: 6px; cursor: pointer;">
+                            Retry
+                        </button>
+                    </div>
+                `;
+            }
+            
+            // Also show alert as fallback
+            alert(message);
+        }
+
+            // Action functions
+            function reviewWorksheet(worksheetId) {
+                // Navigate to the grading interface
+                window.location.href = `/pages/grading-split.html?worksheet=${worksheetId}`;
+            }
+
+            function editWorksheet(worksheetId) {
+                // Navigate to the grading interface in edit mode
+                window.location.href = `/pages/grading-split.html?worksheet=${worksheetId}&mode=edit`;
+            }
+
+            function downloadWorksheet(worksheetId) {
+                const token = localStorage.getItem('gradeflow_token');
+                window.open(`/api/upload/file/${worksheetId}?token=${token}`, '_blank');
+            }
+
+            function toggleSelectAll() {
                 const checkboxes = document.querySelectorAll('.item-checkbox input[type="checkbox"]');
                 const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+
                 checkboxes.forEach(cb => cb.checked = !allChecked);
-            });
             
-            document.getElementById('approve-selected').addEventListener('click', () => {
+                    const approveBtn = document.getElementById('approve-selected');
+                    const checkedCount = document.querySelectorAll('.item-checkbox input[type="checkbox"]:checked').length;
+                    approveBtn.style.display = checkedCount > 0 ? 'inline-block' : 'none';
+                }
+
+                function approveSelected() {
                 const checkedBoxes = document.querySelectorAll('.item-checkbox input[type="checkbox"]:checked');
-                alert(`${checkedBoxes.length} worksheets approved!`);
-            });
-            
-            document.getElementById('export-grades').addEventListener('click', () => {
-                alert('Exporting grades to CSV...');
-            });
-        });
+                    const worksheetIds = Array.from(checkedBoxes).map(cb =>
+                        cb.closest('.grading-item').getAttribute('data-worksheet-id')
+                    );
+
+                    if (worksheetIds.length > 0) {
+                        alert(`${worksheetIds.length} worksheets would be approved (feature not implemented yet)`);
+                    }
+                }
+
+                function exportGrades() {
+                    const token = localStorage.getItem('gradeflow_token');
+                    window.open(`/api/dashboard/export/csv?token=${token}`, '_blank');
+                }
+
+                // Modal functions
+                function closeReviewModal() {
+                    document.getElementById('review-modal').style.display = 'none';
+                }
+
+                function editGrade() {
+                    alert('Edit grade functionality not implemented yet');
+                }
+
+            function approveGrade() {
+                alert('Approve grade functionality not implemented yet');
+            }
     </script>
+<!-- Additional CSS for grading list items -->
+<style>
+    .grading-item {
+        display: flex;
+        align-items: center;
+        padding: 16px;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        margin-bottom: 12px;
+        background: white;
+        transition: all 0.2s ease;
+    }
+
+    .grading-item:hover {
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        border-color: #d1d5db;
+    }
+
+    .item-checkbox {
+        margin-right: 16px;
+    }
+
+    .item-info {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .item-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 8px;
+    }
+
+    .worksheet-name {
+        font-size: 16px;
+        font-weight: 600;
+        margin: 0;
+        color: #1f2937;
+        truncate: true;
+    }
+
+    .status-badge {
+        padding: 4px 8px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 500;
+        text-transform: capitalize;
+    }
+
+    .status-completed {
+        background: #dcfce7;
+        color: #166534;
+    }
+
+    .status-processing {
+        background: #fef3c7;
+        color: #d97706;
+    }
+
+    .status-error {
+        background: #fef2f2;
+        color: #dc2626;
+    }
+
+    .status-pending {
+        background: #f3f4f6;
+        color: #374151;
+    }
+
+    .item-details {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 8px;
+    }
+
+    .detail-item {
+        display: flex;
+        align-items: center;
+        font-size: 14px;
+        color: #6b7280;
+    }
+
+    .detail-item i {
+        margin-right: 8px;
+        width: 16px;
+        color: #9ca3af;
+    }
+
+    .item-score {
+        margin: 0 16px;
+    }
+
+    .score-display {
+        font-size: 24px;
+        font-weight: bold;
+        padding: 8px 12px;
+        border-radius: 8px;
+        text-align: center;
+        min-width: 60px;
+    }
+
+    .score-a {
+        background: #dcfce7;
+        color: #166534;
+    }
+
+    .score-b {
+        background: #dbeafe;
+        color: #1d4ed8;
+    }
+
+    .score-c {
+        background: #fef3c7;
+        color: #d97706;
+    }
+
+    .score-d {
+        background: #fed7aa;
+        color: #ea580c;
+    }
+
+    .score-f {
+        background: #fef2f2;
+        color: #dc2626;
+    }
+
+    .item-actions {
+        display: flex;
+        gap: 8px;
+    }
+
+    .btn-action {
+        padding: 8px;
+        border: 1px solid #d1d5db;
+        border-radius: 6px;
+        background: white;
+        color: #6b7280;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .btn-action:hover {
+        background: #f3f4f6;
+        color: #374151;
+    }
+
+    .results-count {
+        font-size: 14px;
+        color: #6b7280;
+        margin-right: 16px;
+    }
+
+    /* Filter controls styling */
+    .filter-controls {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+
+    .liquid-input {
+        padding: 8px 12px;
+        border: 1px solid #d1d5db;
+        border-radius: 6px;
+        font-size: 14px;
+        min-width: 200px;
+    }
+
+    .liquid-input:focus {
+        outline: none;
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        .grading-item {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .item-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 8px;
+        }
+
+        .item-details {
+            grid-template-columns: 1fr;
+        }
+
+        .item-score,
+        .item-actions {
+            align-self: flex-end;
+        }
+
+        .filter-controls {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .liquid-input {
+            min-width: auto;
+            width: 100%;
+        }
+    }
+</style>
+
     <!-- Floating Background Elements -->
     <div class="floating-element floating-element-1"></div>
     <div class="floating-element floating-element-2"></div>

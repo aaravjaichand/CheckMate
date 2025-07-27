@@ -455,14 +455,17 @@ class CustomDropdown {
     }
 
     showInlineAddForm(prefillValue = '') {
-        // Determine if this is for students or classes based on endpoint
+        // Determine if this is for students, classes, or assignments based on endpoint
         const isStudent = this.options.apiEndpoint && this.options.apiEndpoint.includes('students');
         const isClass = this.options.apiEndpoint && this.options.apiEndpoint.includes('classes');
+        const isAssignment = this.options.apiEndpoint && this.options.apiEndpoint.includes('assignments');
         
         if (isStudent) {
             this.showInlineStudentForm(prefillValue);
         } else if (isClass) {
             this.showInlineClassForm(prefillValue);
+        } else if (isAssignment) {
+            this.showInlineAssignmentForm(prefillValue);
         }
     }
 
@@ -548,6 +551,44 @@ class CustomDropdown {
         this.bindInlineFormEvents();
     }
 
+    showInlineAssignmentForm(prefillValue = '') {
+        this.optionsContainer.innerHTML = `
+            <div class="dropdown-inline-form">
+                <div class="inline-form-header">
+                    <span>Create New Assignment</span>
+                    <button class="inline-form-cancel" type="button">×</button>
+                </div>
+                <div class="inline-form-content">
+                    <div class="inline-form-row">
+                        <input type="text" class="inline-form-input" id="inline-assignment-name" 
+                               placeholder="Assignment Name (e.g., Math Quiz 1)" value="${this.escapeHtml(prefillValue)}">
+                    </div>
+                    <div class="inline-form-row">
+                        <select class="inline-form-select" id="inline-assignment-type">
+                            <option value="worksheet">Worksheet</option>
+                            <option value="quiz">Quiz</option>
+                            <option value="test">Test</option>
+                            <option value="homework">Homework</option>
+                            <option value="project">Project</option>
+                            <option value="other">Other</option>
+                        </select>
+                        <select class="inline-form-select" id="inline-assignment-subject">
+                            <option value="math">Mathematics</option>
+                            <option value="english">English/Language Arts</option>
+                            <option value="science">Science</option>
+                            <option value="history">History/Social Studies</option>
+                            <option value="art">Art</option>
+                            <option value="other">Other</option>
+                        </select>
+                        <button class="inline-form-save" type="button">✓</button>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        this.bindInlineFormEvents();
+    }
+
     bindInlineFormEvents() {
         const saveBtn = this.optionsContainer.querySelector('.inline-form-save');
         const cancelBtn = this.optionsContainer.querySelector('.inline-form-cancel');
@@ -583,11 +624,15 @@ class CustomDropdown {
 
     async handleInlineFormSave() {
         const isStudent = this.options.apiEndpoint && this.options.apiEndpoint.includes('students');
+        const isClass = this.options.apiEndpoint && this.options.apiEndpoint.includes('classes');
+        const isAssignment = this.options.apiEndpoint && this.options.apiEndpoint.includes('assignments');
         
         if (isStudent) {
             await this.saveInlineStudent();
-        } else {
+        } else if (isClass) {
             await this.saveInlineClass();
+        } else if (isAssignment) {
+            await this.saveInlineAssignment();
         }
     }
 
@@ -695,6 +740,62 @@ class CustomDropdown {
             }
         } catch (error) {
             this.showInlineError('Failed to create class');
+        }
+    }
+
+    async saveInlineAssignment() {
+        const nameInput = this.optionsContainer.querySelector('#inline-assignment-name');
+        const typeSelect = this.optionsContainer.querySelector('#inline-assignment-type');
+        const subjectSelect = this.optionsContainer.querySelector('#inline-assignment-subject');
+        
+        const name = nameInput.value.trim();
+        const type = typeSelect.value;
+        const subject = subjectSelect.value;
+        
+        if (!name) {
+            this.showInlineError('Assignment name is required');
+            nameInput.focus();
+            return;
+        }
+        
+        try {
+            const token = localStorage.getItem('gradeflow_token');
+            const response = await fetch('/api/assignments', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ name, type, subject })
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                // Add to options and select it
+                const newOption = {
+                    value: result.assignment._id,
+                    label: result.assignment.name,
+                    type: result.assignment.type,
+                    typeDisplayName: result.assignment.typeDisplayName,
+                    subject: result.assignment.subject,
+                    subjectDisplayName: result.assignment.subjectDisplayName
+                };
+                
+                this.allOptions.unshift(newOption);
+                this.filteredOptions = [...this.allOptions];
+                this.selectOption(newOption);
+                
+                // Show success briefly
+                this.showInlineSuccess('Assignment created successfully!');
+                setTimeout(() => {
+                    this.close();
+                }, 1000);
+            } else {
+                this.showInlineError(result.error || 'Failed to create assignment');
+            }
+        } catch (error) {
+            this.showInlineError('Failed to create assignment');
         }
     }
 
