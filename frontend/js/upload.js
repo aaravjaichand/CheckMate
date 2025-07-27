@@ -589,4 +589,4 @@ document.addEventListener('DOMContentLoaded', () => {
     window.uploadManager = new UploadManager();
 });
 
-export default UploadManager;
+// UploadManager is now available globally

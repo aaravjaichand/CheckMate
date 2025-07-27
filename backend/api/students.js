@@ -163,9 +163,12 @@ router.post('/', verifyToken, async (req, res) => {
         const db = await getDb();
         const students = db.collection('students');
         
+        // Use the authenticated user's ID
+        const teacherId = new ObjectId(req.user.userId);
+        
         // Check for duplicate student name within teacher's students
         const existingStudent = await students.findOne({
-            teacherId: new ObjectId(req.user.userId),
+            teacherId: teacherId,
             name: { $regex: new RegExp(`^${studentData.name.trim()}$`, 'i') },
             isActive: true
         });
@@ -177,7 +180,7 @@ router.post('/', verifyToken, async (req, res) => {
         }
 
         // Create student document
-        const newStudent = createStudentDocument(new ObjectId(req.user.userId), studentData);
+        const newStudent = createStudentDocument(teacherId, studentData);
         
         const result = await students.insertOne(newStudent);
         newStudent._id = result.insertedId;
@@ -190,7 +193,7 @@ router.post('/', verifyToken, async (req, res) => {
             await classes.updateMany(
                 { 
                     _id: { $in: classIds },
-                    teacherId: new ObjectId(req.user.userId)
+                    teacherId: teacherId
                 },
                 { 
                     $addToSet: { students: result.insertedId },
@@ -376,14 +379,17 @@ router.get('/stats/overview', verifyToken, async (req, res) => {
     }
 });
 
-// Search students for dropdown
+// Search students for dropdown (restored to work with actual MongoDB)
 router.get('/search/dropdown', verifyToken, async (req, res) => {
     try {
         const { q, classId, limit = 20 } = req.query;
         
+        console.log('Students dropdown search request:', { q, classId, limit });
+        
         const db = await getDb();
         const students = db.collection('students');
         
+        // Filter by the authenticated user's teacherId for proper data isolation
         let filter = { 
             teacherId: new ObjectId(req.user.userId),
             isActive: true
@@ -398,9 +404,14 @@ router.get('/search/dropdown', verifyToken, async (req, res) => {
             limit: parseInt(limit)
         }).toArray();
 
+        console.log(`Found ${results.length} students for teacher ${req.user.userId}`);
+
         // Apply search filter
-        if (q) {
-            results = searchStudents(results, q);
+        if (q && q.trim()) {
+            const searchTerm = q.toLowerCase().trim();
+            results = results.filter(student => 
+                student.name.toLowerCase().includes(searchTerm)
+            );
         }
 
         // Format for dropdown
@@ -410,6 +421,8 @@ router.get('/search/dropdown', verifyToken, async (req, res) => {
             grade: student.grade,
             classes: student.classes || []
         }));
+
+        console.log('Returning dropdown options:', dropdownOptions.length);
 
         res.json({
             options: dropdownOptions,

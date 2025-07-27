@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JSON Styling Test - CheckMate</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #f8fafc;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #1e293b;
+        }
+
+        .style-showcase {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .style-option {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .style-header {
+            background: #334155;
+            color: white;
+            padding: 15px 20px;
+            font-weight: 600;
+        }
+
+        /* Style 1: Modern Card Design */
+        .style1 {
+            padding: 20px;
+        }
+
+        .score-header-1 {
+            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            border-radius: 12px;
+            margin-bottom: 25px;
+        }
+
+        .score-circle-1 {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 15px;
+            font-size: 28px;
+            font-weight: bold;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .question-card-1 {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            overflow: hidden;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .question-card-1:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .question-header-1 {
+            background: white;
+            padding: 15px 20px;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .question-num-1 {
+            background: #3b82f6;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .question-body-1 {
+            padding: 20px;
+        }
+
+        .answer-grid-1 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .answer-box-1 {
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid;
+        }
+
+        .student-answer-1 {
+            background: #eff6ff;
+            border-left-color: #3b82f6;
+        }
+
+        .correct-answer-1 {
+            background: #f0fdf4;
+            border-left-color: #10b981;
+        }
+
+        /* Style 2: Compact Professional */
+        .style2 {
+            padding: 20px;
+        }
+
+        .score-header-2 {
+            background: #1e293b;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        .score-display-2 {
+            font-size: 36px;
+            font-weight: bold;
+        }
+
+        .score-label-2 {
+            font-size: 14px;
+            opacity: 0.8;
+        }
+
+        .question-item-2 {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            margin-bottom: 12px;
+            overflow: hidden;
+        }
+
+        .question-header-2 {
+            padding: 12px 16px;
+            background: #f8fafc;
+            border-bottom: 1px solid #e2e8f0;
+            font-weight: 600;
+            font-size: 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .question-content-2 {
+            padding: 16px;
+            font-size: 14px;
+        }
+
+        .answer-row-2 {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 10px;
+        }
+
+        .answer-col-2 {
+            flex: 1;
+            padding: 10px;
+            background: #f8fafc;
+            border-radius: 4px;
+            font-size: 13px;
+        }
+
+        /* Style 3: Colorful & Engaging */
+        .style3 {
+            padding: 20px;
+        }
+
+        .score-header-3 {
+            background: linear-gradient(45deg, #ff6b6b, #feca57, #48cae4, #ff6b6b);
+            background-size: 300% 300%;
+            animation: gradientShift 3s ease infinite;
+            color: white;
+            padding: 25px;
+            text-align: center;
+            border-radius: 15px;
+            margin-bottom: 25px;
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .score-circle-3 {
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.25);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 10px;
+            font-size: 24px;
+            font-weight: bold;
+            backdrop-filter: blur(10px);
+        }
+
+        .question-card-3 {
+            background: white;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            overflow: hidden;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            border: 1px solid #f1f5f9;
+        }
+
+        .question-header-3 {
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .question-body-3 {
+            padding: 25px;
+        }
+
+        .answer-container-3 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .answer-bubble-3 {
+            padding: 20px;
+            border-radius: 12px;
+            position: relative;
+        }
+
+        .student-bubble-3 {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .correct-bubble-3 {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+
+        .feedback-3 {
+            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+            padding: 15px;
+            border-radius: 10px;
+            font-style: italic;
+        }
+
+        /* Style 4: Minimalist Clean */
+        .style4 {
+            padding: 25px;
+        }
+
+        .score-header-4 {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 25px;
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+        }
+
+        .score-number-4 {
+            font-size: 48px;
+            font-weight: 300;
+            color: #1e293b;
+            margin-bottom: 5px;
+        }
+
+        .score-text-4 {
+            color: #64748b;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .question-list-4 {
+            list-style: none;
+        }
+
+        .question-item-4 {
+            background: white;
+            margin-bottom: 20px;
+            border: 1px solid #e2e8f0;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .question-title-4 {
+            padding: 15px 20px;
+            background: #f8fafc;
+            border-bottom: 1px solid #e2e8f0;
+            font-weight: 500;
+            color: #374151;
+        }
+
+        .question-details-4 {
+            padding: 20px;
+        }
+
+        .answer-comparison-4 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 15px;
+        }
+
+        .answer-section-4 {
+            padding: 15px;
+            background: #f9fafb;
+            border-left: 3px solid #d1d5db;
+            border-radius: 4px;
+        }
+
+        .answer-section-4.student {
+            border-left-color: #3b82f6;
+        }
+
+        .answer-section-4.correct {
+            border-left-color: #10b981;
+        }
+
+        .sample-data {
+            background: #1e293b;
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 30px;
+        }
+
+        .sample-data h3 {
+            margin-bottom: 15px;
+            color: #94a3b8;
+        }
+
+        .sample-data pre {
+            background: #0f172a;
+            padding: 15px;
+            border-radius: 6px;
+            overflow-x: auto;
+            font-size: 12px;
+            line-height: 1.4;
+        }
+
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .status-correct {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .status-incorrect {
+            background: #fef2f2;
+            color: #dc2626;
+        }
+
+        .status-partial {
+            background: #fef3c7;
+            color: #d97706;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎨 JSON Grading Styles Showcase</h1>
+        
+        <div class="style-showcase">
+            <!-- Style 1: Modern Card Design -->
+            <div class="style-option">
+                <div class="style-header">Style 1: Modern Card Design</div>
+                <div class="style1" id="style1-content">
+                    <!-- Content will be injected here -->
+                </div>
+            </div>
+
+            <!-- Style 2: Compact Professional -->
+            <div class="style-option">
+                <div class="style-header">Style 2: Compact Professional</div>
+                <div class="style2" id="style2-content">
+                    <!-- Content will be injected here -->
+                </div>
+            </div>
+
+            <!-- Style 3: Colorful & Engaging -->
+            <div class="style-option">
+                <div class="style-header">Style 3: Colorful & Engaging</div>
+                <div class="style3" id="style3-content">
+                    <!-- Content will be injected here -->
+                </div>
+            </div>
+
+            <!-- Style 4: Minimalist Clean -->
+            <div class="style-option">
+                <div class="style-header">Style 4: Minimalist Clean</div>
+                <div class="style4" id="style4-content">
+                    <!-- Content will be injected here -->
+                </div>
+            </div>
+        </div>
+
+        <div class="sample-data">
+            <h3>Sample JSON Data Used:</h3>
+            <pre id="sample-json"></pre>
+        </div>
+    </div>
+
+    <script>
+        // Sample grading data
+        const sampleData = {
+            totalScore: 78,
+            questions: [
+                {
+                    number: 1,
+                    question: "What is the derivative of 3x² + 2x - 5?",
+                    studentAnswer: "6x + 2",
+                    correctAnswer: "6x + 2",
+                    score: 10,
+                    maxScore: 10,
+                    isCorrect: true,
+                    partialCredit: false,
+                    feedback: "Perfect! You correctly applied the power rule.",
+                    showWork: "Used power rule: d/dx(ax^n) = nax^(n-1)"
+                },
+                {
+                    number: 2,
+                    question: "Solve for x: 2x + 7 = 15",
+                    studentAnswer: "x = 4",
+                    correctAnswer: "x = 4", 
+                    score: 8,
+                    maxScore: 10,
+                    isCorrect: false,
+                    partialCredit: true,
+                    feedback: "Good approach! Minor arithmetic error in final step.",
+                    showWork: "2x + 7 = 15\n2x = 8\nx = 4"
+                },
+                {
+                    number: 3,
+                    question: "What is the area of a circle with radius 5?",
+                    studentAnswer: "25π",
+                    correctAnswer: "25π",
+                    score: 10,
+                    maxScore: 10,
+                    isCorrect: true,
+                    partialCredit: false,
+                    feedback: "Excellent! Correct formula and calculation.",
+                    showWork: "A = πr² = π(5)² = 25π"
+                }
+            ],
+            strengths: [
+                "Strong understanding of basic calculus rules",
+                "Shows work clearly and systematically",
+                "Correct use of mathematical notation"
+            ],
+            weaknesses: [
+                "Occasional arithmetic errors",
+                "Could double-check final answers"
+            ],
+            recommendations: [
+                "Practice more algebra problems",
+                "Review arithmetic operations",
+                "Continue excellent work with showing steps"
+            ],
+            presentationNotes: "Neat handwriting and well-organized work",
+            visualElements: "Clear diagrams and proper mathematical formatting"
+        };
+
+        // Render Style 1: Modern Card Design
+        function renderStyle1(data) {
+            const container = document.getElementById('style1-content');
+            
+            let html = `
+                <div class="score-header-1">
+                    <div class="score-circle-1">${data.totalScore}%</div>
+                    <div>Overall Score</div>
+                </div>
+                
+                <h3 style="margin-bottom: 20px; color: #1f2937;">📝 Questions</h3>
+            `;
+            
+            data.questions.forEach(q => {
+                const statusClass = q.isCorrect ? 'correct' : (q.partialCredit ? 'partial' : 'incorrect');
+                const statusText = q.isCorrect ? '✅ Correct' : (q.partialCredit ? '🟨 Partial' : '❌ Incorrect');
+                
+                html += `
+                    <div class="question-card-1">
+                        <div class="question-header-1">
+                            <div class="question-num-1">${q.number}</div>
+                            <div style="flex: 1; font-weight: 600;">${q.question}</div>
+                            <span class="status-badge status-${statusClass}">${q.score}/${q.maxScore} ${statusText}</span>
+                        </div>
+                        <div class="question-body-1">
+                            <div class="answer-grid-1">
+                                <div class="answer-box-1 student-answer-1">
+                                    <strong>Student Answer:</strong><br>
+                                    ${q.studentAnswer}
+                                </div>
+                                <div class="answer-box-1 correct-answer-1">
+                                    <strong>Correct Answer:</strong><br>
+                                    ${q.correctAnswer}
+                                </div>
+                            </div>
+                            ${q.showWork ? `
+                                <div style="background: #f1f5f9; padding: 10px; border-radius: 6px; margin-bottom: 10px; font-size: 14px;">
+                                    <strong>Work Shown:</strong><br>
+                                    ${q.showWork.replace(/\n/g, '<br>')}
+                                </div>
+                            ` : ''}
+                            ${q.feedback ? `
+                                <div style="background: #fef3c7; border: 1px solid #fbbf24; padding: 12px; border-radius: 6px; font-size: 14px;">
+                                    <strong>💬 Feedback:</strong> ${q.feedback}
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+
+        // Render Style 2: Compact Professional
+        function renderStyle2(data) {
+            const container = document.getElementById('style2-content');
+            
+            let html = `
+                <div class="score-header-2">
+                    <div>
+                        <div class="score-display-2">${data.totalScore}%</div>
+                        <div class="score-label-2">OVERALL SCORE</div>
+                    </div>
+                </div>
+                
+                <h4 style="margin-bottom: 15px; color: #374151;">Questions & Answers</h4>
+            `;
+            
+            data.questions.forEach(q => {
+                const statusClass = q.isCorrect ? 'correct' : (q.partialCredit ? 'partial' : 'incorrect');
+                const statusIcon = q.isCorrect ? '✓' : (q.partialCredit ? '◐' : '✗');
+                
+                html += `
+                    <div class="question-item-2">
+                        <div class="question-header-2">
+                            <span>Q${q.number}: ${q.question}</span>
+                            <span class="status-badge status-${statusClass}">${statusIcon} ${q.score}/${q.maxScore}</span>
+                        </div>
+                        <div class="question-content-2">
+                            <div class="answer-row-2">
+                                <div class="answer-col-2">
+                                    <strong>Student:</strong> ${q.studentAnswer}
+                                </div>
+                                <div class="answer-col-2">
+                                    <strong>Correct:</strong> ${q.correctAnswer}
+                                </div>
+                            </div>
+                            ${q.feedback ? `<div style="font-style: italic; color: #64748b;">${q.feedback}</div>` : ''}
+                        </div>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+
+        // Render Style 3: Colorful & Engaging
+        function renderStyle3(data) {
+            const container = document.getElementById('style3-content');
+            
+            let html = `
+                <div class="score-header-3">
+                    <div class="score-circle-3">${data.totalScore}%</div>
+                    <div style="font-size: 16px; font-weight: 500;">Amazing Work!</div>
+                </div>
+            `;
+            
+            data.questions.forEach(q => {
+                html += `
+                    <div class="question-card-3">
+                        <div class="question-header-3">
+                            <h4>Question ${q.number}</h4>
+                            <p style="margin-top: 8px; opacity: 0.9;">${q.question}</p>
+                        </div>
+                        <div class="question-body-3">
+                            <div class="answer-container-3">
+                                <div class="answer-bubble-3 student-bubble-3">
+                                    <strong>Your Answer</strong><br>
+                                    ${q.studentAnswer}
+                                </div>
+                                <div class="answer-bubble-3 correct-bubble-3">
+                                    <strong>Expected Answer</strong><br>
+                                    ${q.correctAnswer}
+                                </div>
+                            </div>
+                            ${q.feedback ? `
+                                <div class="feedback-3">
+                                    <strong>Teacher's Note:</strong> ${q.feedback}
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+
+        // Render Style 4: Minimalist Clean
+        function renderStyle4(data) {
+            const container = document.getElementById('style4-content');
+            
+            let html = `
+                <div class="score-header-4">
+                    <div class="score-number-4">${data.totalScore}%</div>
+                    <div class="score-text-4">Total Score</div>
+                </div>
+                
+                <ul class="question-list-4">
+            `;
+            
+            data.questions.forEach(q => {
+                const statusClass = q.isCorrect ? 'correct' : (q.partialCredit ? 'partial' : 'incorrect');
+                
+                html += `
+                    <li class="question-item-4">
+                        <div class="question-title-4">
+                            ${q.number}. ${q.question}
+                            <span class="status-badge status-${statusClass}" style="float: right;">${q.score}/${q.maxScore}</span>
+                        </div>
+                        <div class="question-details-4">
+                            <div class="answer-comparison-4">
+                                <div class="answer-section-4 student">
+                                    <div style="font-size: 12px; color: #6b7280; margin-bottom: 5px;">STUDENT ANSWER</div>
+                                    <div>${q.studentAnswer}</div>
+                                </div>
+                                <div class="answer-section-4 correct">
+                                    <div style="font-size: 12px; color: #6b7280; margin-bottom: 5px;">CORRECT ANSWER</div>
+                                    <div>${q.correctAnswer}</div>
+                                </div>
+                            </div>
+                            ${q.feedback ? `
+                                <div style="font-size: 14px; color: #4b5563; margin-top: 10px; padding-top: 10px; border-top: 1px solid #e5e7eb;">
+                                    ${q.feedback}
+                                </div>
+                            ` : ''}
+                        </div>
+                    </li>
+                `;
+            });
+            
+            html += `</ul>`;
+            container.innerHTML = html;
+        }
+
+        // Initialize all styles
+        document.addEventListener('DOMContentLoaded', function() {
+            renderStyle1(sampleData);
+            renderStyle2(sampleData);
+            renderStyle3(sampleData);
+            renderStyle4(sampleData);
+            
+            // Display sample JSON
+            document.getElementById('sample-json').textContent = JSON.stringify(sampleData, null, 2);
+        });
+    </script>
+</body>
+</html>

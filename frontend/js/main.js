@@ -757,5 +757,4 @@ document.addEventListener('DOMContentLoaded', () => {
     window.gradeflow = new CheckMate();
 });
 
-// Export for use in other modules
-export default CheckMate;
+// CheckMate is now available globally

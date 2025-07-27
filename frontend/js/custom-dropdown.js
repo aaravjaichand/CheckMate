@@ -445,7 +445,6 @@ class CustomDropdown {
         const dropdownType = this.element.id === 'student-dropdown' ? 'Student' : 
                             this.element.id === 'class-dropdown' ? 'Class' : 
                             (this.element.id || 'Unknown');
-        alert(`DROPDOWN SELECTION: "${option.label}" selected in ${dropdownType} dropdown`);
     }
 
     handleAddNew() {

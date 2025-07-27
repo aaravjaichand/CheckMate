@@ -24,7 +24,7 @@ export const WorksheetSchema = {
         type: Number,
         required: true,
         min: 0,
-        max: 52428800 // 50MB
+        max: 20971520 // 20MB
     },
     mimeType: {
         type: String,
@@ -152,8 +152,8 @@ export function validateWorksheetUpload(fileData) {
 
     if (!fileData.size) {
         errors.push('File size is required');
-    } else if (fileData.size > 52428800) { // 50MB
-        errors.push('File too large. Maximum size is 50MB');
+    } else if (fileData.size > 20971520) { // 20MB
+        errors.push('File too large. Maximum size is 20MB');
     }
 
     return errors;

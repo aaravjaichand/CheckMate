@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gemini API Test - CheckMate</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f8fafc;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            color: #1e293b;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            color: #64748b;
+            margin-bottom: 30px;
+        }
+        
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+        }
+        
+        .test-section h3 {
+            margin-top: 0;
+            color: #334155;
+        }
+        
+        .input-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #374151;
+        }
+        
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-family: inherit;
+            font-size: 14px;
+            resize: vertical;
+            min-height: 100px;
+        }
+        
+        button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        
+        button:hover {
+            background: #2563eb;
+        }
+        
+        button:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+        }
+        
+        .response {
+            margin-top: 20px;
+            padding: 16px;
+            border-radius: 6px;
+            white-space: pre-wrap;
+            font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', monospace;
+            font-size: 13px;
+            display: none;
+        }
+        
+        .response.success {
+            background: #ecfdf5;
+            border: 1px solid #bbf7d0;
+            color: #166534;
+        }
+        
+        .response.error {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            color: #dc2626;
+        }
+        
+        .loading {
+            display: none;
+            align-items: center;
+            gap: 10px;
+            color: #6b7280;
+            margin-top: 20px;
+        }
+        
+        .spinner {
+            width: 16px;
+            height: 16px;
+            border: 2px solid #e5e7eb;
+            border-top: 2px solid #3b82f6;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Grading UI Styles */
+        .grading-ui {
+            background: white;
+            border-radius: 12px;
+            padding: 0;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            margin-top: 20px;
+        }
+        
+        .grading-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .score-circle {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 10px;
+            font-size: 24px;
+            font-weight: bold;
+        }
+        
+        .score-label {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        
+        .grading-content {
+            padding: 20px;
+        }
+        
+        .questions-section {
+            margin-bottom: 30px;
+        }
+        
+        .question-card {
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            overflow: hidden;
+        }
+        
+        .question-header {
+            background: #f8fafc;
+            padding: 12px 16px;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .question-number {
+            background: #3b82f6;
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .question-text {
+            flex: 1;
+            font-weight: 500;
+        }
+        
+        .question-score {
+            font-weight: bold;
+        }
+        
+        .question-score.correct {
+            color: #10b981;
+        }
+        
+        .question-score.incorrect {
+            color: #ef4444;
+        }
+        
+        .question-score.partial {
+            color: #f59e0b;
+        }
+        
+        .question-body {
+            padding: 16px;
+        }
+        
+        .answer-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 12px;
+        }
+        
+        .answer-item {
+            background: #f8fafc;
+            padding: 8px 12px;
+            border-radius: 4px;
+            border-left: 3px solid #cbd5e1;
+        }
+        
+        .student-answer {
+            border-left-color: #3b82f6;
+        }
+        
+        .correct-answer {
+            border-left-color: #10b981;
+        }
+        
+        .feedback {
+            background: #fef3c7;
+            border: 1px solid #fbbf24;
+            border-radius: 6px;
+            padding: 12px;
+            margin-top: 8px;
+            font-size: 14px;
+        }
+        
+        .insights-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .insight-card {
+            background: #f8fafc;
+            border-radius: 8px;
+            padding: 16px;
+            border-left: 4px solid #cbd5e1;
+        }
+        
+        .insight-card.strengths {
+            border-left-color: #10b981;
+        }
+        
+        .insight-card.weaknesses {
+            border-left-color: #ef4444;
+        }
+        
+        .insight-card.recommendations {
+            border-left-color: #3b82f6;
+        }
+        
+        .insight-title {
+            font-weight: 600;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .insight-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .insight-list li {
+            padding: 4px 0;
+            padding-left: 16px;
+            position: relative;
+        }
+        
+        .insight-list li:before {
+            content: "•";
+            position: absolute;
+            left: 0;
+            color: #64748b;
+        }
+        
+        .quick-tests {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .quick-test-btn {
+            background: #f3f4f6;
+            color: #374151;
+            border: 1px solid #d1d5db;
+            padding: 8px 12px;
+            font-size: 13px;
+        }
+        
+        .quick-test-btn:hover {
+            background: #e5e7eb;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🤖 Gemini API Test</h1>
+        <p class="subtitle">Test your Gemini API integration with custom prompts</p>
+        
+        <div class="test-section">
+            <h3>Custom Prompt Test</h3>
+            <div class="input-group">
+                <label for="prompt">Enter your prompt:</label>
+                <textarea id="prompt" placeholder="Please spell out the ABC's (the alphabet from A to Z).">Please spell out the ABC's (the alphabet from A to Z).</textarea>
+            </div>
+            
+            <button id="test-btn" onclick="testGemini()">Test Gemini API</button>
+            
+            <div class="quick-tests">
+                <button class="quick-test-btn" onclick="setPrompt('Please spell out the ABC\'s (the alphabet from A to Z).')">ABC Test</button>
+                <button class="quick-test-btn" onclick="setPrompt('Count from 1 to 10.')">Count 1-10</button>
+                <button class="quick-test-btn" onclick="setPrompt('What is 2 + 2?')">Simple Math</button>
+                <button class="quick-test-btn" onclick="setPrompt('Tell me a short joke.')">Joke Test</button>
+            </div>
+            
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <span>Testing Gemini API...</span>
+            </div>
+            
+            <div class="response" id="response"></div>
+        </div>
+        
+        <div class="test-section" style="opacity: 0.5;">
+            <h3>Gemini 2.5 Pro Mock Test (DISABLED)</h3>
+            <p><strong>⚠️ Mock test disabled to prevent hardcoded responses.</strong><br>Use the file upload test below for real API testing.</p>
+            <button onclick="testGemini25Pro()" disabled style="background: #ccc; cursor: not-allowed;">Mock Test Disabled</button>
+            <div class="response" id="gemini25-response"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>🔍 File Upload Test with Gemini 2.5 Pro</h3>
+            <p>Upload an actual image file to test direct processing with Gemini 2.5 Pro</p>
+            
+            <div class="input-group">
+                <label for="test-file">Choose image file (PDF, PNG, JPG):</label>
+                <input type="file" id="test-file" accept=".pdf,.png,.jpg,.jpeg" style="margin-bottom: 10px;">
+                <p style="font-size: 12px; color: #6b7280; margin-top: 4px;">
+                    ⚠️ Note: Production upload limit is 10MB. Test API allows up to 20MB.
+                </p>
+            </div>
+            
+            <div class="input-group">
+                <label for="test-prompt">Custom prompt for the file:</label>
+                <textarea id="test-prompt" placeholder="Analyze this worksheet and provide detailed feedback on the student's work.">Analyze this worksheet image in detail. Read all text, identify questions and answers, and provide a comprehensive analysis of the student's work including strengths and areas for improvement.</textarea>
+            </div>
+            
+            <button onclick="testFileUpload()" id="test-file-btn">Analyze File with Gemini 2.5 Pro</button>
+            
+            <div class="loading" id="file-loading">
+                <div class="spinner"></div>
+                <span>Processing file with Gemini 2.5 Pro...</span>
+            </div>
+            
+            <div class="response" id="file-response"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>🔧 Gemini SDK Connection Test</h3>
+            <p>Test if the Gemini SDK can connect and make basic API calls.</p>
+            <button onclick="testGeminiSDK()">Test Gemini SDK Connection</button>
+            <div class="response" id="sdk-response"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>API Status Check</h3>
+            <button onclick="checkAPIStatus()">Check All APIs</button>
+            <div class="response" id="status-response"></div>
+        </div>
+    </div>
+
+    <script>
+        function setPrompt(text) {
+            document.getElementById('prompt').value = text;
+        }
+        
+        async function testGemini() {
+            const promptText = document.getElementById('prompt').value.trim();
+            const testBtn = document.getElementById('test-btn');
+            const loading = document.getElementById('loading');
+            const response = document.getElementById('response');
+            
+            if (!promptText) {
+                showResponse('Please enter a prompt to test.', 'error');
+                return;
+            }
+            
+            // Show loading state
+            testBtn.disabled = true;
+            loading.style.display = 'flex';
+            response.style.display = 'none';
+            
+            try {
+                // Call Gemini API directly
+                const result = await fetch('/api/test-apis/gemini', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        prompt: promptText
+                    })
+                });
+                
+                if (!result.ok) {
+                    // If POST doesn't work, try the existing GET endpoint
+                    const getResult = await fetch('/api/test-apis/gemini');
+                    const data = await getResult.json();
+                    
+                    showResponse(JSON.stringify(data, null, 2), getResult.ok ? 'success' : 'error');
+                } else {
+                    const data = await result.json();
+                    showResponse(JSON.stringify(data, null, 2), 'success');
+                }
+                
+            } catch (error) {
+                // Fallback to existing endpoint
+                try {
+                    const fallbackResult = await fetch('/api/test-apis/gemini');
+                    const data = await fallbackResult.json();
+                    
+                    const fallbackMessage = `Custom prompt test failed, but basic API test succeeded:\n\n${JSON.stringify(data, null, 2)}`;
+                    showResponse(fallbackMessage, 'success');
+                } catch (fallbackError) {
+                    showResponse(`Error: ${error.message}`, 'error');
+                }
+            } finally {
+                testBtn.disabled = false;
+                loading.style.display = 'none';
+            }
+        }
+        
+        async function testGemini25Pro() {
+            const response = document.getElementById('gemini25-response');
+            
+            try {
+                const result = await fetch('/api/test-apis/gemini-2.5-test', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const data = await result.json();
+                showGemini25Response(JSON.stringify(data, null, 2), result.ok ? 'success' : 'error');
+            } catch (error) {
+                showGemini25Response(`Error: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testFileUpload() {
+            const fileInput = document.getElementById('test-file');
+            const promptText = document.getElementById('test-prompt').value;
+            const testBtn = document.getElementById('test-file-btn');
+            const loading = document.getElementById('file-loading');
+            const response = document.getElementById('file-response');
+            
+            if (!fileInput.files || fileInput.files.length === 0) {
+                showFileResponse('Please select a file to test.', 'error');
+                return;
+            }
+            
+            const file = fileInput.files[0];
+            
+            // Show loading state
+            testBtn.disabled = true;
+            loading.style.display = 'flex';
+            response.style.display = 'none';
+            
+            try {
+                const formData = new FormData();
+                formData.append('file', file);
+                formData.append('prompt', promptText);
+                
+                console.log('Uploading file:', file.name, 'Size:', file.size, 'Type:', file.type);
+                
+                const result = await fetch('/api/test-apis/gemini-file-test', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await result.json();
+                
+                if (result.ok) {
+                    // Extract only the Gemini response content
+                    let cleanOutput = '';
+                    
+                    if (data.result && data.result.customPromptResponse) {
+                        // For custom prompts, try to extract JSON first
+                        const jsonMatch = data.result.customPromptResponse.match(/\{[\s\S]*\}/);
+                        if (jsonMatch) {
+                            try {
+                                const parsedJson = JSON.parse(jsonMatch[0]);
+                                showGradingUI(parsedJson);
+                                return;
+                            } catch (e) {
+                                // If JSON parsing fails, show raw response
+                                cleanOutput = data.result.customPromptResponse;
+                            }
+                        } else {
+                            cleanOutput = data.result.customPromptResponse;
+                        }
+                    } else if (data.result && data.result.questions) {
+                        // For grading responses, show beautiful UI
+                        showGradingUI(data.result);
+                        return;
+                    } else if (data.result) {
+                        // Fallback - show the result object
+                        cleanOutput = JSON.stringify(data.result, null, 2);
+                    } else {
+                        // Error case - show error message
+                        cleanOutput = data.message || 'No response received';
+                    }
+                    
+                    showFileResponse(cleanOutput, 'success');
+                } else {
+                    // Only show error message, not full debug data
+                    const errorMsg = data.error || data.message || 'Upload failed';
+                    showFileResponse(errorMsg, 'error');
+                }
+                
+            } catch (error) {
+                console.error('File upload error:', error);
+                showFileResponse(`Error: ${error.message}`, 'error');
+            } finally {
+                testBtn.disabled = false;
+                loading.style.display = 'none';
+            }
+        }
+        
+        async function testGeminiSDK() {
+            const response = document.getElementById('sdk-response');
+            
+            try {
+                const result = await fetch('/api/test-apis/gemini-sdk-test');
+                const data = await result.json();
+                
+                showSDKResponse(JSON.stringify(data, null, 2), result.ok && data.status === 'success' ? 'success' : 'error');
+            } catch (error) {
+                showSDKResponse(`Error: ${error.message}`, 'error');
+            }
+        }
+        
+        async function checkAPIStatus() {
+            const response = document.getElementById('status-response');
+            
+            try {
+                const result = await fetch('/api/test-apis/all');
+                const data = await result.json();
+                
+                showStatusResponse(JSON.stringify(data, null, 2), result.ok ? 'success' : 'error');
+            } catch (error) {
+                showStatusResponse(`Error: ${error.message}`, 'error');
+            }
+        }
+        
+        function showResponse(text, type) {
+            const response = document.getElementById('response');
+            response.textContent = text;
+            response.className = `response ${type}`;
+            response.style.display = 'block';
+        }
+        
+        function showGemini25Response(text, type) {
+            const response = document.getElementById('gemini25-response');
+            response.textContent = text;
+            response.className = `response ${type}`;
+            response.style.display = 'block';
+        }
+        
+        function formatGradingResults(result) {
+            let output = '';
+            
+            // Overall Score
+            if (result.totalScore !== undefined) {
+                output += `📊 OVERALL SCORE: ${result.totalScore}%\n\n`;
+            }
+            
+            // Questions
+            if (result.questions && result.questions.length > 0) {
+                output += `📝 QUESTIONS:\n`;
+                result.questions.forEach(q => {
+                    output += `\n${q.number}. ${q.question}\n`;
+                    output += `   Student Answer: ${q.studentAnswer}\n`;
+                    output += `   Correct Answer: ${q.correctAnswer}\n`;
+                    output += `   Score: ${q.score}/${q.maxScore} ${q.isCorrect ? '✅' : '❌'}\n`;
+                    if (q.feedback) {
+                        output += `   Feedback: ${q.feedback}\n`;
+                    }
+                    if (q.showWork) {
+                        output += `   Work Shown: ${q.showWork}\n`;
+                    }
+                });
+                output += '\n';
+            }
+            
+            // Strengths
+            if (result.strengths && result.strengths.length > 0) {
+                output += `💪 STRENGTHS:\n`;
+                result.strengths.forEach(s => output += `• ${s}\n`);
+                output += '\n';
+            }
+            
+            // Areas for Improvement
+            if (result.weaknesses && result.weaknesses.length > 0) {
+                output += `📈 AREAS FOR IMPROVEMENT:\n`;
+                result.weaknesses.forEach(w => output += `• ${w}\n`);
+                output += '\n';
+            }
+            
+            // Recommendations
+            if (result.recommendations && result.recommendations.length > 0) {
+                output += `💡 RECOMMENDATIONS:\n`;
+                result.recommendations.forEach(r => output += `• ${r}\n`);
+                output += '\n';
+            }
+            
+            // Presentation Notes
+            if (result.presentationNotes) {
+                output += `✏️ PRESENTATION: ${result.presentationNotes}\n\n`;
+            }
+            
+            // Visual Elements
+            if (result.visualElements) {
+                output += `🎨 VISUAL ELEMENTS: ${result.visualElements}\n`;
+            }
+            
+            return output || 'No grading results available';
+        }
+        
+        function showGradingUI(result) {
+            const response = document.getElementById('file-response');
+            
+            let html = `
+                <div class="grading-ui">
+                    <div class="grading-header">
+                        <div class="score-circle">
+                            ${result.totalScore || 0}%
+                        </div>
+                        <div class="score-label">Overall Score</div>
+                    </div>
+                    
+                    <div class="grading-content">
+            `;
+            
+            // Questions Section
+            if (result.questions && result.questions.length > 0) {
+                html += `
+                    <div class="questions-section">
+                        <h3 style="margin-bottom: 16px; color: #1f2937;">📝 Questions & Answers</h3>
+                `;
+                
+                result.questions.forEach(q => {
+                    const scoreClass = q.isCorrect ? 'correct' : (q.partialCredit ? 'partial' : 'incorrect');
+                    const scoreIcon = q.isCorrect ? '✅' : (q.partialCredit ? '🟨' : '❌');
+                    
+                    html += `
+                        <div class="question-card">
+                            <div class="question-header">
+                                <div class="question-number">${q.number}</div>
+                                <div class="question-text">${q.question || 'Question ' + q.number}</div>
+                                <div class="question-score ${scoreClass}">
+                                    ${q.score}/${q.maxScore} ${scoreIcon}
+                                </div>
+                            </div>
+                            <div class="question-body">
+                                <div class="answer-row">
+                                    <div class="answer-item student-answer">
+                                        <strong>Student Answer:</strong><br>
+                                        ${q.studentAnswer || 'No answer provided'}
+                                    </div>
+                                    <div class="answer-item correct-answer">
+                                        <strong>Correct Answer:</strong><br>
+                                        ${q.correctAnswer || 'Not specified'}
+                                    </div>
+                                </div>
+                                ${q.showWork ? `
+                                    <div class="answer-item" style="margin-bottom: 8px;">
+                                        <strong>Work Shown:</strong><br>
+                                        ${q.showWork}
+                                    </div>
+                                ` : ''}
+                                ${q.feedback ? `
+                                    <div class="feedback">
+                                        <strong>💬 Feedback:</strong> ${q.feedback}
+                                    </div>
+                                ` : ''}
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                html += `</div>`;
+            }
+            
+            // Insights Section
+            html += `<div class="insights-section">`;
+            
+            // Strengths
+            if (result.strengths && result.strengths.length > 0) {
+                html += `
+                    <div class="insight-card strengths">
+                        <div class="insight-title">
+                            💪 Strengths
+                        </div>
+                        <ul class="insight-list">
+                            ${result.strengths.map(s => `<li>${s}</li>`).join('')}
+                        </ul>
+                    </div>
+                `;
+            }
+            
+            // Areas for Improvement
+            if (result.weaknesses && result.weaknesses.length > 0) {
+                html += `
+                    <div class="insight-card weaknesses">
+                        <div class="insight-title">
+                            📈 Areas for Improvement
+                        </div>
+                        <ul class="insight-list">
+                            ${result.weaknesses.map(w => `<li>${w}</li>`).join('')}
+                        </ul>
+                    </div>
+                `;
+            }
+            
+            // Recommendations
+            if (result.recommendations && result.recommendations.length > 0) {
+                html += `
+                    <div class="insight-card recommendations">
+                        <div class="insight-title">
+                            💡 Recommendations
+                        </div>
+                        <ul class="insight-list">
+                            ${result.recommendations.map(r => `<li>${r}</li>`).join('')}
+                        </ul>
+                    </div>
+                `;
+            }
+            
+            html += `</div>`; // Close insights-section
+            
+            // Additional Notes
+            if (result.presentationNotes || result.visualElements) {
+                html += `
+                    <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #e2e8f0;">
+                `;
+                
+                if (result.presentationNotes) {
+                    html += `
+                        <div style="margin-bottom: 12px;">
+                            <strong>✏️ Presentation:</strong> ${result.presentationNotes}
+                        </div>
+                    `;
+                }
+                
+                if (result.visualElements) {
+                    html += `
+                        <div>
+                            <strong>🎨 Visual Elements:</strong> ${result.visualElements}
+                        </div>
+                    `;
+                }
+                
+                html += `</div>`;
+            }
+            
+            html += `
+                    </div>
+                </div>
+            `;
+            
+            response.innerHTML = html;
+            response.className = 'response success';
+            response.style.display = 'block';
+        }
+        
+        function showFileResponse(text, type) {
+            const response = document.getElementById('file-response');
+            response.textContent = text;
+            response.className = `response ${type}`;
+            response.style.display = 'block';
+        }
+        
+        function showSDKResponse(text, type) {
+            const response = document.getElementById('sdk-response');
+            response.textContent = text;
+            response.className = `response ${type}`;
+            response.style.display = 'block';
+        }
+        
+        function showStatusResponse(text, type) {
+            const response = document.getElementById('status-response');
+            response.textContent = text;
+            response.className = `response ${type}`;
+            response.style.display = 'block';
+        }
+        
+        // Auto-load API status on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            checkAPIStatus();
+        });
+    </script>
+</body>
+</html>

@@ -29,7 +29,7 @@ const upload = multer({
     storage: storage,
     fileFilter: fileFilter,
     limits: {
-        fileSize: 50 * 1024 * 1024, // 50MB limit
+        fileSize: 10 * 1024 * 1024, // 10MB limit (increased for worksheets)
         files: 50 // Maximum 50 files per upload
     }
 });
@@ -52,7 +52,7 @@ const verifyToken = (req, res, next) => {
 };
 
 // Upload single worksheet with student and class selection
-router.post('/worksheet/single', upload.single('worksheet'), async (req, res) => {
+router.post('/worksheet/single', verifyToken, upload.single('worksheet'), async (req, res) => {
     try {
         console.log('Upload request received:', {
             hasFile: !!req.file,
@@ -80,8 +80,9 @@ router.post('/worksheet/single', upload.single('worksheet'), async (req, res) =>
         
         console.log('Collections accessed successfully');
 
-        // For demo purposes, skip auth checks and use default values
-        const defaultTeacherId = new ObjectId('507f1f77bcf86cd799439011'); // Demo teacher ID
+        // Use the authenticated user's ID as the teacher
+        const teacherId = req.user.userId;
+        console.log('Using authenticated user as teacher ID:', teacherId);
         
         // Get student and class info (without teacher verification for demo)
         const student = await students.findOne({
@@ -98,14 +99,30 @@ router.post('/worksheet/single', upload.single('worksheet'), async (req, res) =>
         const studentInfo = student || { name: 'Demo Student', _id: studentId };
         const classInfo = classDoc || { name: 'Demo Class', subject: 'General', gradeLevel: 'K' };
 
+        // Debug file upload info
+        const isPNG = req.file.mimetype && req.file.mimetype.includes('png');
+        console.log('=== FILE UPLOAD DEBUG ===');
+        console.log('File type:', req.file.mimetype);
+        console.log('Is PNG:', isPNG);
+        console.log('Original buffer type:', typeof req.file.buffer);
+        console.log('Buffer length:', req.file.buffer.length);
+        console.log('Buffer is Buffer:', Buffer.isBuffer(req.file.buffer));
+
+        if (isPNG && req.file.buffer) {
+            const signature = req.file.buffer.toString('hex', 0, 8);
+            console.log('PNG upload signature check:', signature);
+            console.log('Is valid PNG:', signature === '89504e470d0a1a0a');
+        }
+
         // Create worksheet record with memory storage adaptations
         const worksheetData = {
-            teacherId: defaultTeacherId,
+            teacherId: teacherId,
             originalName: req.file.originalname,
             filename: `${Date.now()}-${req.file.originalname}`,
             filepath: 'memory-storage', // No actual file path in serverless
             fileSize: req.file.size,
             mimeType: req.file.mimetype,
+            fileBuffer: req.file.buffer, // Store file buffer for serving
             uploadDate: new Date(),
             status: 'processing',
             processingStage: 'uploaded',
@@ -125,10 +142,22 @@ router.post('/worksheet/single', upload.single('worksheet'), async (req, res) =>
         const result = await worksheets.insertOne(worksheetData);
         worksheetData._id = result.insertedId;
 
+        console.log('=== WORKSHEET CREATED ===');
+        console.log('Worksheet ID:', result.insertedId);
+        console.log('Teacher ID:', teacherId);
+        console.log('Student ID:', studentId);
+        console.log('Class ID:', classId);
+        console.log('File size:', req.file.size);
+        console.log('MIME type:', req.file.mimetype);
+
         // Skip user count update for demo
 
-        // Start OCR and grading processing asynchronously with file buffer
-        processSingleWorksheetAsync(result.insertedId, req.file.buffer, req.file.mimetype, { preferences: { feedbackTone: 'encouraging' } });
+        // Start OCR and grading processing asynchronously with file buffer - pass the exact buffer
+        processSingleWorksheetAsync(result.insertedId, {
+            fileBuffer: req.file.buffer,
+            mimeType: req.file.mimetype,
+            originalName: req.file.originalname
+        }, { preferences: { feedbackTone: 'encouraging' } });
 
         res.json({
             message: 'Worksheet uploaded successfully',
@@ -160,7 +189,7 @@ router.post('/worksheet/single', upload.single('worksheet'), async (req, res) =>
         });
         
         if (error.code === 'LIMIT_FILE_SIZE') {
-            return res.status(413).json({ error: 'File too large. Maximum size is 50MB per file.' });
+            return res.status(413).json({ error: 'File too large. Maximum size is 10MB per file.' });
         }
         
         if (error.message.includes('Invalid file type')) {
@@ -293,7 +322,7 @@ router.post('/worksheets', verifyToken, upload.array('worksheets', 50), async (r
         console.error('Upload error:', error);
         
         if (error.code === 'LIMIT_FILE_SIZE') {
-            return res.status(413).json({ error: 'File too large. Maximum size is 50MB per file.' });
+            return res.status(413).json({ error: 'File too large. Maximum size is 10MB per file.' });
         }
         
         if (error.code === 'LIMIT_FILE_COUNT') {
@@ -308,32 +337,249 @@ router.post('/worksheets', verifyToken, upload.array('worksheets', 50), async (r
     }
 });
 
-// Get upload status
-router.get('/status/:worksheetId', verifyToken, async (req, res) => {
+// Streaming endpoint for real-time grading updates  
+router.get('/stream/:worksheetId', async (req, res) => {
+    // Custom token verification for EventSource (which can't send custom headers)
+    try {
+        const token = req.query.token || req.headers.authorization?.replace('Bearer ', '');
+
+        if (!token) {
+            res.writeHead(401, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: 'No token provided' }));
+            return;
+        }
+
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        req.user = decoded;
+    } catch (error) {
+        res.writeHead(401, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Invalid token' }));
+        return;
+    }
     try {
         const { worksheetId } = req.params;
-        
+
+        console.log('=== STREAMING GRADING REQUEST ===');
+        console.log('Worksheet ID:', worksheetId);
+        console.log('User ID:', req.user.userId);
+
+        // Set up Server-Sent Events
+        res.writeHead(200, {
+            'Content-Type': 'text/event-stream',
+            'Cache-Control': 'no-cache',
+            'Connection': 'keep-alive',
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Headers': 'Cache-Control'
+        });
+
         const db = await getDb();
         const worksheets = db.collection('worksheets');
-        
+
+        // Convert string ID to ObjectId
+        let objectId;
+        try {
+            objectId = new ObjectId(worksheetId);
+        } catch (error) {
+            res.write(`data: ${JSON.stringify({ error: 'Invalid worksheet ID format' })}\n\n`);
+            res.end();
+            return;
+        }
+
+        // Get worksheet and verify ownership
         const worksheet = await worksheets.findOne({
-            _id: worksheetId,
+            _id: objectId,
             teacherId: req.user.userId
         });
 
         if (!worksheet) {
+            res.write(`data: ${JSON.stringify({ error: 'Worksheet not found' })}\n\n`);
+            res.end();
+            return;
+        }
+
+        // Send initial status
+        res.write(`data: ${JSON.stringify({
+            type: 'status',
+            message: 'Starting AI grading with Gemini 2.5 Flash...',
+            worksheetId: worksheetId,
+            studentName: worksheet.studentName
+        })}\n\n`);
+
+        // Import grading service
+        const { gradeWorksheetDirect } = await import('../services/gemini.js');
+
+        // Create stream callback to send chunks to frontend
+        const streamCallback = (chunk) => {
+            console.log('Sending chunk to frontend:', chunk.type, chunk.data?.length || 0, 'chars');
+            res.write(`data: ${JSON.stringify(chunk)}\n\n`);
+        };
+
+        try {
+            // Ensure we have the file buffer - it might be corrupted from MongoDB storage
+            let fileBuffer = worksheet.fileBuffer;
+
+            console.log('File buffer details for streaming:', {
+                hasBuffer: !!fileBuffer,
+                bufferType: typeof fileBuffer,
+                isBuffer: Buffer.isBuffer(fileBuffer),
+                bufferLength: fileBuffer?.length,
+                mimeType: worksheet.mimeType
+            });
+
+            // Convert MongoDB Binary to Buffer if needed
+            if (fileBuffer && !Buffer.isBuffer(fileBuffer)) {
+                if (fileBuffer.buffer) {
+                    // Handle MongoDB Binary data
+                    fileBuffer = Buffer.from(fileBuffer.buffer);
+                    console.log('Converted MongoDB Binary to Buffer, new length:', fileBuffer.length);
+                } else if (typeof fileBuffer === 'object') {
+                    // Handle other object types
+                    fileBuffer = Buffer.from(Object.values(fileBuffer));
+                    console.log('Converted object to Buffer, new length:', fileBuffer.length);
+                }
+            }
+
+            // Grade with streaming
+            const gradingResults = await gradeWorksheetDirect({
+                fileBuffer: fileBuffer,
+                mimeType: worksheet.mimeType,
+                subject: worksheet.metadata?.subject,
+                gradeLevel: worksheet.metadata?.grade,
+                studentName: worksheet.studentName,
+                assignmentName: worksheet.metadata?.assignment,
+                streamCallback: streamCallback
+            });
+
+            // Send final results
+            res.write(`data: ${JSON.stringify({
+                type: 'results',
+                data: gradingResults
+            })}\n\n`);
+
+            // Update worksheet in database
+            await worksheets.updateOne(
+                { _id: objectId },
+                {
+                    $set: {
+                        status: 'graded',
+                        processingStage: 'completed',
+                        progress: 100,
+                        gradingResults,
+                        completedAt: new Date(),
+                        updatedAt: new Date()
+                    }
+                }
+            );
+
+        } catch (error) {
+            console.error('Streaming grading error:', error);
+
+            // Check if it's a rate limit error and provide helpful message
+            const isRateLimit = error.message?.includes('429') ||
+                error.message?.includes('rate limit') ||
+                error.message?.includes('quota');
+
+            const errorMessage = isRateLimit
+                ? 'API rate limit reached. Please wait a moment and try again.'
+                : error.message;
+
+            res.write(`data: ${JSON.stringify({
+                type: 'error',
+                message: errorMessage,
+                isRateLimit: isRateLimit
+            })}\n\n`);
+
+            // Update worksheet with error
+            await worksheets.updateOne(
+                { _id: objectId },
+                {
+                    $set: {
+                        status: 'error',
+                        error: errorMessage,
+                        updatedAt: new Date()
+                    }
+                }
+            );
+        }
+
+        res.write(`data: ${JSON.stringify({ type: 'done' })}\n\n`);
+        res.end();
+
+    } catch (error) {
+        console.error('Streaming endpoint error:', error);
+        res.write(`data: ${JSON.stringify({
+            type: 'error',
+            message: 'Streaming failed'
+        })}\n\n`);
+        res.end();
+    }
+});
+
+// Get upload status (demo version without strict auth)
+router.get('/status/:worksheetId', verifyToken, async (req, res) => {
+    try {
+        const { worksheetId } = req.params;
+        
+        console.log('=== WORKSHEET STATUS REQUEST ===');
+        console.log('Worksheet ID:', worksheetId);
+        console.log('User ID:', req.user.userId);
+        console.log('User object:', req.user);
+
+        const db = await getDb();
+        const worksheets = db.collection('worksheets');
+        
+        // Convert string ID to ObjectId
+        let objectId;
+        try {
+            objectId = new ObjectId(worksheetId);
+            console.log('Converted to ObjectId:', objectId);
+        } catch (error) {
+            console.log('Invalid ObjectId format:', error.message);
+            return res.status(400).json({ error: 'Invalid worksheet ID format' });
+        }
+
+        // First, let's check if the worksheet exists at all (without user filtering)
+        const worksheetExists = await worksheets.findOne({ _id: objectId });
+        console.log('Worksheet exists (no user filter):', !!worksheetExists);
+        if (worksheetExists) {
+            console.log('Worksheet teacherId:', worksheetExists.teacherId);
+            console.log('User teacherId:', req.user.userId);
+            console.log('TeacherIds match:', worksheetExists.teacherId?.toString() === req.user.userId);
+        }
+
+        // Filter by the authenticated user's teacherId for proper data isolation
+        const worksheet = await worksheets.findOne({
+            _id: objectId,
+            teacherId: req.user.userId
+        });
+
+        console.log('Worksheet found with user filter:', !!worksheet);
+
+        if (!worksheet) {
+            console.log('Worksheet not found for ID:', worksheetId);
             return res.status(404).json({ error: 'Worksheet not found' });
         }
+
+        console.log('Found worksheet:', {
+            id: worksheet._id,
+            status: worksheet.status,
+            processingStage: worksheet.processingStage
+        });
 
         res.json({
             id: worksheet._id,
             filename: worksheet.originalName,
+            mimeType: worksheet.mimeType,
             status: worksheet.status,
             processingStage: worksheet.processingStage,
             progress: worksheet.progress || 0,
             error: worksheet.error,
             completedAt: worksheet.completedAt,
-            results: worksheet.results
+            gradingResults: worksheet.gradingResults,
+            feedback: worksheet.feedback,
+            studentName: worksheet.studentName,
+            className: worksheet.className,
+            uploadDate: worksheet.uploadDate
         });
 
     } catch (error) {
@@ -418,51 +664,84 @@ router.delete('/worksheets/:worksheetId', verifyToken, async (req, res) => {
 });
 
 // Async function to process single worksheet with enhanced grading
-async function processSingleWorksheetAsync(worksheetId, filePath, mimeType, user) {
+async function processSingleWorksheetAsync(worksheetId, fileData, user) {
+    console.log('=== STARTING WORKSHEET PROCESSING ===');
+    console.log('Worksheet ID:', worksheetId);
+    console.log('MIME type:', fileData.mimeType);
+    console.log('File buffer size:', fileData.fileBuffer?.length);
+    console.log('Original filename:', fileData.originalName);
+    console.log('User preferences:', user);
+
     try {
         const db = await getDb();
         const worksheets = db.collection('worksheets');
 
-        // Update status to processing OCR
+        console.log('Updating worksheet status to analyzing...');
+        // Update status to analyzing worksheet with Gemini 2.5 Pro
         await worksheets.updateOne(
             { _id: worksheetId },
             { 
                 $set: { 
-                    processingStage: 'ocr',
-                    progress: 20,
+                    processingStage: 'analyzing',
+                    progress: 30,
                     updatedAt: new Date()
                 }
             }
         );
+        console.log('Status updated to analyzing');
 
-        // Process OCR
-        const ocrResults = await processOCR(filePath, mimeType);
+        // Skip OCR - Process directly with Gemini 2.5 Pro
+        console.log('Bypassing OCR, processing directly with Gemini 2.5 Pro');
 
-        // Update with OCR results
+        // Update progress before grading
         await worksheets.updateOne(
             { _id: worksheetId },
             { 
                 $set: { 
                     processingStage: 'grading',
-                    progress: 60,
-                    ocrResults,
+                    progress: 70,
                     updatedAt: new Date()
                 }
             }
         );
 
-        // Get the worksheet with full context for grading
+        // Get the worksheet with full context for grading - ensure user isolation
+        console.log('Looking up worksheet for grading with user:', user);
         const worksheet = await worksheets.findOne({ _id: worksheetId });
 
-        // Import grading service
-        const { gradeWithGemini, generateFeedback } = await import('../services/gemini.js');
+        console.log('Worksheet found for grading:', !!worksheet);
+        if (!worksheet) {
+            throw new Error(`Worksheet ${worksheetId} not found for grading`);
+        }
 
-        // Grade with Gemini API using enhanced context
-        const gradingResults = await gradeWithGemini({
-            text: ocrResults.text,
+        console.log('Worksheet details:', {
+            id: worksheet._id,
+            mimeType: worksheet.mimeType,
+            hasFileBuffer: !!worksheet.fileBuffer,
+            teacherId: worksheet.teacherId
+        });
+
+        // Import grading service
+        const { gradeWorksheetDirect, generateFeedback } = await import('../services/gemini.js');
+
+        // Grade directly with Gemini 2.5 Flash using image analysis (bypassing OCR)
+        console.log('Starting direct image processing with Gemini 2.5 Flash...');
+
+        // Use the original file buffer, not the one from database (which may be corrupted)
+        const originalFileBuffer = fileData.fileBuffer;
+        console.log('Using original file buffer:', {
+            bufferLength: originalFileBuffer?.length,
+            bufferType: typeof originalFileBuffer,
+            isBuffer: Buffer.isBuffer(originalFileBuffer)
+        });
+
+        const gradingResults = await gradeWorksheetDirect({
+            fileBuffer: originalFileBuffer, // Use the original buffer directly
+            mimeType: fileData.mimeType,
             subject: worksheet.metadata?.subject,
             gradeLevel: worksheet.metadata?.grade,
             studentName: worksheet.studentName,
+            assignmentName: worksheet.metadata?.assignment,
             rubric: null // No custom rubric for now
         });
 
@@ -490,7 +769,7 @@ async function processSingleWorksheetAsync(worksheetId, filePath, mimeType, user
             }
         );
 
-        console.log(`Single worksheet ${worksheetId} processed successfully`);
+        console.log(`Single worksheet ${worksheetId} processing completed successfully with ${gradingResults.questions?.length || 0} questions graded`);
 
     } catch (error) {
         console.error('Single worksheet processing error:', worksheetId, error);
@@ -582,5 +861,190 @@ async function processWorksheetAsync(worksheetId, filePath, mimeType) {
         );
     }
 }
+
+// Serve uploaded files
+router.get('/file/:worksheetId', verifyToken, async (req, res) => {
+    try {
+        const { worksheetId } = req.params;
+
+        console.log('=== FILE SERVING REQUEST ===');
+        console.log('Worksheet ID:', worksheetId);
+        console.log('User ID:', req.user.userId);
+
+        const db = await getDb();
+        const worksheets = db.collection('worksheets');
+
+        // Convert to ObjectId
+        let objectId;
+        try {
+            objectId = new ObjectId(worksheetId);
+        } catch (error) {
+            console.log('Invalid ObjectId format:', error.message);
+            return res.status(400).json({ error: 'Invalid worksheet ID format' });
+        }
+
+        // Get worksheet and verify ownership
+        const worksheet = await worksheets.findOne({
+            _id: objectId,
+            teacherId: req.user.userId
+        });
+
+        console.log('Worksheet found:', !!worksheet);
+        if (worksheet) {
+            console.log('Has fileBuffer:', !!worksheet.fileBuffer);
+            console.log('Has filepath:', !!worksheet.filepath);
+            console.log('MIME type:', worksheet.mimeType);
+            console.log('File size:', worksheet.fileSize);
+            console.log('Original name:', worksheet.originalName);
+
+            // Debug buffer structure for PNG files
+            if (worksheet.mimeType && worksheet.mimeType.includes('png')) {
+                console.log('=== PNG FILE DEBUG ===');
+                console.log('Buffer type:', typeof worksheet.fileBuffer);
+                console.log('Is Buffer:', Buffer.isBuffer(worksheet.fileBuffer));
+                console.log('Buffer constructor:', worksheet.fileBuffer?.constructor?.name);
+
+                if (worksheet.fileBuffer) {
+                    console.log('Buffer length:', worksheet.fileBuffer.length);
+                    console.log('Buffer preview:', worksheet.fileBuffer.toString('hex').substring(0, 50));
+
+                    // Check if it looks like a valid PNG file
+                    const pngSignature = worksheet.fileBuffer.toString('hex').substring(0, 16);
+                    console.log('PNG signature check:', pngSignature);
+                    console.log('Is valid PNG signature:', pngSignature === '89504e470d0a1a0a');
+                }
+            }
+        }
+
+        if (!worksheet) {
+            return res.status(404).json({ error: 'Worksheet not found' });
+        }
+
+        // For files stored in memory (buffer), serve directly
+        if (worksheet.fileBuffer) {
+            console.log('Serving file from buffer');
+            console.log('Buffer type:', typeof worksheet.fileBuffer);
+            console.log('Buffer length:', worksheet.fileBuffer.length);
+            console.log('Is Buffer:', Buffer.isBuffer(worksheet.fileBuffer));
+
+            try {
+                // Handle both Buffer and Binary data from MongoDB
+                let buffer;
+                const originalBufferType = typeof worksheet.fileBuffer;
+                const isPNG = worksheet.mimeType && worksheet.mimeType.includes('png');
+
+                console.log(`Processing ${isPNG ? 'PNG' : 'non-PNG'} file buffer...`);
+
+                if (Buffer.isBuffer(worksheet.fileBuffer)) {
+                    buffer = worksheet.fileBuffer;
+                    console.log('File buffer is already a Buffer');
+                } else if (worksheet.fileBuffer && worksheet.fileBuffer.buffer) {
+                    // Handle MongoDB Binary data
+                    buffer = Buffer.from(worksheet.fileBuffer.buffer);
+                    console.log('Converted MongoDB Binary to Buffer');
+                } else if (worksheet.fileBuffer && typeof worksheet.fileBuffer === 'object') {
+                    // Handle other object types - convert to buffer
+                    console.log('Converting object to buffer, object keys:', Object.keys(worksheet.fileBuffer));
+
+                    // For PNG files, try different conversion methods
+                    if (isPNG) {
+                        // Try to handle MongoDB stored binary data for PNG
+                        if (worksheet.fileBuffer.data && Array.isArray(worksheet.fileBuffer.data)) {
+                            console.log('PNG: Using data array from MongoDB Binary');
+                            buffer = Buffer.from(worksheet.fileBuffer.data);
+                        } else if (worksheet.fileBuffer.buffer) {
+                            console.log('PNG: Using buffer property');
+                            buffer = Buffer.from(worksheet.fileBuffer.buffer);
+                        } else {
+                            console.log('PNG: Using Object.values fallback');
+                            buffer = Buffer.from(Object.values(worksheet.fileBuffer));
+                        }
+                    } else {
+                        buffer = Buffer.from(Object.values(worksheet.fileBuffer));
+                    }
+                    console.log('Converted object to Buffer');
+                } else if (worksheet.fileBuffer && Array.isArray(worksheet.fileBuffer)) {
+                    // Handle array data
+                    buffer = Buffer.from(worksheet.fileBuffer);
+                    console.log('Converted array to Buffer');
+                } else {
+                    console.error('Unsupported buffer type for', isPNG ? 'PNG' : 'file', ':', originalBufferType);
+                    console.error('FileBuffer structure:', {
+                        type: originalBufferType,
+                        hasBuffer: !!worksheet.fileBuffer?.buffer,
+                        hasData: !!worksheet.fileBuffer?.data,
+                        isArray: Array.isArray(worksheet.fileBuffer),
+                        keys: worksheet.fileBuffer && typeof worksheet.fileBuffer === 'object' ? Object.keys(worksheet.fileBuffer) : []
+                    });
+                    throw new Error(`Invalid buffer data type for ${isPNG ? 'PNG' : 'file'}: ${originalBufferType}`);
+                }
+
+                console.log('Final buffer length:', buffer.length);
+                console.log('Buffer first 20 bytes (hex):', buffer.toString('hex').substring(0, 40));
+
+                // Validate buffer has content
+                if (buffer.length === 0) {
+                    throw new Error('Buffer is empty');
+                }
+
+                // For PNG files, validate the signature
+                if (isPNG) {
+                    const signature = buffer.toString('hex', 0, 8);
+                    const validPNGSignature = '89504e470d0a1a0a';
+                    console.log('PNG signature validation:', {
+                        expected: validPNGSignature,
+                        actual: signature,
+                        isValid: signature === validPNGSignature
+                    });
+
+                    if (signature !== validPNGSignature) {
+                        console.warn('PNG signature mismatch - buffer may be corrupted');
+                        // Don't throw error, just warn - let browser handle it
+                    }
+                }
+
+                // Set headers with special handling for PNG files
+                const headers = {
+                    'Content-Type': worksheet.mimeType || 'application/octet-stream',
+                    'Content-Length': buffer.length,
+                    'Content-Disposition': `inline; filename="${worksheet.originalName || 'worksheet'}"`,
+                    'Cache-Control': 'public, max-age=31536000', // Cache for better performance
+                    'Access-Control-Allow-Origin': '*',
+                    'Access-Control-Allow-Methods': 'GET',
+                    'Access-Control-Allow-Headers': 'Authorization, Content-Type'
+                };
+
+                // For PNG files, ensure proper MIME type
+                if (isPNG) {
+                    headers['Content-Type'] = 'image/png';
+                    console.log('Setting PNG-specific headers');
+                }
+
+                res.set(headers);
+                return res.send(buffer);
+            } catch (bufferError) {
+                console.error('Error serving buffer:', bufferError);
+                console.error('Buffer details:', {
+                    hasFileBuffer: !!worksheet.fileBuffer,
+                    bufferType: typeof worksheet.fileBuffer,
+                    isBuffer: Buffer.isBuffer(worksheet.fileBuffer),
+                    isArray: Array.isArray(worksheet.fileBuffer)
+                });
+                return res.status(500).json({ error: 'Failed to serve file buffer', details: bufferError.message });
+            }
+        }
+
+        // For files stored on disk (if using file storage)
+        if (worksheet.filepath) {
+            return res.sendFile(path.resolve(worksheet.filepath));
+        }
+
+        res.status(404).json({ error: 'File not found' });
+
+    } catch (error) {
+        console.error('Error serving file:', error);
+        res.status(500).json({ error: 'Failed to serve file' });
+    }
+});
 
 export default router;

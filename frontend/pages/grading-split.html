@@ -20,6 +20,139 @@
     
     <!-- PDF.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    
+    <!-- AI Streaming Styles -->
+    <style>
+        .ai-streaming-container {
+            margin-top: 24px;
+            padding: 20px;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            border-radius: 12px;
+            border: 2px solid #e2e8f0;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        
+        .streaming-header {
+            margin-bottom: 16px;
+            text-align: center;
+        }
+        
+        .streaming-header h4 {
+            margin: 0 0 8px 0;
+            color: #1f2937;
+            font-size: 18px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .streaming-header h4 i {
+            color: #3b82f6;
+            animation: pulse 2s infinite;
+        }
+        
+        .streaming-header p {
+            margin: 0;
+            color: #6b7280;
+            font-size: 14px;
+        }
+        
+        .streaming-output {
+            background: #ffffff;
+            border-radius: 8px;
+            padding: 16px;
+            font-family: 'Courier New', 'Monaco', 'Menlo', monospace;
+            font-size: 13px;
+            line-height: 1.5;
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid #d1d5db;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+        
+        .stream-message {
+            margin-bottom: 8px;
+            padding: 4px 8px;
+            border-radius: 4px;
+            word-wrap: break-word;
+            white-space: pre-wrap;
+        }
+        
+        .stream-message.status {
+            background: #dbeafe;
+            color: #1e40af;
+            font-weight: 500;
+            border-left: 3px solid #3b82f6;
+        }
+        
+        .stream-message.chunk {
+            background: #f9fafb !important;
+            color: #374151 !important;
+            border-left: 3px solid #d1d5db;
+        }
+        
+        .stream-message.complete {
+            background: #d1fae5 !important;
+            color: #065f46 !important;
+            font-weight: 500;
+            border-left: 3px solid #10b981;
+        }
+        
+        .stream-message.error {
+            background: #fee2e2 !important;
+            color: #991b1b !important;
+            font-weight: 500;
+            border-left: 3px solid #ef4444;
+        }
+        
+        .streaming-output::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .streaming-output::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 4px;
+        }
+        
+        .streaming-output::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        
+        .streaming-output::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+        
+        .typing-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #3b82f6;
+            animation: typing 1.4s infinite ease-in-out both;
+        }
+        
+        .typing-indicator:nth-child(1) { animation-delay: -0.32s; }
+        .typing-indicator:nth-child(2) { animation-delay: -0.16s; }
+        
+        @keyframes typing {
+            0%, 80%, 100% {
+                transform: scale(0.8);
+                opacity: 0.5;
+            }
+            40% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+    </style>
 </head>
 <body class="dashboard-body split-screen-body">
     <!-- Liquid Glass Navigation -->
@@ -170,17 +303,28 @@
                             <h3>Grading in Progress</h3>
                             <p>AI is analyzing the worksheet...</p>
                             <div class="progress-steps">
-                                <div class="step active" id="step-ocr">
-                                    <i class="fas fa-eye"></i>
-                                    Reading Text
+                                <div class="step active" id="step-analyzing">
+                                    <i class="fas fa-search"></i>
+                                    Analyzing Worksheet
                                 </div>
                                 <div class="step" id="step-grading">
                                     <i class="fas fa-brain"></i>
-                                    Analyzing Answers
+                                    Grading Answers
                                 </div>
                                 <div class="step" id="step-feedback">
                                     <i class="fas fa-comment"></i>
                                     Generating Feedback
+                                </div>
+                            </div>
+                            
+                            <!-- AI Streaming Output -->
+                            <div class="ai-streaming-container" id="ai-streaming-container" style="display: none;">
+                                                            <div class="streaming-header">
+                                <h4><i class="fas fa-robot"></i> Gemini 2.5 Flash Analysis</h4>
+                                <p>Watch the AI analyze your worksheet in real-time</p>
+                            </div>
+                                <div class="streaming-output" id="streaming-output">
+                                    <div class="stream-message status">🤖 Initializing AI grading...</div>
                                 </div>
                             </div>
                         </div>
@@ -313,7 +457,6 @@
 
     <!-- Scripts -->
     <script src="/js/grading-interface.js"></script>
-    <script src="/js/dashboard.js"></script>
     <script>
         function toggleDropdown() {
             const dropdown = document.getElementById('userDropdown');

@@ -103,14 +103,12 @@ class SingleUploadManager {
         // Set up event handlers
         this.studentDropdown.options.onSelect = (option) => {
             console.log('Student selected:', option);
-            alert(`${option.label} selected in Student dropdown`);
             this.clearError('student-error');
             setTimeout(() => this.validateForm(), 10);
         };
         
         this.classDropdown.options.onSelect = (option) => {
             console.log('Class selected:', option);
-            alert(`${option.label} selected in Class dropdown`);
             this.clearError('class-error');
             setTimeout(() => this.validateForm(), 10);
         };
@@ -718,7 +716,7 @@ class SingleUploadManager {
 
     validateFile(file) {
         const allowedTypes = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png'];
-        const maxSize = 50 * 1024 * 1024; // 50MB
+        const maxSize = 10 * 1024 * 1024; // 10MB limit (matches backend)
 
         if (!allowedTypes.includes(file.type)) {
             this.showNotification(`Invalid file type "${file.type}". Only PDF, JPG, and PNG files are allowed.`, 'error');
@@ -726,7 +724,12 @@ class SingleUploadManager {
         }
 
         if (file.size > maxSize) {
-            this.showNotification(`File too large (${this.formatFileSize(file.size)}). Maximum size is 50MB.`, 'error');
+            const fileSizeMB = Math.round(file.size / (1024 * 1024) * 10) / 10;
+            this.showNotification(
+                `File too large (${fileSizeMB}MB). Maximum size is 10MB. ` +
+                `For images, try compressing the file or reducing image quality.`, 
+                'error'
+            );
             return false;
         }
 
@@ -818,6 +821,9 @@ class SingleUploadManager {
         this.showProcessingOverlay('Uploading worksheet...', 'Please wait while we process your file.');
 
         try {
+            // Step 1: Upload in progress
+            this.updateProcessingStep(0);
+
             // Get values or use defaults for demo
             const studentId = this.studentDropdown?.getValue() || '507f1f77bcf86cd799439012'; // Demo student ID
             const classId = this.classDropdown?.getValue() || '507f1f77bcf86cd799439013'; // Demo class ID
@@ -841,15 +847,37 @@ class SingleUploadManager {
 
             console.log('Making upload request...');
             
+            const token = localStorage.getItem('gradeflow_token');
             const response = await fetch('/api/upload/worksheet/single', {
                 method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                },
                 body: formData
             });
 
             const result = await response.json();
 
             if (response.ok) {
-                this.showNotification('Worksheet uploaded successfully! Redirecting to grading interface...', 'success');
+                // Step 2: Analyzing worksheet
+                this.updateProcessingStep(1);
+                this.updateProcessingOverlay('Analyzing worksheet...', 'AI is reading and understanding the content.');
+
+                await new Promise(resolve => setTimeout(resolve, 1500));
+
+                // Step 3: AI grading 
+                this.updateProcessingStep(2);
+                this.updateProcessingOverlay('AI grading in progress...', 'Gemini 2.5 Flash is evaluating answers.');
+
+                await new Promise(resolve => setTimeout(resolve, 2000));
+
+                // Step 4: Generating feedback
+                this.updateProcessingStep(3);
+                this.updateProcessingOverlay('Generating feedback...', 'Creating personalized recommendations.');
+
+                await new Promise(resolve => setTimeout(resolve, 1000));
+
+                this.showNotification('Worksheet processed successfully! Redirecting to results...', 'success');
                 
                 // Clear form
                 this.clearAll();
@@ -859,7 +887,7 @@ class SingleUploadManager {
                 // Redirect to split-screen grading interface
                 setTimeout(() => {
                     window.location.href = `/pages/grading-split.html?worksheet=${result.worksheet.id}`;
-                }, 2000);
+                }, 1500);
 
             } else {
                 throw new Error(result.error || 'Upload failed');
@@ -919,11 +947,93 @@ class SingleUploadManager {
                 <div class="processing-spinner"></div>
                 <div class="processing-text">${title}</div>
                 <div class="processing-subtext">${subtitle}</div>
+                <div class="processing-steps" id="processing-steps">
+                    <div class="step active">
+                        <i class="fas fa-upload"></i>
+                        <span>Uploading file...</span>
+                    </div>
+                    <div class="step">
+                        <i class="fas fa-eye"></i>
+                        <span>Analyzing worksheet</span>
+                    </div>
+                    <div class="step">
+                        <i class="fas fa-robot"></i>
+                        <span>AI grading in progress</span>
+                    </div>
+                    <div class="step">
+                        <i class="fas fa-check"></i>
+                        <span>Generating feedback</span>
+                    </div>
+                </div>
             </div>
         `;
+
+        // Add CSS for processing steps
+        if (!document.querySelector('#processing-steps-css')) {
+            const style = document.createElement('style');
+            style.id = 'processing-steps-css';
+            style.textContent = `
+                .processing-steps {
+                    margin-top: 20px;
+                    padding-top: 20px;
+                    border-top: 1px solid #e5e7eb;
+                }
+                .processing-steps .step {
+                    display: flex;
+                    align-items: center;
+                    gap: 10px;
+                    padding: 8px 0;
+                    color: #9ca3af;
+                    font-size: 14px;
+                    transition: color 0.3s ease;
+                }
+                .processing-steps .step.active {
+                    color: #3b82f6;
+                }
+                .processing-steps .step.completed {
+                    color: #10b981;
+                }
+                .processing-steps .step i {
+                    width: 16px;
+                    text-align: center;
+                }
+            `;
+            document.head.appendChild(style);
+        }
+
         document.body.appendChild(overlay);
         this.processingOverlay = overlay;
     }
+
+    updateProcessingStep(stepIndex) {
+        const steps = this.processingOverlay?.querySelectorAll('.step');
+        if (steps && steps[stepIndex]) {
+            // Mark previous steps as completed
+            for (let i = 0; i < stepIndex; i++) {
+                steps[i].classList.remove('active');
+                steps[i].classList.add('completed');
+            }
+
+            // Mark current step as active
+            steps[stepIndex].classList.add('active');
+
+            // Remove active from future steps
+            for (let i = stepIndex + 1; i < steps.length; i++) {
+                steps[i].classList.remove('active', 'completed');
+            }
+        }
+    }
+
+    updateProcessingOverlay(title, subtitle) {
+        if (this.processingOverlay) {
+            const titleEl = this.processingOverlay.querySelector('.processing-text');
+            const subtitleEl = this.processingOverlay.querySelector('.processing-subtext');
+
+            if (titleEl) titleEl.textContent = title;
+            if (subtitleEl) subtitleEl.textContent = subtitle;
+        }
+    }
+
 
     hideProcessingOverlay() {
         if (this.processingOverlay) {

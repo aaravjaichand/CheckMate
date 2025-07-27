@@ -1,0 +1,27 @@
+
+> checkmate@1.0.0 start
+> node server.js
+
+Firebase Admin SDK not initialized - missing service account credentials
+🚀 CheckMate server running on port 3000
+📱 Frontend: http://localhost:3000
+🔌 API: http://localhost:3000/api
+Complete grading test received: {
+  hasFile: true,
+  fileName: 'test.png',
+  fileSize: 70,
+  mimeType: 'image/png'
+}
+Testing grading pipeline without database...
+Step 1: Starting grading with Gemini 2.5 Pro (or mock fallback)...
+Checking Gemini API key: Present
+Environment check: { hasApiKey: true, keyLength: 19, nodeEnv: 'development' }
+GEMINI_API_KEY not found or using placeholder value in environment variables
+Falling back to mock grading due to missing/invalid API key
+Step 2: Generating feedback...
+Gemini feedback error: Error: Gemini API error: 400 Bad Request
+    at generateFeedback (file:///Users/aaravj/GitHub/TeachFlow/backend/services/gemini.js:477:19)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async file:///Users/aaravj/GitHub/TeachFlow/backend/api/test-apis.js:407:26
+Complete grading test completed successfully
+Received SIGTERM, closing database connection...
