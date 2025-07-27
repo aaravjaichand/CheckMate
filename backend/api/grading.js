@@ -347,9 +347,12 @@ async function gradeWorksheetAsync(worksheetId, worksheet, rubric, subject, grad
         const worksheets = db.collection('worksheets');
         const users = db.collection('users');
 
-        // Get user preferences for feedback tone
+        // Get user preferences for feedback tone and custom instructions
         const userData = await users.findOne({ _id: user.userId });
         const feedbackTone = userData?.preferences?.feedbackTone || 'encouraging';
+
+        // Get custom grading instructions from worksheet metadata (per-worksheet basis)
+        const customGradingInstructions = worksheet.metadata?.customGradingInstructions || '';
 
         // Grade with Gemini API
         const gradingResults = await gradeWithGemini({
@@ -357,7 +360,8 @@ async function gradeWorksheetAsync(worksheetId, worksheet, rubric, subject, grad
             subject: subject || worksheet.metadata?.subject,
             gradeLevel: gradeLevel || worksheet.metadata?.grade,
             rubric: rubric,
-            studentName: worksheet.studentName
+            studentName: worksheet.studentName,
+            customGradingInstructions: customGradingInstructions
         });
 
         // Generate personalized feedback
@@ -387,21 +391,24 @@ async function gradeWorksheetAsync(worksheetId, worksheet, rubric, subject, grad
         console.log(`Worksheet ${worksheetId} graded successfully`);
 
     } catch (error) {
-        console.error(`Grading error for worksheet ${worksheetId}:`, error);
+        console.error(`Error grading worksheet ${worksheetId}:`, error);
         
+        // Update worksheet with error status
         const db = await getDb();
         const worksheets = db.collection('worksheets');
-        
         await worksheets.updateOne(
             { _id: worksheetId },
             { 
                 $set: { 
                     status: 'error',
-                    error: `Grading failed: ${error.message}`,
+                    processingStage: 'failed',
+                    errorMessage: error.message,
                     updatedAt: new Date()
                 }
             }
         );
+
+        throw error;
     }
 }
 

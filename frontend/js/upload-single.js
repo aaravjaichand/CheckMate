@@ -772,6 +772,8 @@ class SingleUploadManager {
         this.studentDropdown?.clear();
         this.classDropdown?.clear();
         document.getElementById('assignment-name').value = '';
+        document.getElementById('grading-instructions').value = '';
+        document.getElementById('instruction-count').textContent = '0';
         this.clearAllErrors();
         this.validateForm();
     }
@@ -825,11 +827,13 @@ class SingleUploadManager {
             const studentId = this.studentDropdown?.getValue() || '507f1f77bcf86cd799439012'; // Demo student ID
             const classId = this.classDropdown?.getValue() || '507f1f77bcf86cd799439013'; // Demo class ID
             const assignmentName = document.getElementById('assignment-name')?.value?.trim() || 'Demo Assignment';
+            const customGradingInstructions = document.getElementById('grading-instructions')?.value?.trim() || '';
             
             console.log('Starting upload with values:', {
                 studentId,
                 classId,
                 assignmentName,
+                customGradingInstructions: customGradingInstructions ? 'Present' : 'None',
                 fileName: this.selectedFile?.name
             });
             
@@ -840,6 +844,10 @@ class SingleUploadManager {
             
             if (assignmentName) {
                 formData.append('assignment', assignmentName);
+            }
+
+            if (customGradingInstructions) {
+                formData.append('customGradingInstructions', customGradingInstructions);
             }
 
             console.log('Making upload request...');

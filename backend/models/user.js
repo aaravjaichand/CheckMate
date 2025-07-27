@@ -64,6 +64,14 @@ export const UserSchema = {
             enum: ['percentage', 'letter', 'points'],
             default: 'percentage'
         },
+        showWorkSteps: {
+            type: Boolean,
+            default: true
+        },
+        partialCredit: {
+            type: Boolean,
+            default: true
+        },
         notifications: {
             email: {
                 type: Boolean,

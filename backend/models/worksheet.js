@@ -67,18 +67,22 @@ export const WorksheetSchema = {
     metadata: {
         subject: {
             type: String,
-            enum: ['math', 'english', 'science', 'history', 'art', 'other', 'unknown'],
-            default: 'unknown'
+            maxlength: 100
         },
         grade: {
             type: String,
-            enum: ['K', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', 'unknown'],
-            default: 'unknown'
+            maxlength: 20
         },
         assignment: {
             type: String,
             maxlength: 200,
             default: 'Untitled Assignment'
+        },
+        customGradingInstructions: {
+            type: String,
+            maxlength: 2000,
+            trim: true,
+            default: ''
         }
     },
     ocrResults: {

@@ -295,6 +295,62 @@
             justify-content: flex-end;
             margin-top: 20px;
         }
+
+        /* Custom grading instructions styles */
+        .form-textarea {
+            width: 100%;
+            min-height: 80px;
+            padding: 12px;
+            border: 2px solid rgba(79, 70, 229, 0.1);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            color: #374151;
+            font-family: 'Inter', sans-serif;
+            font-size: 14px;
+            line-height: 1.5;
+            resize: vertical;
+            transition: all 0.3s ease;
+        }
+        
+        .form-textarea:focus {
+            outline: none;
+            border-color: #4F46E5;
+            background: rgba(255, 255, 255, 0.95);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+        
+        .form-textarea::placeholder {
+            color: #9CA3AF;
+        }
+        
+        .character-count {
+            text-align: right;
+            margin-top: 4px;
+            font-size: 12px;
+            color: #6B7280;
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .instruction-hint {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            margin-top: 8px;
+            padding: 8px 12px;
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            border-radius: 6px;
+            font-size: 12px;
+            color: #1E40AF;
+            line-height: 1.4;
+        }
+        
+        .instruction-hint i {
+            color: #3B82F6;
+            margin-top: 1px;
+            flex-shrink: 0;
+        }
     </style>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -426,6 +482,24 @@
                     <div class="form-group">
                         <label for="assignment-name">Assignment Name</label>
                         <input type="text" id="assignment-name" class="form-input" placeholder="e.g., Chapter 5 Quiz, Math Homework #3">
+                    </div>
+                </div>
+
+                <!-- Custom Grading Instructions -->
+                <div class="selection-section" id="grading-instructions-section">
+                    <div class="form-group">
+                        <label for="grading-instructions">Custom Grading Instructions (Optional)</label>
+                        <textarea id="grading-instructions" class="form-textarea"
+                            placeholder="e.g., Each question is worth 5 points, except question 20 which is a bonus worth 7 points. Give partial credit for showing work even if the final answer is wrong."
+                            rows="3" maxlength="2000"></textarea>
+                        <div class="character-count">
+                            <span id="instruction-count">0</span>/2000 characters
+                        </div>
+                        <div class="instruction-hint">
+                            <i class="fas fa-lightbulb"></i>
+                            Provide specific instructions for how AI should grade this particular worksheet. These instructions will
+                            take priority over default grading settings.
+                        </div>
                     </div>
                 </div>
 
@@ -658,6 +732,28 @@
     <script src="/js/dashboard.js"></script>
     <script src="/js/upload-single.js"></script>
     <script>
+            // Character counter for grading instructions
+            document.addEventListener('DOMContentLoaded', function () {
+                const textarea = document.getElementById('grading-instructions');
+                const counter = document.getElementById('instruction-count');
+
+                if (textarea && counter) {
+                    textarea.addEventListener('input', function () {
+                        const count = this.value.length;
+                        counter.textContent = count;
+
+                        // Change color as approaching limit
+                        if (count > 1800) {
+                            counter.style.color = '#EF4444'; // Red
+                        } else if (count > 1500) {
+                            counter.style.color = '#F59E0B'; // Orange
+                        } else {
+                            counter.style.color = '#6B7280'; // Gray
+                        }
+                    });
+                }
+            });
+        
         function toggleDropdown() {
             const dropdown = document.getElementById('userDropdown');
             dropdown.classList.toggle('active');

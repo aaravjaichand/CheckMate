@@ -228,12 +228,91 @@
             console.log(`${setting} is now ${isActive ? 'enabled' : 'disabled'}`);
         }
         
+                            // Load user preferences from backend
+                            document.addEventListener('DOMContentLoaded', function () {
+                                loadUserPreferences();
+                            });
+
+                            async function loadUserPreferences() {
+                                try {
+                                    const token = localStorage.getItem('gradeflow_token');
+                                    if (!token) return;
+
+                                    const response = await fetch('/api/auth/profile', {
+                                        headers: {
+                                            'Authorization': `Bearer ${token}`
+                                        }
+                                    });
+
+                                    if (response.ok) {
+                                        const data = await response.json();
+                                        const prefs = data.user?.preferences || {};
+
+                                        // Set dropdown values
+                                        document.getElementById('feedback-tone').value = prefs.feedbackTone || 'encouraging';
+                                        document.getElementById('grade-display').value = prefs.gradeDisplay || 'percentage';
+
+                                        // Set toggle switches
+                                        const showWorkToggle = document.querySelector('[data-setting="showWorkSteps"]');
+                                        const partialCreditToggle = document.querySelector('[data-setting="partialCredit"]');
+
+                                        if (showWorkToggle) {
+                                            showWorkToggle.classList.toggle('active', prefs.showWorkSteps !== false);
+                                        }
+                                        if (partialCreditToggle) {
+                                            partialCreditToggle.classList.toggle('active', prefs.partialCredit !== false);
+                                        }
+                                    }
+                                } catch (error) {
+                                    console.error('Error loading preferences:', error);
+                                }
+                            }
+                        
             // Settings functions
-        function saveGrading() {
-            const feedbackTone = document.getElementById('feedback-tone').value;
-            const gradeDisplay = document.getElementById('grade-display').value;
-            console.log('Saving grading preferences:', { feedbackTone, gradeDisplay });
-            showNotification('Grading preferences saved!', 'success');
+                                async function saveGrading() {
+                                    try {
+                                        const feedbackTone = document.getElementById('feedback-tone').value;
+                                        const gradeDisplay = document.getElementById('grade-display').value;
+
+                                    // Get toggle switch states
+                                    const showWorkToggle = document.querySelector('[data-setting="showWorkSteps"]');
+                                    const partialCreditToggle = document.querySelector('[data-setting="partialCredit"]');
+
+                                    const showWorkSteps = showWorkToggle ? showWorkToggle.classList.contains('active') : true;
+                                    const partialCredit = partialCreditToggle ? partialCreditToggle.classList.contains('active') : true;
+
+                                    const preferences = {
+                                        feedbackTone,
+                                        gradeDisplay,
+                                        showWorkSteps,
+                                        partialCredit
+                                    };
+
+                                    const token = localStorage.getItem('gradeflow_token');
+                                    if (!token) {
+                                        showNotification('Please log in to save preferences', 'error');
+                                        return;
+                                    }
+
+                                    const response = await fetch('/api/auth/profile', {
+                                        method: 'PUT',
+                                        headers: {
+                                            'Content-Type': 'application/json',
+                                            'Authorization': `Bearer ${token}`
+                                        },
+                                        body: JSON.stringify({ preferences })
+                                    });
+
+                                    if (response.ok) {
+                                        showNotification('Grading preferences saved successfully!', 'success');
+                                    } else {
+                                        const error = await response.json();
+                                        showNotification(error.error || 'Failed to save preferences', 'error');
+                                    }
+                                } catch (error) {
+                                    console.error('Error saving preferences:', error);
+                                    showNotification('Failed to save preferences', 'error');
+                                }
         }
 
         // Notification system

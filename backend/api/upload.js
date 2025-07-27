@@ -63,11 +63,18 @@ router.post('/worksheet/single', verifyToken, upload.single('worksheet'), async 
             return res.status(400).json({ error: 'No file uploaded' });
         }
 
-        const { studentId, classId, assignment } = req.body;
+        const { studentId, classId, assignment, customGradingInstructions } = req.body;
 
         if (!studentId || !classId) {
             return res.status(400).json({ error: 'Student ID and Class ID are required' });
         }
+
+        console.log('Request parameters:', {
+            studentId,
+            classId,
+            assignment,
+            hasCustomInstructions: !!customGradingInstructions
+        });
 
         console.log('Connecting to database...');
         const db = await getDb();
@@ -134,7 +141,8 @@ router.post('/worksheet/single', verifyToken, upload.single('worksheet'), async 
             metadata: {
                 subject: classInfo.subject || 'unknown',
                 grade: classInfo.gradeLevel || 'unknown',
-                assignment: assignment || 'Untitled Assignment'
+                assignment: assignment || 'Untitled Assignment',
+                customGradingInstructions: customGradingInstructions || ''
             },
             updatedAt: new Date()
         };
@@ -742,7 +750,8 @@ async function processSingleWorksheetAsync(worksheetId, fileData, user) {
             gradeLevel: worksheet.metadata?.grade,
             studentName: worksheet.studentName,
             assignmentName: worksheet.metadata?.assignment,
-            rubric: null // No custom rubric for now
+            rubric: null, // No custom rubric for now
+            customGradingInstructions: worksheet.metadata?.customGradingInstructions || ''
         });
 
         // Generate personalized feedback

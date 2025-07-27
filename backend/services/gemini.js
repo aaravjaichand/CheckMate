@@ -163,7 +163,7 @@ function tryExtractPartialResults(text) {
 }
 
 // NEW: Direct worksheet image processing with Gemini 2.5 Pro
-export async function gradeWorksheetDirect({ fileBuffer, mimeType, subject, gradeLevel, rubric, studentName, assignmentName, customPrompt, streamCallback }) {
+export async function gradeWorksheetDirect({ fileBuffer, mimeType, subject, gradeLevel, rubric, studentName, assignmentName, customPrompt, customGradingInstructions, streamCallback }) {
     try {
         const apiKey = process.env.GEMINI_API_KEY;
         console.log('Checking Gemini API key:', apiKey ? 'Present' : 'Missing');
@@ -200,7 +200,7 @@ export async function gradeWorksheetDirect({ fileBuffer, mimeType, subject, grad
         } else {
             // Use inline processing for smaller files
             console.log(`Small file (${Math.round(fileSize / 1024)}KB), using inline processing`);
-            result = await processInlineWorksheet(model, fileBuffer, mimeType, { subject, gradeLevel, rubric, studentName, assignmentName, customPrompt, streamCallback });
+            result = await processInlineWorksheet(model, fileBuffer, mimeType, { subject, gradeLevel, rubric, studentName, assignmentName, customPrompt, customGradingInstructions, streamCallback });
         }
 
         return result;
@@ -409,13 +409,25 @@ async function processLargeWorksheet(model, fileBuffer, mimeType, context) {
 }
 
 // Build comprehensive grading prompt for direct image analysis
-function buildDirectGradingPrompt({ subject, gradeLevel, rubric, studentName, assignmentName }) {
-    const basePrompt = `You are an experienced ${subject || 'elementary'} teacher grading a worksheet for a ${gradeLevel || 'elementary'} student named ${studentName || 'the student'}.
+function buildDirectGradingPrompt({ subject, gradeLevel, rubric, studentName, assignmentName, customGradingInstructions }) {
+    let basePrompt = `You are an experienced ${subject || 'elementary'} teacher grading a worksheet for a ${gradeLevel || 'elementary'} student named ${studentName || 'the student'}.
 
 ASSIGNMENT: ${assignmentName || 'Worksheet Assignment'}
 SUBJECT: ${subject || 'General'}
 GRADE LEVEL: ${gradeLevel || 'Elementary'}
-STUDENT: ${studentName || 'Student'}
+STUDENT: ${studentName || 'Student'}`;
+
+    // PRIORITY: Add custom grading instructions first if provided
+    if (customGradingInstructions && customGradingInstructions.trim()) {
+        basePrompt += `
+
+**CUSTOM GRADING INSTRUCTIONS (HIGHEST PRIORITY):**
+${customGradingInstructions.trim()}
+
+IMPORTANT: The custom grading instructions above take PRIORITY over all other grading guidelines. Follow them exactly as specified.`;
+    }
+
+    basePrompt += `
 
 CRITICAL: You MUST respond with ONLY valid JSON. Do not include any text before or after the JSON. Do not use markdown formatting. Do not include explanations outside the JSON structure.
 
@@ -462,44 +474,15 @@ IMPORTANT:
 - Do not include any markdown formatting (no backticks or code blocks)
 - Do not include any explanatory text outside the JSON`;
 
-    // Add subject-specific instructions
-    if (subject?.toLowerCase().includes('math')) {
-        return basePrompt + `
+    // Add subject-specific instructions if no custom instructions override them
+    if (!customGradingInstructions || !customGradingInstructions.trim()) {
+        if (subject?.toLowerCase().includes('math')) {
+            return basePrompt + `
 
 MATH-SPECIFIC INSTRUCTIONS:
-- Pay special attention to mathematical notation and equations
-- Look for step-by-step work in problem solving
-- Award partial credit for correct methodology even if final answer is wrong
-- Identify calculation errors vs conceptual errors
-- Note any use of proper mathematical symbols and formatting
-- Look for word problem setup and reasoning
-- Check unit labels and mathematical vocabulary usage`;
-    }
-
-    if (subject?.toLowerCase().includes('english') || subject?.toLowerCase().includes('language')) {
-        return basePrompt + `
-
-LANGUAGE ARTS INSTRUCTIONS:
-- Evaluate grammar, spelling, and sentence structure
-- Assess reading comprehension responses for completeness
-- Look for evidence of understanding in written responses
-- Note vocabulary usage and variety
-- Check punctuation and capitalization
-- Evaluate creative writing elements if present
-- Assess handwriting legibility and effort`;
-    }
-
-    if (subject?.toLowerCase().includes('science')) {
-        return basePrompt + `
-
-SCIENCE INSTRUCTIONS:
-- Look for scientific vocabulary and proper terminology
-- Evaluate diagrams, labels, and scientific drawings
-- Assess understanding of scientific concepts and processes
-- Check for evidence-based reasoning
-- Note any data tables, graphs, or experimental observations
-- Evaluate hypothesis formation and conclusion drawing
-- Look for proper scientific method application`;
+- Pay special attention to mathematical notation and equations`;
+        }
+        // Add other subject-specific instructions as needed
     }
 
     return basePrompt;
@@ -606,25 +589,25 @@ async function mockGradingFromImage({ subject, gradeLevel, rubric, studentName }
     return result;
 }
 
-export async function gradeWithGemini({ text, subject, gradeLevel, rubric, studentName }) {
+export async function gradeWithGemini({ text, subject, gradeLevel, rubric, studentName, customGradingInstructions }) {
     try {
         const apiKey = process.env.GEMINI_API_KEY;
         if (!apiKey) {
             console.warn('Gemini API key not found, using mock grading');
-            return await mockGrading({ text, subject, gradeLevel, rubric, studentName });
+            return await mockGrading({ text, subject, gradeLevel, studentName });
         }
 
-        // Construct grading prompt based on subject and grade level
+        // Rate limit grading calls
+        await enforceRateLimit();
+
         const gradingPrompt = buildGradingPrompt({
             text,
             subject,
             gradeLevel,
             rubric,
-            studentName
+            studentName,
+            customGradingInstructions
         });
-
-        // Rate limit and call Gemini API with retry logic
-        await enforceRateLimit();
 
         const response = await retryWithBackoff(async () => {
             return fetch(
@@ -748,8 +731,8 @@ export async function generateFeedback({ gradingResults, studentName, subject, t
 }
 
 // Build grading prompt based on subject and requirements
-function buildGradingPrompt({ text, subject, gradeLevel, rubric, studentName }) {
-    const basePrompt = `You are an experienced ${subject} teacher grading a ${gradeLevel} student's worksheet. 
+function buildGradingPrompt({ text, subject, gradeLevel, rubric, studentName, customGradingInstructions }) {
+    let basePrompt = `You are an experienced ${subject} teacher grading a ${gradeLevel} student's worksheet. 
 Please evaluate the student's work and provide detailed grading information.
 
 Student Name: ${studentName || 'Unknown'}
@@ -759,7 +742,19 @@ Grade Level: ${gradeLevel}
 Worksheet Content:
 ${text}
 
-${rubric ? `Grading Rubric: ${rubric}` : ''}
+${rubric ? `Grading Rubric: ${rubric}` : ''}`;
+
+    // PRIORITY: Add custom grading instructions first if provided
+    if (customGradingInstructions && customGradingInstructions.trim()) {
+        basePrompt += `
+
+**CUSTOM GRADING INSTRUCTIONS (HIGHEST PRIORITY):**
+${customGradingInstructions.trim()}
+
+IMPORTANT: The custom grading instructions above take PRIORITY over all other grading guidelines. Follow them exactly as specified.`;
+    }
+
+    basePrompt += `
 
 Please provide your response in the following JSON format:
 {
@@ -783,9 +778,10 @@ Please provide your response in the following JSON format:
     "recommendations": ["<recommendation 1>", "<recommendation 2>"]
 }`;
 
-    // Add subject-specific instructions
-    if (subject?.toLowerCase().includes('math')) {
-        return basePrompt + `
+    // Add subject-specific instructions only if no custom instructions are provided
+    if (!customGradingInstructions || !customGradingInstructions.trim()) {
+        if (subject?.toLowerCase().includes('math')) {
+            return basePrompt + `
 
 Special Math Grading Instructions:
 - Evaluate work shown, not just final answers
@@ -793,10 +789,10 @@ Special Math Grading Instructions:
 - Check for computational errors vs conceptual errors
 - Look for proper use of mathematical notation
 - Consider alternative solution methods as valid`;
-    }
+        }
 
-    if (subject?.toLowerCase().includes('english') || subject?.toLowerCase().includes('language')) {
-        return basePrompt + `
+        if (subject?.toLowerCase().includes('english') || subject?.toLowerCase().includes('language')) {
+            return basePrompt + `
 
 Special Language Arts Grading Instructions:
 - Evaluate grammar, spelling, and sentence structure
@@ -804,10 +800,10 @@ Special Language Arts Grading Instructions:
 - Look for evidence of reading comprehension
 - Assess vocabulary usage and variety
 - Check for proper punctuation and capitalization`;
-    }
+        }
 
-    if (subject?.toLowerCase().includes('science')) {
-        return basePrompt + `
+        if (subject?.toLowerCase().includes('science')) {
+            return basePrompt + `
 
 Special Science Grading Instructions:
 - Evaluate scientific reasoning and methodology
@@ -815,6 +811,7 @@ Special Science Grading Instructions:
 - Look for evidence of understanding scientific concepts
 - Consider accuracy of observations and conclusions
 - Assess ability to apply scientific principles`;
+        }
     }
 
     return basePrompt;

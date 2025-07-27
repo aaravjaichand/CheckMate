@@ -87,6 +87,8 @@ router.post('/signup', async (req, res) => {
             preferences: {
                 feedbackTone: 'encouraging',
                 gradeDisplay: 'percentage',
+                showWorkSteps: true,
+                partialCredit: true,
                 notifications: {
                     email: true,
                     processing: true,
@@ -408,6 +410,8 @@ router.post('/firebase', async (req, res) => {
                 preferences: {
                     feedbackTone: 'encouraging',
                     gradeDisplay: 'percentage',
+                    showWorkSteps: true,
+                    partialCredit: true,
                     notifications: {
                         email: true,
                         processing: true,
