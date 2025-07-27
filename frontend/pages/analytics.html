@@ -16,7 +16,437 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+    .class-section {
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 16px;
+        padding: 24px;
+        margin-bottom: 32px;
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    }
+
+    .class-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 24px;
+        padding-bottom: 16px;
+        border-bottom: 2px solid #f0f0f0;
+    }
+
+    .class-title {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .class-title h2 {
+        margin: 0;
+        color: #2d3748;
+        font-size: 24px;
+        font-weight: 600;
+    }
+
+    .class-badge {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 500;
+    }
+
+    .analytics-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 24px;
+        margin-bottom: 32px;
+    }
+
+    .analytics-card {
+        background: rgba(255, 255, 255, 0.9);
+        border-radius: 12px;
+        padding: 20px;
+        border: 1px solid rgba(0, 0, 0, 0.08);
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    }
+
+    .analytics-card h3 {
+        margin: 0 0 16px 0;
+        color: #2d3748;
+        font-size: 18px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .student-dropdown {
+        width: 100%;
+        padding: 12px;
+        border: 2px solid #e2e8f0;
+        border-radius: 8px;
+        background: white;
+        font-size: 14px;
+        margin-bottom: 16px;
+    }
+
+    .grade-display {
+        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        color: white;
+        padding: 16px;
+        border-radius: 8px;
+        text-align: center;
+    }
+
+    .grade-display .grade-value {
+        font-size: 28px;
+        font-weight: 700;
+        margin-bottom: 4px;
+    }
+
+    .grade-display .grade-details {
+        font-size: 14px;
+        opacity: 0.9;
+    }
+
+    .class-average {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 20px;
+        border-radius: 12px;
+        text-align: center;
+    }
+
+    .class-average .average-value {
+        font-size: 36px;
+        font-weight: 700;
+        margin-bottom: 8px;
+    }
+
+    .class-average .average-label {
+        font-size: 16px;
+        opacity: 0.9;
+    }
+
+    .performer-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .performer-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 0;
+        border-bottom: 1px solid #f0f0f0;
+    }
+
+    .performer-item:last-child {
+        border-bottom: none;
+    }
+
+    .performer-rank {
+        background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+        color: #333;
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    .performer-info {
+        flex: 1;
+        margin-left: 12px;
+    }
+
+    .performer-name {
+        font-weight: 600;
+        color: #2d3748;
+    }
+
+    .performer-score {
+        font-size: 14px;
+        color: #666;
+    }
+
+    .score-badge {
+        padding: 4px 8px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    .score-high {
+        background: #d4edda;
+        color: #155724;
+    }
+
+    .score-medium {
+        background: #fff3cd;
+        color: #856404;
+    }
+
+    .score-low {
+        background: #f8d7da;
+        color: #721c24;
+    }
+
+    .support-list {
+        max-height: 300px;
+        overflow-y: auto;
+    }
+
+    .support-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 16px;
+        margin-bottom: 8px;
+        background: #fff5f5;
+        border-radius: 8px;
+        border-left: 4px solid #e53e3e;
+    }
+
+    .support-info {
+        flex: 1;
+    }
+
+    .support-name {
+        font-weight: 600;
+        color: #2d3748;
+        margin-bottom: 4px;
+    }
+
+    .support-details {
+        font-size: 12px;
+        color: #666;
+    }
+
+    .priority-badge {
+        padding: 4px 8px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+
+    .priority-high {
+        background: #fed7d7;
+        color: #c53030;
+    }
+
+    .priority-medium {
+        background: #feebc8;
+        color: #dd6b20;
+    }
+
+    .priority-low {
+        background: #e6fffa;
+        color: #285e61;
+    }
+
+    .recommendations-section {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 24px;
+        border-radius: 12px;
+        margin-top: 24px;
+    }
+
+    .recommendations-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+
+    .refresh-btn {
+        background: rgba(255, 255, 255, 0.2);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        color: white;
+        padding: 8px 16px;
+        border-radius: 20px;
+        cursor: pointer;
+        font-size: 14px;
+        transition: all 0.3s ease;
+    }
+
+    .refresh-btn:hover {
+        background: rgba(255, 255, 255, 0.3);
+    }
+
+    .refresh-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    .recommendation-topics {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 16px;
+        margin-bottom: 20px;
+    }
+
+    .topic-card {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        padding: 16px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .topic-title {
+        font-weight: 600;
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .topic-priority {
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-size: 10px;
+        text-transform: uppercase;
+    }
+
+    .topic-priority.high {
+        background: rgba(255, 107, 107, 0.8);
+    }
+
+    .topic-priority.medium {
+        background: rgba(255, 193, 7, 0.8);
+    }
+
+    .topic-priority.low {
+        background: rgba(72, 187, 120, 0.8);
+    }
+
+    .topic-description {
+        font-size: 14px;
+        margin-bottom: 12px;
+        opacity: 0.9;
+    }
+
+    .topic-activities {
+        font-size: 12px;
+        opacity: 0.8;
+    }
+
+    .topic-activities ul {
+        margin: 8px 0 0 0;
+        padding-left: 16px;
+    }
+
+    .class-strategy {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        padding: 16px;
+        border-left: 4px solid rgba(255, 255, 255, 0.5);
+    }
+
+    .loading-spinner {
+        display: inline-block;
+        width: 16px;
+        height: 16px;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-radius: 50%;
+        border-top-color: white;
+        animation: spin 1s ease-in-out infinite;
+    }
+
+    @keyframes spin {
+        to {
+            transform: rotate(360deg);
+        }
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 40px 20px;
+        color: #666;
+    }
+
+    .empty-state i {
+        font-size: 48px;
+        margin-bottom: 16px;
+        color: #ccc;
+    }
+
+            .no-classes {
+            text-align: center;
+            padding: 60px 20px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 16px;
+            margin-top: 40px;
+            color: #2d3748;
+        }
+
+        .no-classes i {
+            font-size: 64px;
+            color: #ddd;
+            margin-bottom: 20px;
+        }
+
+        .no-classes h3 {
+            color: #2d3748;
+        }
+
+        .no-classes p {
+            color: #4a5568;
+        }
+
+    .class-selector-section {
+        margin-bottom: 32px;
+    }
+
+    .selector-card {
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 16px;
+        padding: 24px;
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    }
+
+    .selector-card h3 {
+        margin: 0 0 16px 0;
+        color: #2d3748;
+        font-size: 18px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .class-dropdown {
+        width: 100%;
+        padding: 16px;
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        background: white;
+        font-size: 16px;
+        font-weight: 500;
+        color: #2d3748;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .class-dropdown:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    .class-dropdown:hover {
+        border-color: #a0aec0;
+    }
+</style>
 </head>
 <body class="dashboard-body">
     <!-- Liquid Glass Navigation -->
@@ -69,31 +499,6 @@
             </div>
         </div>
     </nav>
-    
-    <!-- Old Navigation (Hidden) -->
-    <nav class="dashboard-nav" style="display: none;">
-        <div class="nav-container">
-            <div class="nav-brand">
-                <i class="fas fa-graduation-cap"></i>
-                <span>CheckMate</span>
-            </div>
-            
-            <div class="nav-user">
-                <div class="user-info">
-                    <span class="user-name" id="user-name">Teacher Name</span>
-                    <span class="user-plan" id="user-plan">Pro Plan</span>
-                </div>
-                <div class="user-avatar" id="user-avatar">
-                    <i class="fas fa-user"></i>
-                </div>
-                <div class="dropdown-menu" id="user-dropdown">
-                    <a href="/pages/dashboard.html"><i class="fas fa-home"></i> Dashboard</a>
-                    <a href="/pages/settings.html"><i class="fas fa-cog"></i> Settings</a>
-                    <a href="/" id="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</a>
-                </div>
-            </div>
-        </div>
-    </nav>
 
     <!-- Sidebar -->
     <aside class="dashboard-sidebar">
@@ -124,407 +529,422 @@
     <!-- Main Content -->
     <main class="dashboard-main">
         <div class="main-header">
-            <h1>Analytics & Insights</h1>
-            <p>Detailed performance analytics and class insights</p>
+            <h1>Class Analytics & Insights</h1>
+            <p>Comprehensive performance analytics for your classes</p>
         </div>
 
-        <!-- Analytics Controls -->
-        <div class="analytics-controls">
-            <div class="control-group">
-                <label>Time Period:</label>
-                <div class="liquid-dropdown" id="time-dropdown">
-                    <div class="liquid-dropdown-button" onclick="toggleLiquidDropdown('time-dropdown')">
-                        <span id="time-selected">Last 30 days</span>
-                        <i class="fas fa-chevron-down"></i>
-                    </div>
-                    <div class="liquid-dropdown-menu">
-                        <div class="liquid-dropdown-item" onclick="selectDropdownItem('time-dropdown', 'Last 7 days', '7d')">Last 7 days</div>
-                        <div class="liquid-dropdown-item" onclick="selectDropdownItem('time-dropdown', 'Last 30 days', '30d')">Last 30 days</div>
-                        <div class="liquid-dropdown-item" onclick="selectDropdownItem('time-dropdown', 'Last 90 days', '90d')">Last 90 days</div>
-                        <div class="liquid-dropdown-item" onclick="selectDropdownItem('time-dropdown', 'Last year', '1y')">Last year</div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="control-group">
-                <label>Subject Filter:</label>
-                <div class="liquid-dropdown" id="subject-dropdown">
-                    <div class="liquid-dropdown-button" onclick="toggleLiquidDropdown('subject-dropdown')">
-                        <span id="subject-selected">All Subjects</span>
-                        <i class="fas fa-chevron-down"></i>
-                    </div>
-                    <div class="liquid-dropdown-menu">
-                        <div class="liquid-dropdown-item" onclick="selectDropdownItem('subject-dropdown', 'All Subjects', '')">All Subjects</div>
-                        <div class="liquid-dropdown-item" onclick="selectDropdownItem('subject-dropdown', 'Mathematics', 'math')">Mathematics</div>
-                        <div class="liquid-dropdown-item" onclick="selectDropdownItem('subject-dropdown', 'English', 'english')">English</div>
-                        <div class="liquid-dropdown-item" onclick="selectDropdownItem('subject-dropdown', 'Science', 'science')">Science</div>
-                        <div class="liquid-dropdown-item" onclick="selectDropdownItem('subject-dropdown', 'History', 'history')">History</div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="control-group">
-                <label>Grade Level:</label>
-                <div class="liquid-dropdown" id="grade-dropdown">
-                    <div class="liquid-dropdown-button" onclick="toggleLiquidDropdown('grade-dropdown')">
-                        <span id="grade-selected">All Grades</span>
-                        <i class="fas fa-chevron-down"></i>
-                    </div>
-                    <div class="liquid-dropdown-menu">
-                        <div class="liquid-dropdown-item" onclick="selectDropdownItem('grade-dropdown', 'All Grades', '')">All Grades</div>
-                        <div class="liquid-dropdown-item" onclick="selectDropdownItem('grade-dropdown', 'K-2', 'K-2')">K-2</div>
-                        <div class="liquid-dropdown-item" onclick="selectDropdownItem('grade-dropdown', '3-5', '3-5')">3-5</div>
-                        <div class="liquid-dropdown-item" onclick="selectDropdownItem('grade-dropdown', '6-8', '6-8')">6-8</div>
-                        <div class="liquid-dropdown-item" onclick="selectDropdownItem('grade-dropdown', '9-12', '9-12')">9-12</div>
-                    </div>
-                </div>
-            </div>
-            
-            <button class="liquid-button primary" id="export-report">
-                <i class="fas fa-download"></i>
-                Export Report
-            </button>
-        </div>
-
-        <!-- Key Metrics -->
-        <div class="metrics-grid">
-            <div class="metric-card">
-                <div class="metric-icon">
-                    <i class="fas fa-chart-line"></i>
-                </div>
-                <div class="metric-info">
-                    <div class="metric-value">87.3%</div>
-                    <div class="metric-label">Average Class Score</div>
-                    <div class="metric-change positive">+2.1% vs last period</div>
-                </div>
-            </div>
-            
-            <div class="metric-card">
-                <div class="metric-icon">
-                    <i class="fas fa-users"></i>
-                </div>
-                <div class="metric-info">
-                    <div class="metric-value">24</div>
-                    <div class="metric-label">Active Students</div>
-                    <div class="metric-change neutral">Same as last period</div>
-                </div>
-            </div>
-            
-            <div class="metric-card">
-                <div class="metric-icon">
-                    <i class="fas fa-tasks"></i>
-                </div>
-                <div class="metric-info">
-                    <div class="metric-value">156</div>
-                    <div class="metric-label">Worksheets Graded</div>
-                    <div class="metric-change positive">+23% vs last period</div>
-                </div>
-            </div>
-            
-            <div class="metric-card">
-                <div class="metric-icon">
-                    <i class="fas fa-clock"></i>
-                </div>
-                <div class="metric-info">
-                    <div class="metric-value">26h</div>
-                    <div class="metric-label">Time Saved</div>
-                    <div class="metric-change positive">+31% vs last period</div>
-                </div>
+        <!-- Class Selector -->
+        <div class="class-selector-section" id="class-selector-section" style="display: none;">
+            <div class="selector-card">
+                <h3><i class="fas fa-chalkboard-teacher"></i> Select Class</h3>
+                <select class="class-dropdown" id="class-selector" onchange="loadClassData()">
+                    <option value="">Choose a class to view analytics...</option>
+                </select>
             </div>
         </div>
+<!-- Loading State -->
+<div id="loading-state" class="empty-state" style="display: none;">
+    <div class="loading-spinner"></div>
+    <p>Loading analytics data...</p>
+</div>
+<!-- No Classes State -->
+<div id="no-classes-state" class="no-classes" style="display: none;">
+    <i class="fas fa-chalkboard-teacher"></i>
+    <h3>No Classes Found</h3>
+    <p>Create some classes and upload worksheets to see analytics.</p>
+        </div>
 
-        <!-- Charts Row 1 -->
-        <div class="charts-row">
-            <div class="chart-card">
-                <div class="chart-header">
-                    <h3>Grade Distribution Over Time</h3>
-                    <div class="chart-legend">
-                        <span class="legend-item"><span class="legend-color" style="background: #ef4444;"></span> F (0-59%)</span>
-                        <span class="legend-item"><span class="legend-color" style="background: #f97316;"></span> D (60-69%)</span>
-                        <span class="legend-item"><span class="legend-color" style="background: #eab308;"></span> C (70-79%)</span>
-                        <span class="legend-item"><span class="legend-color" style="background: #22c55e;"></span> B (80-89%)</span>
-                        <span class="legend-item"><span class="legend-color" style="background: #3b82f6;"></span> A (90-100%)</span>
-                    </div>
-                </div>
-                <div class="chart-container">
-                    <canvas id="gradeDistributionChart"></canvas>
-                </div>
-            </div>
+        <!-- Selected Class Content -->
+        <div id="selected-class-content" style="display: none;">
+            <!-- Selected class analytics will be dynamically inserted here -->
+        </div>
+    </main>
+    <!-- Scripts -->
+    <script src="/js/dashboard.js"></script>
+    <script src="/js/user.js"></script>
+    <script>
+        let analyticsData = null;
+        let selectedClassData = null;
+
+        // Initialize analytics
+        document.addEventListener('DOMContentLoaded', () => {
+            loadAnalytics();
+        });
+
+        async function loadAnalytics() {
+            try {
+                showLoading(true);
+
+                // Check authentication first
+                const userData = localStorage.getItem('user');
+                const token = localStorage.getItem('gradeflow_token');
+
+                console.log('Analytics auth check:', {
+                    hasUser: !!userData,
+                    hasToken: !!token,
+                    tokenLength: token ? token.length : 0
+                });
+
+                if (!userData || !token) {
+                    console.log('No authentication found, redirecting to login');
+                    window.location.href = '/pages/login.html';
+                    return;
+                }
+
+                const response = await fetch('/api/analytics/classes', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (!response.ok) {
+                    if (response.status === 401) {
+                        console.log('Authentication failed, redirecting to login');
+                        localStorage.removeItem('user');
+                        localStorage.removeItem('gradeflow_token');
+                        window.location.href = '/pages/login.html';
+                        return;
+                    }
+                    throw new Error(`Failed to load analytics: ${response.status} ${response.statusText}`);
+                }
+
+                analyticsData = await response.json();
+                console.log('Analytics data received:', analyticsData);
+                setupClassSelector(analyticsData);
+
+            } catch (error) {
+                console.error('Error loading analytics:', error);
+                showError('Failed to load analytics data');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+                function setupClassSelector(data) {
+            console.log('Setting up class selector with data:', data);
             
-            <div class="chart-card">
-                <div class="chart-header">
-                    <h3>Subject Performance</h3>
-                    <div class="chart-info">Average scores by subject</div>
-                </div>
-                <div class="chart-container">
-                    <canvas id="subjectPerformanceChart"></canvas>
+            if (!data.classes || data.classes.length === 0) {
+                console.log('No classes found, showing no-classes state');
+                document.getElementById('no-classes-state').style.display = 'block';
+                return;
+            }
+
+            console.log('Found', data.classes.length, 'classes, showing selector');
+            
+            // Show class selector
+            document.getElementById('class-selector-section').style.display = 'block';
+            
+            // Populate dropdown
+            const selector = document.getElementById('class-selector');
+            selector.innerHTML = '<option value="">Choose a class to view analytics...</option>' +
+                data.classes.map(classData => 
+                    `<option value="${classData.classId}">${classData.className} (${classData.subject} • Grade ${classData.gradeLevel})</option>`
+                ).join('');
+            
+            console.log('Class selector populated with options:', selector.options.length);
+        }
+
+                            function loadClassData() {
+                                const selector = document.getElementById('class-selector');
+                                const selectedClassId = selector.value;
+            
+                            if (!selectedClassId) {
+                                document.getElementById('selected-class-content').style.display = 'none';
+                                return;
+                            }
+
+                            // Find the selected class data
+                            selectedClassData = analyticsData.classes.find(c => c.classId === selectedClassId);
+            
+                            if (selectedClassData) {
+                                renderSelectedClass(selectedClassData);
+                                loadStudentGrades(selectedClassData.classId);
+                            }
+                        }
+
+                                        function renderSelectedClass(classData) {
+                                            const content = document.getElementById('selected-class-content');
+                                            content.style.display = 'block';
+            
+                                        content.innerHTML = renderClassSection(classData);
+                                    }
+
+                                    function renderClassSection(classData) {
+                                        return `
+                <div class="class-section">
+            
+                    <div class="analytics-grid">
+                        <!-- Student Grade Dropdown -->
+                        <div class="analytics-card">
+                            <h3><i class="fas fa-user-graduate"></i> Student Grades</h3>
+                            <select class="student-dropdown" id="student-dropdown-${classData.classId}" onchange="showStudentGrade('${classData.classId}')">
+                                <option value="">Select a student...</option>
+                            </select>
+                            <div id="grade-display-${classData.classId}" class="grade-display" style="display: none;">
+                                <div class="grade-value">--</div>
+                                <div class="grade-details">Select a student to see their grade</div>
+            </div>
+        </div>
+
+                        <!-- Class Average -->
+                        <div class="analytics-card">
+                            <div class="class-average">
+                                <div class="average-value">${classData.metrics.averageScore}%</div>
+                                <div class="average-label">Average Class Score</div>
+                                <div style="font-size: 14px; margin-top: 8px; opacity: 0.8;">
+                                    ${classData.metrics.totalPointsEarned}/${classData.metrics.totalPoints} total points
                 </div>
             </div>
         </div>
 
-        <!-- Charts Row 2 -->
-        <div class="charts-row">
-            <div class="chart-card full-width">
-                <div class="chart-header">
-                    <h3>Class Performance Trends</h3>
-                    <div class="chart-controls">
-                        <button class="chart-toggle active" data-metric="average">Average Score</button>
-                        <button class="chart-toggle" data-metric="completion">Completion Rate</button>
-                        <button class="chart-toggle" data-metric="improvement">Improvement Rate</button>
-                    </div>
-                </div>
-                <div class="chart-container">
-                    <canvas id="performanceTrendsChart"></canvas>
-                </div>
-            </div>
-        </div>
-
-        <!-- Student Insights -->
-        <div class="insights-section">
-            <div class="insights-row">
                 <!-- Top Performers -->
-                <div class="insight-card">
-                    <div class="insight-header">
-                        <h3>Top Performers</h3>
-                        <span class="insight-subtitle">Students excelling across subjects</span>
+                        <div class="analytics-card">
+                            <h3><i class="fas fa-trophy"></i> Top Performers</h3>
+                            ${classData.topPerformers.length > 0 ? `
+                                <ul class="performer-list">
+                                    ${classData.topPerformers.map(student => `
+                                        <li class="performer-item">
+                                            <div class="performer-rank">${student.rank}</div>
+                                            <div class="performer-info">
+                                                <div class="performer-name">${student.studentName}</div>
+                                                <div class="performer-score">${student.totalWorksheets} worksheets</div>
                     </div>
-                    <div class="student-list">
+                                            <span class="score-badge score-high">${student.averageScore}% (${student.grade})</span>
+                                        </li>
+                                    `).join('')}
+                                </ul>
+                            ` : `
                         <div class="empty-state">
                             <i class="fas fa-trophy"></i>
                             <p>No performance data available</p>
-                            <span>Grade more worksheets to see top performers</span>
-                        </div>
-                    </div>
+                                </div>
+                            `}
                 </div>
 
                 <!-- Students Needing Support -->
-                <div class="insight-card">
-                    <div class="insight-header">
-                        <h3>Students Needing Support</h3>
-                        <span class="insight-subtitle">Focus areas for improvement</span>
+                        <div class="analytics-card">
+                            <h3><i class="fas fa-hands-helping"></i> Students Needing Support</h3>
+                            ${classData.studentsNeedingSupport.length > 0 ? `
+                                <div class="support-list">
+                                    ${classData.studentsNeedingSupport.map(student => `
+                                        <div class="support-item">
+                                            <div class="support-info">
+                                                <div class="support-name">${student.studentName}</div>
+                                                <div class="support-details">${student.totalWorksheets} worksheets • ${student.averageScore}% average</div>
+                                            </div>
+                                            <span class="priority-badge priority-${student.priority}">${student.priority}</span>
+                                        </div>
+                                    `).join('')}
                     </div>
-                    <div class="student-list">
+                            ` : `
                         <div class="empty-state">
                             <i class="fas fa-hands-helping"></i>
-                            <p>No support data available</p>
-                            <span>AI will identify students needing support as you grade more worksheets</span>
-                        </div>
+                                    <p>All students performing well!</p>
+                                </div>
+                            `}
                     </div>
                 </div>
 
-                <!-- Common Mistakes -->
-                <div class="insight-card">
-                    <div class="insight-header">
-                        <h3>Common Mistakes</h3>
-                        <span class="insight-subtitle">Class-wide areas for review</span>
+                    <!-- AI Recommendations -->
+                    <div class="recommendations-section">
+                        <div class="recommendations-header">
+                            <h3><i class="fas fa-robot"></i> AI-Powered Recommendations</h3>
+                            <button class="refresh-btn" onclick="refreshRecommendations('${classData.classId}', '${classData.className}')" id="refresh-btn-${classData.classId}">
+                                <i class="fas fa-sync-alt"></i> Refresh
+                            </button>
                     </div>
-                    <div class="mistakes-list">
-                        <div class="empty-state">
-                            <i class="fas fa-search"></i>
-                            <p>No common mistakes identified</p>
-                            <span>AI will analyze patterns and identify common mistakes as you grade worksheets</span>
+                        <div id="recommendations-${classData.classId}">
+                            <p style="opacity: 0.8;">Click refresh to generate AI recommendations for this class.</p>
                         </div>
                     </div>
                 </div>
-            </div>
-        </div>
+            `;
+                                }
 
-        <!-- Recommendations -->
-        <div class="recommendations-section">
-            <div class="recommendations-card">
-                <div class="recommendations-header">
-                    <h3>AI-Powered Recommendations</h3>
-                    <span class="recommendations-subtitle">Based on class performance analysis</span>
-                </div>
+                                                async function loadStudentGrades(classId) {
+                                                    try {
+                                                        const token = localStorage.getItem('gradeflow_token');
+                                                        if (!token) {
+                                                            console.log('No token found, redirecting to login');
+                                                            window.location.href = '/pages/login.html';
+                                                            return;
+                                                        }
+
+                                                    const response = await fetch(`/api/analytics/classes/${classId}/student-grades`, {
+                                                        headers: {
+                                                            'Authorization': `Bearer ${token}`
+                                                        }
+                                                    });
+
+                                                    if (!response.ok) {
+                                                        if (response.status === 401) {
+                                                            localStorage.removeItem('user');
+                                                            localStorage.removeItem('gradeflow_token');
+                                                            window.location.href = '/pages/login.html';
+                                                            return;
+                                                        }
+                                                    throw new Error('Failed to load student grades');
+                                                }
+
+                                                    const data = await response.json();
+                                                    const dropdown = document.getElementById(`student-dropdown-${classId}`);
+
+                                                    dropdown.innerHTML = '<option value="">Select a student...</option>' +
+                                                        data.students.map(student =>
+                                                            `<option value="${JSON.stringify({
+                                                                name: student.studentName,
+                                                                points: student.totalPointsEarned,
+                                                                total: student.totalPoints,
+                                                                percentage: student.percentage,
+                                                                grade: student.letterGrade,
+                                                                worksheets: student.worksheetCount
+                                                            }).replace(/"/g, '&quot;')}">${student.studentName}</option>`
+                                                        ).join('');
+
+                                                } catch (error) {
+                                                    console.error('Error loading student grades:', error);
+                                                }
+        }
+
+                                        function showStudentGrade(classId) {
+                                            const dropdown = document.getElementById(`student-dropdown-${classId}`);
+                                            const gradeDisplay = document.getElementById(`grade-display-${classId}`);
+
+                                            if (dropdown.value) {
+                                                const studentData = JSON.parse(dropdown.value.replace(/&quot;/g, '"'));
+
+                                                gradeDisplay.style.display = 'block';
+                                                gradeDisplay.innerHTML = `
+                    <div class="grade-value">${studentData.percentage}% (${studentData.grade})</div>
+                    <div class="grade-details">
+                        ${studentData.points}/${studentData.total} points earned<br>
+                        ${studentData.worksheets} worksheets completed
+                    </div>
+                `;
+                                            } else {
+                                                gradeDisplay.style.display = 'none';
+                                            }
+                                        }
+
+    async function refreshRecommendations(classId, className) {
+        const refreshBtn = document.getElementById(`refresh-btn-${classId}`);
+        const recommendationsDiv = document.getElementById(`recommendations-${classId}`);
+
+        try {
+            refreshBtn.disabled = true;
+            refreshBtn.innerHTML = '<div class="loading-spinner"></div> Generating...';
+        
+            recommendationsDiv.innerHTML = '<p style="opacity: 0.8;"><div class="loading-spinner" style="margin-right: 8px;"></div>Analyzing class performance and generating recommendations...</p>';
+
+            const token = localStorage.getItem('gradeflow_token');
+            if (!token) {
+                console.log('No token found, redirecting to login');
+                window.location.href = '/pages/login.html';
+                return;
+            }
+
+            const response = await fetch(`/api/analytics/classes/${classId}/ai-recommendations`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to generate recommendations');
+            }
+
+            const data = await response.json();
+            renderRecommendations(recommendationsDiv, data.recommendations);
+
+        } catch (error) {
+            console.error('Error generating recommendations:', error);
+            recommendationsDiv.innerHTML = '<p style="color: #ffcccc;">Failed to generate recommendations. Please try again.</p>';
+        } finally {
+            refreshBtn.disabled = false;
+            refreshBtn.innerHTML = '<i class="fas fa-sync-alt"></i> Refresh';
+        }
+    }
+
+        function renderRecommendations(container, recommendations) {
+            if (!recommendations || !recommendations.topics) {
+                container.innerHTML = '<p style="opacity: 0.8;">No recommendations available.</p>';
+                return;
+            }
+
+        container.innerHTML = `
+                ${recommendations.topics.length > 0 ? `
+                    <div class="recommendation-topics">
+                        ${recommendations.topics.map(topic => `
+                            <div class="topic-card">
+                                <div class="topic-title">
+                                    ${topic.topic}
+                                    <span class="topic-priority ${topic.priority}">${topic.priority}</span>
+                                </div>
+                                <div class="topic-description">${topic.description}</div>
+                                <div class="topic-activities">
+                                    <strong>Suggested Activities:</strong>
+                                    <ul>
+                                        ${topic.suggestedActivities.map(activity => `<li>${activity}</li>`).join('')}
+                                    </ul>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                ` : ''}
                 
-                <div class="recommendation-list">
-                    <div class="empty-state">
-                        <i class="fas fa-robot"></i>
-                        <p>No AI recommendations yet</p>
-                        <span>AI will provide personalized teaching recommendations based on class performance analysis</span>
+                ${recommendations.classStrategy ? `
+                    <div class="class-strategy">
+                        <h4 style="margin: 0 0 12px 0;"><i class="fas fa-lightbulb"></i> Class Strategy</h4>
+                        <p style="margin: 0; opacity: 0.9;">${recommendations.classStrategy}</p>
                     </div>
-                </div>
-            </div>
-        </div>
-    </main>
+                ` : ''}
+            `;
+    }
 
-    <!-- Scripts -->
-    <script src="/js/dashboard.js"></script>
-    <script>
-        // Liquid Dropdown Functions
-        function toggleLiquidDropdown(dropdownId) {
-            const dropdown = document.getElementById(dropdownId);
-            const isActive = dropdown.classList.contains('active');
-            
-            // Close all dropdowns
-            document.querySelectorAll('.liquid-dropdown').forEach(d => d.classList.remove('active'));
-            
-            // Toggle current dropdown
-            if (!isActive) {
-                dropdown.classList.add('active');
+    function showLoading(show) {
+        document.getElementById('loading-state').style.display = show ? 'block' : 'none';
+        if (show) {
+            // Hide everything when loading
+            document.getElementById('class-selector-section').style.display = 'none';
+            document.getElementById('selected-class-content').style.display = 'none';
+            document.getElementById('no-classes-state').style.display = 'none';
             }
-        }
-        
-        function selectDropdownItem(dropdownId, displayText, value) {
-            const dropdown = document.getElementById(dropdownId);
-            const selectedElement = dropdown.querySelector('[id$="-selected"]');
-            selectedElement.textContent = displayText;
-            dropdown.classList.remove('active');
-            
-            // Trigger analytics update
-            updateAnalytics();
-        }
-        
-        // Close dropdowns when clicking outside
-        document.addEventListener('click', function(event) {
-            if (!event.target.closest('.liquid-dropdown')) {
-                document.querySelectorAll('.liquid-dropdown').forEach(d => d.classList.remove('active'));
-            }
-        });
-        
-        // Analytics-specific JavaScript
-        document.addEventListener('DOMContentLoaded', () => {
-            initializeCharts();
-            setupAnalyticsControls();
-        });
-
-        function initializeCharts() {
-            // Grade Distribution Chart
-            const gradeCtx = document.getElementById('gradeDistributionChart').getContext('2d');
-            new Chart(gradeCtx, {
-                type: 'line',
-                data: {
-                    labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
-                    datasets: [{
-                        label: 'A (90-100%)',
-                        data: [12, 15, 18, 20],
-                        borderColor: '#3b82f6',
-                        backgroundColor: '#3b82f6',
-                        fill: false
-                    }, {
-                        label: 'B (80-89%)',
-                        data: [8, 6, 4, 3],
-                        borderColor: '#22c55e',
-                        backgroundColor: '#22c55e',
-                        fill: false
-                    }, {
-                        label: 'C (70-79%)',
-                        data: [3, 2, 1, 1],
-                        borderColor: '#eab308',
-                        backgroundColor: '#eab308',
-                        fill: false
-                    }, {
-                        label: 'D (60-69%)',
-                        data: [1, 1, 1, 0],
-                        borderColor: '#f97316',
-                        backgroundColor: '#f97316',
-                        fill: false
-                    }, {
-                        label: 'F (0-59%)',
-                        data: [0, 0, 0, 0],
-                        borderColor: '#ef4444',
-                        backgroundColor: '#ef4444',
-                        fill: false
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            display: false
-                        }
-                    }
-                }
-            });
-
-            // Subject Performance Chart
-            const subjectCtx = document.getElementById('subjectPerformanceChart').getContext('2d');
-            new Chart(subjectCtx, {
-                type: 'radar',
-                data: {
-                    labels: ['Mathematics', 'English', 'Science', 'History', 'Art'],
-                    datasets: [{
-                        label: 'Class Average',
-                        data: [87, 82, 89, 85, 91],
-                        borderColor: '#3b82f6',
-                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                        pointBackgroundColor: '#3b82f6'
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        r: {
-                            beginAtZero: true,
-                            max: 100
-                        }
-                    }
-                }
-            });
-
-            // Performance Trends Chart
-            const trendsCtx = document.getElementById('performanceTrendsChart').getContext('2d');
-            new Chart(trendsCtx, {
-                type: 'line',
-                data: {
-                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
-                    datasets: [{
-                        label: 'Average Score',
-                        data: [78, 82, 85, 87, 89, 87],
-                        borderColor: '#3b82f6',
-                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                        fill: true,
-                        tension: 0.4
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            display: false
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: false,
-                            min: 70,
-                            max: 100
-                        }
-                    }
-                }
-            });
+                // When not loading, the setupClassSelector or error functions will show the appropriate elements
         }
 
-        function updateAnalytics() {
-            console.log('Analytics updated based on filters');
-            // Update charts and data based on current filter selections
+                                                function showError(message) {
+                                                    document.getElementById('class-selector-section').style.display = 'none';
+                                                    document.getElementById('selected-class-content').style.display = 'none';
+                                                    document.getElementById('no-classes-state').innerHTML = `
+                <i class="fas fa-exclamation-triangle"></i>
+                <h3>Error Loading Analytics</h3>
+                <p>${message}</p>
+                <button onclick="loadAnalytics()" style="margin-top: 16px; padding: 8px 16px; background: #667eea; color: white; border: none; border-radius: 6px; cursor: pointer;">
+                    Try Again
+                </button>
+            `;
+                                                    document.getElementById('no-classes-state').style.display = 'block';
         }
-        
-        function setupAnalyticsControls() {
-            // Chart toggles
-            document.querySelectorAll('.chart-toggle').forEach(button => {
-                button.addEventListener('click', (e) => {
-                    document.querySelectorAll('.chart-toggle').forEach(btn => btn.classList.remove('active'));
-                    e.target.classList.add('active');
-                    console.log('Chart metric changed to:', e.target.dataset.metric);
-                    // Update performance trends chart
-                });
-            });
 
-            // Export report
-            document.getElementById('export-report').addEventListener('click', () => {
-                alert('Exporting analytics report...');
-            });
-        }
+                                        // Liquid dropdown functions
+                                        function toggleDropdown() {
+                                            const dropdown = document.getElementById('userDropdown');
+                                            dropdown.classList.toggle('active');
+                                        }
+
+                                        // Close dropdown when clicking outside
+                                        document.addEventListener('click', function (event) {
+                                            if (!event.target.closest('.nav-user-liquid')) {
+                                                document.getElementById('userDropdown').classList.remove('active');
+                                            }
+                                        });
     </script>
+
     <!-- Floating Background Elements -->
     <div class="floating-element floating-element-1"></div>
     <div class="floating-element floating-element-2"></div>
     <div class="floating-element floating-element-3"></div>
-    <!-- User Management Script -->
-    <script src="/js/user.js"></script>
 </body>
 </html>

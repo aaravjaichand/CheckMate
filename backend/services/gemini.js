@@ -610,25 +610,30 @@ export async function gradeWithGemini({ text, subject, gradeLevel, rubric, stude
         });
 
         const response = await retryWithBackoff(async () => {
-            return fetch(
-                `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
-                {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        contents: [{
-                            parts: [{
-                                text: gradingPrompt
-                            }]
-                        }],
-                        generationConfig: {
-                            temperature: 0.2, // Lower for more consistent grading
-                            topK: 32,
-                            topP: 0.9,
-                            maxOutputTokens: 4096 // Increased for complex grading tasks
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 60000); // 60 second timeout
+
+            try {
+                const response = await fetch(
+                    `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+                    {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
                         },
+                        signal: controller.signal,
+                        body: JSON.stringify({
+                            contents: [{
+                                parts: [{
+                                    text: gradingPrompt
+                                }]
+                            }],
+                            generationConfig: {
+                                temperature: 0.2, // Lower for more consistent grading
+                                topK: 32,
+                                topP: 0.9,
+                                maxOutputTokens: 4096 // Increased for complex grading tasks
+                            },
                         safetySettings: [
                             {
                                 category: 'HARM_CATEGORY_HARASSMENT',
@@ -642,6 +647,11 @@ export async function gradeWithGemini({ text, subject, gradeLevel, rubric, stude
                     })
                 }
             );
+                clearTimeout(timeoutId);
+                return response;
+            } finally {
+                clearTimeout(timeoutId);
+            }
         });
 
         if (!response.ok) {
@@ -685,13 +695,18 @@ export async function generateFeedback({ gradingResults, studentName, subject, t
         await enforceRateLimit();
 
         const response = await retryWithBackoff(async () => {
-            return fetch(
-                `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
-                {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout for feedback
+
+            try {
+                const response = await fetch(
+                    `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+                    {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        signal: controller.signal,
                     body: JSON.stringify({
                         contents: [{
                             parts: [{
@@ -707,6 +722,11 @@ export async function generateFeedback({ gradingResults, studentName, subject, t
                     })
                 }
             );
+            clearTimeout(timeoutId);
+            return response;
+            } finally {
+                clearTimeout(timeoutId);
+            }
         });
 
         if (!response.ok) {
@@ -856,19 +876,27 @@ function parseGradingResponse(response, subject) {
             const parsed = JSON.parse(jsonMatch[0]);
             
             // Validate and clean the response
+            const questions = (parsed.questions || []).map((q, index) => ({
+                number: q.number || index + 1,
+                question: q.question || '',
+                studentAnswer: q.studentAnswer || '',
+                correctAnswer: q.correctAnswer || '',
+                score: Math.max(0, q.score || 0),
+                maxScore: Math.max(1, q.maxScore || 1),
+                isCorrect: Boolean(q.isCorrect),
+                partialCredit: Boolean(q.partialCredit),
+                feedback: q.feedback || ''
+            }));
+
+            // Calculate total points and points earned
+            const totalPoints = questions.reduce((sum, q) => sum + q.maxScore, 0);
+            const totalPointsEarned = questions.reduce((sum, q) => sum + q.score, 0);
+
             return {
                 totalScore: Math.max(0, Math.min(100, parsed.totalScore || 0)),
-                questions: (parsed.questions || []).map((q, index) => ({
-                    number: q.number || index + 1,
-                    question: q.question || '',
-                    studentAnswer: q.studentAnswer || '',
-                    correctAnswer: q.correctAnswer || '',
-                    score: Math.max(0, q.score || 0),
-                    maxScore: Math.max(1, q.maxScore || 1),
-                    isCorrect: Boolean(q.isCorrect),
-                    partialCredit: Boolean(q.partialCredit),
-                    feedback: q.feedback || ''
-                })),
+                totalPoints: totalPoints,
+                totalPointsEarned: totalPointsEarned,
+                questions: questions,
                 strengths: Array.isArray(parsed.strengths) ? parsed.strengths : [],
                 weaknesses: Array.isArray(parsed.weaknesses) ? parsed.weaknesses : [],
                 commonErrors: Array.isArray(parsed.commonErrors) ? parsed.commonErrors : [],
@@ -917,6 +945,211 @@ function parseFeedbackResponse(response) {
     };
 }
 
+// Generate AI-powered recommendations based on class performance
+export async function generateAIRecommendations({ className, subject, gradeLevel, feedbackData, commonErrors, studentPerformanceData }) {
+    try {
+        const apiKey = process.env.GEMINI_API_KEY;
+        if (!apiKey) {
+            console.warn('Gemini API key not found, using mock recommendations');
+            return generateMockRecommendations({ className, subject, gradeLevel });
+        }
+
+        // Rate limit recommendation calls
+        await enforceRateLimit();
+
+        const recommendationPrompt = buildRecommendationPrompt({
+            className,
+            subject,
+            gradeLevel,
+            feedbackData,
+            commonErrors,
+            studentPerformanceData
+        });
+
+        const response = await retryWithBackoff(async () => {
+            return fetch(
+                `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
+                {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        contents: [{
+                            parts: [{
+                                text: recommendationPrompt
+                            }]
+                        }],
+                        generationConfig: {
+                            temperature: 0.7, // Higher for creative recommendations
+                            topK: 40,
+                            topP: 0.9,
+                            maxOutputTokens: 3072 // More tokens for comprehensive recommendations
+                        }
+                    })
+                }
+            );
+        });
+
+        if (!response.ok) {
+            throw new Error(`Gemini API error: ${response.status} ${response.statusText}`);
+        }
+
+        const result = await response.json();
+
+        if (result.candidates && result.candidates[0] && result.candidates[0].content) {
+            const generatedRecommendations = result.candidates[0].content.parts[0].text;
+            return parseRecommendationsResponse(generatedRecommendations);
+        } else {
+            throw new Error('No valid recommendations from Gemini API');
+        }
+
+    } catch (error) {
+        console.error('Gemini recommendations error:', error);
+
+        // Fallback to mock recommendations
+        return generateMockRecommendations({ className, subject, gradeLevel });
+    }
+}
+
+// Build AI recommendation prompt
+function buildRecommendationPrompt({ className, subject, gradeLevel, feedbackData, commonErrors, studentPerformanceData }) {
+    const errorFrequency = {};
+    commonErrors.forEach(error => {
+        errorFrequency[error] = (errorFrequency[error] || 0) + 1;
+    });
+
+    const topErrors = Object.entries(errorFrequency)
+        .sort(([, a], [, b]) => b - a)
+        .slice(0, 10)
+        .map(([error, count]) => `${error} (${count} students)`);
+
+    const averageClassScore = studentPerformanceData.length > 0
+        ? Math.round(studentPerformanceData.reduce((sum, s) => sum + s.score, 0) / studentPerformanceData.length)
+        : 0;
+
+    const strugglingStudents = studentPerformanceData.filter(s => s.score < 70).length;
+    const excellentStudents = studentPerformanceData.filter(s => s.score >= 90).length;
+
+    return `As an AI teaching assistant, analyze the performance data for ${className} (${subject}, Grade ${gradeLevel}) and provide actionable recommendations.
+
+CLASS PERFORMANCE SUMMARY:
+- Average Score: ${averageClassScore}%
+- Students Struggling (< 70%): ${strugglingStudents}
+- Students Excelling (≥ 90%): ${excellentStudents}
+- Total Worksheets Analyzed: ${studentPerformanceData.length}
+
+TOP COMMON ERRORS:
+${topErrors.join('\n')}
+
+SAMPLE FEEDBACK DATA:
+${feedbackData.slice(0, 5).map(f =>
+        `- ${f.studentName}: ${f.topic} (${f.score}%) - ${f.feedback}`
+    ).join('\n')}
+
+Please provide recommendations in the following JSON format:
+{
+    "topics": [
+        {
+            "topic": "<specific topic that needs focus>",
+            "description": "<why this topic needs attention>", 
+            "priority": "<high/medium/low>",
+            "studentsAffected": <number>,
+            "suggestedActivities": ["<activity1>", "<activity2>", "<activity3>"]
+        }
+    ],
+    "classStrategy": "<overall teaching strategy recommendation>",
+    "individualRecommendations": [
+        {
+            "studentName": "<name>",
+            "recommendations": ["<specific recommendation1>", "<specific recommendation2>"]
+        }
+    ]
+}
+
+Focus on:
+1. Specific ${subject} topics that need review based on common errors
+2. Teaching strategies appropriate for Grade ${gradeLevel}
+3. Individual student needs where performance data indicates specific issues
+4. Practical activities and exercises to address identified weaknesses
+
+Limit to maximum 5 topics, 3 class strategies, and individual recommendations only for students scoring below 70%.`;
+}
+
+// Parse AI recommendations response
+function parseRecommendationsResponse(response) {
+    try {
+        const jsonMatch = response.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+            const parsed = JSON.parse(jsonMatch[0]);
+
+            return {
+                topics: (parsed.topics || []).map(topic => ({
+                    topic: topic.topic || 'Unknown Topic',
+                    description: topic.description || 'No description provided',
+                    priority: ['high', 'medium', 'low'].includes(topic.priority) ? topic.priority : 'medium',
+                    studentsAffected: Math.max(0, topic.studentsAffected || 0),
+                    suggestedActivities: Array.isArray(topic.suggestedActivities) ? topic.suggestedActivities : []
+                })).slice(0, 5), // Limit to 5 topics
+                classStrategy: parsed.classStrategy || 'Continue current teaching approach.',
+                individualRecommendations: (parsed.individualRecommendations || []).map(rec => ({
+                    studentName: rec.studentName || 'Unknown Student',
+                    recommendations: Array.isArray(rec.recommendations) ? rec.recommendations : []
+                })).slice(0, 10), // Limit to 10 individual recommendations
+                generatedAt: new Date(),
+                source: 'gemini-2.5'
+            };
+        }
+    } catch (error) {
+        console.error('Error parsing recommendations response:', error);
+    }
+
+    // Fallback if parsing fails
+    return generateMockRecommendations({});
+}
+
+// Mock recommendations for fallback
+function generateMockRecommendations({ className = 'Class', subject = 'math', gradeLevel = '9' }) {
+    const mathTopics = [
+        'Algebraic manipulation and equation solving',
+        'Graphing linear functions and interpreting slopes',
+        'Word problem translation and setup',
+        'Fraction operations and decimal conversions',
+        'Order of operations and mathematical notation'
+    ];
+
+    const activities = [
+        'Practice worksheets with step-by-step solutions',
+        'Interactive online math games and simulations',
+        'Peer tutoring and collaborative problem solving',
+        'Real-world application projects',
+        'Daily warm-up review exercises'
+    ];
+
+    return {
+        topics: mathTopics.slice(0, 3).map((topic, index) => ({
+            topic: topic,
+            description: `Students are showing difficulty with ${topic.toLowerCase()}. Additional practice and review needed.`,
+            priority: index === 0 ? 'high' : index === 1 ? 'medium' : 'low',
+            studentsAffected: Math.floor(Math.random() * 10) + 5,
+            suggestedActivities: activities.slice(index, index + 3)
+        })),
+        classStrategy: `Focus on foundational ${subject} concepts for Grade ${gradeLevel}. Use varied teaching methods including visual aids, hands-on activities, and technology integration to accommodate different learning styles.`,
+        individualRecommendations: [
+            {
+                studentName: 'Sample Student',
+                recommendations: [
+                    'Provide additional practice with basic operations',
+                    'Use visual aids and manipulatives for better understanding',
+                    'Consider one-on-one tutoring sessions'
+                ]
+            }
+        ],
+        generatedAt: new Date(),
+        source: 'mock-fallback'
+    };
+}
+
 // Mock grading for development/fallback
 async function mockGrading({ text, subject, gradeLevel, rubric, studentName }) {
     // Simulate API delay
@@ -957,6 +1190,8 @@ function generateMockGradingResults(subject, text = '') {
 
     return {
         totalScore,
+        totalPoints: totalPossible,
+        totalPointsEarned: totalEarned,
         questions: mockQuestions,
         strengths: [
             'Shows good understanding of basic concepts',

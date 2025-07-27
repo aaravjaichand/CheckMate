@@ -307,8 +307,34 @@ class GradingInterface {
 
     async startStreamingGrading() {
         return new Promise((resolve, reject) => {
+            // Close any existing EventSource
+            if (this.currentEventSource) {
+                this.currentEventSource.close();
+                this.currentEventSource = null;
+            }
+
             const token = localStorage.getItem('gradeflow_token');
-            const eventSource = new EventSource(`/api/upload/stream/${this.worksheetId}?token=${token}`);
+            const timestamp = Date.now();
+            const random = Math.random().toString(36).substring(2);
+            const sessionId = Math.random().toString(36).substring(2, 15);
+
+                        // Force browser to treat this as a completely new request
+            const url = `/api/upload/stream/${this.worksheetId}?token=${token}&_t=${timestamp}&_r=${random}&_sid=${sessionId}&nocache=${Date.now()}`;
+            console.log('Creating EventSource with URL:', url);
+            console.log('Token being used:', token ? 'Present' : 'Missing');
+            console.log('Worksheet ID:', this.worksheetId);
+            
+            const eventSource = new EventSource(url);
+            this.currentEventSource = eventSource;
+
+            // Add immediate connection debugging
+            eventSource.onopen = () => {
+                console.log('✅ EventSource connection opened successfully');
+            };
+
+            eventSource.addEventListener('open', () => {
+                console.log('🔗 EventSource connection established');
+            });
 
             // Show streaming display after analyzing step
             setTimeout(() => {
@@ -355,17 +381,22 @@ class GradingInterface {
 
                             // Show final cleaned results immediately
                             this.showGradingResults(data.data);
+                            eventSource.close();
+                            this.currentEventSource = null;
                             resolve();
                             break;
 
                         case 'error':
                             this.addStreamMessage(`❌ Error: ${data.message}`, 'error');
                             this.showGradingError(data.message);
+                            eventSource.close();
+                            this.currentEventSource = null;
                             reject(new Error(data.message));
                             break;
 
                         case 'done':
                             eventSource.close();
+                            this.currentEventSource = null;
                             break;
                     }
                 } catch (error) {
@@ -377,15 +408,19 @@ class GradingInterface {
             eventSource.onerror = (error) => {
                 console.error('EventSource error:', error);
                 eventSource.close();
+                this.currentEventSource = null;
                 this.addStreamMessage('❌ Streaming connection failed', 'error');
                 reject(new Error('Streaming connection failed'));
             };
 
             // Timeout after 5 minutes
             setTimeout(() => {
-                eventSource.close();
-                this.addStreamMessage('⏰ Streaming timeout', 'error');
-                reject(new Error('Streaming timeout'));
+                if (this.currentEventSource === eventSource) {
+                    eventSource.close();
+                    this.currentEventSource = null;
+                    this.addStreamMessage('⏰ Streaming timeout', 'error');
+                    reject(new Error('Streaming timeout'));
+                }
             }, 5 * 60 * 1000);
         });
     }

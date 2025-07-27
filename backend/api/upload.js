@@ -347,19 +347,32 @@ router.post('/worksheets', verifyToken, upload.array('worksheets', 50), async (r
 
 // Streaming endpoint for real-time grading updates  
 router.get('/stream/:worksheetId', async (req, res) => {
+    console.log('🚀 STREAMING ENDPOINT HIT!');
+    console.log('Raw URL:', req.url);
+    console.log('Raw query:', req.query);
+    
     // Custom token verification for EventSource (which can't send custom headers)
     try {
         const token = req.query.token || req.headers.authorization?.replace('Bearer ', '');
+        console.log('Token extraction:', { 
+            fromQuery: !!req.query.token, 
+            fromHeader: !!req.headers.authorization,
+            hasToken: !!token,
+            tokenLength: token ? token.length : 0
+        });
 
         if (!token) {
+            console.log('❌ No token provided');
             res.writeHead(401, { 'Content-Type': 'application/json' });
             res.end(JSON.stringify({ error: 'No token provided' }));
             return;
         }
 
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        console.log('✅ Token verified for user:', decoded.userId);
         req.user = decoded;
     } catch (error) {
+        console.log('❌ Token verification failed:', error.message);
         res.writeHead(401, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ error: 'Invalid token' }));
         return;
@@ -370,14 +383,24 @@ router.get('/stream/:worksheetId', async (req, res) => {
         console.log('=== STREAMING GRADING REQUEST ===');
         console.log('Worksheet ID:', worksheetId);
         console.log('User ID:', req.user.userId);
+        console.log('Request URL:', req.url);
+        console.log('Query params:', req.query);
+        console.log('Headers:', {
+            'user-agent': req.headers['user-agent'],
+            'accept': req.headers['accept'],
+            'cache-control': req.headers['cache-control']
+        });
 
-        // Set up Server-Sent Events
+        // Set up Server-Sent Events with aggressive cache prevention
         res.writeHead(200, {
             'Content-Type': 'text/event-stream',
-            'Cache-Control': 'no-cache',
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache',
+            'Expires': '0',
             'Connection': 'keep-alive',
             'Access-Control-Allow-Origin': '*',
-            'Access-Control-Allow-Headers': 'Cache-Control'
+            'Access-Control-Allow-Headers': 'Cache-Control',
+            'X-Accel-Buffering': 'no' // Disable nginx buffering
         });
 
         const db = await getDb();
@@ -413,6 +436,14 @@ router.get('/stream/:worksheetId', async (req, res) => {
             studentName: worksheet.studentName
         })}\n\n`);
 
+        // Set up heartbeat to prevent connection timeout
+        const heartbeat = setInterval(() => {
+            res.write(`data: ${JSON.stringify({
+                type: 'heartbeat',
+                timestamp: Date.now()
+            })}\n\n`);
+        }, 10000); // Every 10 seconds
+
         // Import grading service
         const { gradeWorksheetDirect } = await import('../services/gemini.js');
 
@@ -447,8 +478,8 @@ router.get('/stream/:worksheetId', async (req, res) => {
                 }
             }
 
-            // Grade with streaming
-            const gradingResults = await gradeWorksheetDirect({
+            // Grade with streaming (with timeout)
+            const gradingPromise = gradeWorksheetDirect({
                 fileBuffer: fileBuffer,
                 mimeType: worksheet.mimeType,
                 subject: worksheet.metadata?.subject,
@@ -457,6 +488,13 @@ router.get('/stream/:worksheetId', async (req, res) => {
                 assignmentName: worksheet.metadata?.assignment,
                 streamCallback: streamCallback
             });
+
+            // Add a timeout wrapper
+            const timeoutPromise = new Promise((_, reject) => {
+                setTimeout(() => reject(new Error('Grading timeout after 2 minutes')), 120000); // 2 minute timeout
+            });
+
+            const gradingResults = await Promise.race([gradingPromise, timeoutPromise]);
 
             // Send final results
             res.write(`data: ${JSON.stringify({
@@ -508,13 +546,17 @@ router.get('/stream/:worksheetId', async (req, res) => {
                     }
                 }
             );
+            
+            clearInterval(heartbeat);
         }
 
         res.write(`data: ${JSON.stringify({ type: 'done' })}\n\n`);
+        clearInterval(heartbeat);
         res.end();
 
     } catch (error) {
         console.error('Streaming endpoint error:', error);
+        clearInterval(heartbeat);
         res.write(`data: ${JSON.stringify({
             type: 'error',
             message: 'Streaming failed'

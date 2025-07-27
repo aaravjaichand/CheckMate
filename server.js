@@ -16,6 +16,7 @@ import configRoutes from './backend/api/config.js';
 import debugRoutes from './backend/api/debug.js';
 import studentsRoutes from './backend/api/students.js';
 import classesRoutes from './backend/api/classes.js';
+import analyticsRoutes from './backend/api/analytics.js';
 import testApisRoutes from './backend/api/test-apis.js';
 
 // Load environment variables
@@ -64,6 +65,7 @@ app.use('/api/config', configRoutes);
 app.use('/api/debug', debugRoutes);
 app.use('/api/students', studentsRoutes);
 app.use('/api/classes', classesRoutes);
+app.use('/api/analytics', analyticsRoutes);
 app.use('/api/test-apis', testApisRoutes);
 
 // Health check endpoint

@@ -99,6 +99,16 @@ export const WorksheetSchema = {
             min: 0,
             max: 100
         },
+        totalPoints: {
+            type: Number,
+            min: 0,
+            default: 0
+        },
+        totalPointsEarned: {
+            type: Number,
+            min: 0,
+            default: 0
+        },
         questions: [{
             number: Number,
             question: String,
