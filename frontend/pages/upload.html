@@ -295,6 +295,81 @@
             justify-content: flex-end;
             margin-top: 20px;
         }
+
+        /* Grading Instructions Card */
+        .grading-instructions-card {
+            background: rgba(255, 255, 255, 0.9);
+            border: 2px solid rgba(79, 70, 229, 0.1);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 24px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .grading-instructions-card .card-header {
+            margin-bottom: 16px;
+        }
+
+        .grading-instructions-card .card-header h3 {
+            color: #4F46E5;
+            font-size: 18px;
+            font-weight: 600;
+            margin: 0 0 8px 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .grading-instructions-card .card-header p {
+            color: #6B7280;
+            font-size: 14px;
+            margin: 0;
+        }
+
+        .instructions-textarea {
+            width: 100%;
+            min-height: 120px;
+            padding: 12px;
+            border: 2px solid #E5E7EB;
+            border-radius: 8px;
+            font-family: 'Inter', sans-serif;
+            font-size: 14px;
+            line-height: 1.5;
+            resize: vertical;
+            transition: border-color 0.2s ease;
+            background: rgba(255, 255, 255, 0.8);
+        }
+
+        .instructions-textarea:focus {
+            outline: none;
+            border-color: #4F46E5;
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+
+        .instructions-textarea::placeholder {
+            color: #9CA3AF;
+            line-height: 1.6;
+        }
+
+        .textarea-footer {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 8px;
+        }
+
+        .char-count {
+            font-size: 12px;
+            color: #6B7280;
+        }
+
+        .char-count.warning {
+            color: #F59E0B;
+        }
+
+        .char-count.error {
+            color: #EF4444;
+        }
     </style>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -413,25 +488,20 @@
             <p>Upload student worksheets for AI-powered grading and feedback</p>
         </div>
 
-        <!-- Usage Stats -->
-        <div class="usage-card">
-            <div class="usage-info">
-                <div class="usage-stat">
-                    <span class="usage-number" id="worksheets-used">0</span>
-                    <span class="usage-label">Used this month</span>
-                </div>
-                <div class="usage-stat">
-                    <span class="usage-number" id="worksheets-remaining">50</span>
-                    <span class="usage-label">Remaining</span>
+        <!-- Custom Grading Instructions -->
+        <div class="grading-instructions-card">
+            <div class="card-header">
+                <h3><i class="fas fa-robot"></i> Custom Grading Instructions</h3>
+                <p>Provide specific instructions for AI grading (optional)</p>
+            </div>
+            <div class="instructions-input">
+                <textarea id="grading-instructions" class="instructions-textarea"
+                    placeholder="Enter custom grading instructions for Gemini AI...&#10;&#10;Examples:&#10;• Focus on mathematical reasoning, not just correct answers&#10;• Give partial credit for showing work&#10;• Be encouraging in feedback&#10;• Grade strictly according to rubric&#10;• Pay attention to spelling and grammar"
+                    rows="6"></textarea>
+                <div class="textarea-footer">
+                    <span class="char-count"><span id="char-count">0</span>/500 characters</span>
                 </div>
             </div>
-            <div class="usage-bar">
-                <div class="usage-progress" id="usage-progress" style="width: 0%"></div>
-            </div>
-            <p class="usage-text">
-                <span id="usage-percentage">0%</span> of monthly limit used
-                <a href="/pages/settings.html#billing" class="upgrade-link">Upgrade Plan</a>
-            </p>
         </div>
 
         <!-- Upload Section -->
@@ -709,6 +779,39 @@
     <div class="floating-element floating-element-1"></div>
     <div class="floating-element floating-element-2"></div>
     <div class="floating-element floating-element-3"></div>
+    <!-- Grading Instructions Script -->
+    <script>
+        // Character count functionality
+        const gradingInstructions = document.getElementById('grading-instructions');
+        const charCount = document.getElementById('char-count');
+        const maxChars = 500;
+
+        if (gradingInstructions && charCount) {
+            gradingInstructions.addEventListener('input', function() {
+                const currentLength = this.value.length;
+                charCount.textContent = currentLength;
+                
+                // Update styling based on character count
+                charCount.parentElement.classList.remove('warning', 'error');
+                if (currentLength > maxChars * 0.8) {
+                    charCount.parentElement.classList.add('warning');
+                }
+                if (currentLength > maxChars) {
+                    charCount.parentElement.classList.add('error');
+                    // Trim the text if it exceeds the limit
+                    this.value = this.value.substring(0, maxChars);
+                    charCount.textContent = maxChars;
+                }
+            });
+        }
+
+        // Function to get grading instructions (to be used by upload scripts)
+        window.getGradingInstructions = function() {
+            const textarea = document.getElementById('grading-instructions');
+            return textarea ? textarea.value.trim() : '';
+        };
+    </script>
+
     <!-- User Management Script -->
     <script src="/js/user.js"></script>
 </body>

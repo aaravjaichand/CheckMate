@@ -818,12 +818,9 @@ class SingleUploadManager {
         }
 
         this.isUploading = true;
-        this.showProcessingOverlay('Uploading worksheet...', 'Please wait while we process your file.');
+        this.showProcessingOverlay('Redirecting to grading portal...', 'Please wait while we process your file.');
 
         try {
-            // Step 1: Upload in progress
-            this.updateProcessingStep(0);
-
             // Get values or use defaults for demo
             const studentId = this.studentDropdown?.getValue() || '507f1f77bcf86cd799439012'; // Demo student ID
             const classId = this.classDropdown?.getValue() || '507f1f77bcf86cd799439013'; // Demo class ID
@@ -859,35 +856,13 @@ class SingleUploadManager {
             const result = await response.json();
 
             if (response.ok) {
-                // Step 2: Analyzing worksheet
-                this.updateProcessingStep(1);
-                this.updateProcessingOverlay('Analyzing worksheet...', 'AI is reading and understanding the content.');
-
-                await new Promise(resolve => setTimeout(resolve, 1500));
-
-                // Step 3: AI grading 
-                this.updateProcessingStep(2);
-                this.updateProcessingOverlay('AI grading in progress...', 'Gemini 2.5 Flash is evaluating answers.');
-
-                await new Promise(resolve => setTimeout(resolve, 2000));
-
-                // Step 4: Generating feedback
-                this.updateProcessingStep(3);
-                this.updateProcessingOverlay('Generating feedback...', 'Creating personalized recommendations.');
-
-                await new Promise(resolve => setTimeout(resolve, 1000));
-
-                this.showNotification('Worksheet processed successfully! Redirecting to results...', 'success');
-                
                 // Clear form
                 this.clearAll();
                 this.updateUsageStats();
                 this.loadRecentUploads();
 
-                // Redirect to split-screen grading interface
-                setTimeout(() => {
-                    window.location.href = `/pages/grading-split.html?worksheet=${result.worksheet.id}`;
-                }, 1500);
+                // Redirect to split-screen grading interface immediately
+                window.location.href = `/pages/grading-split.html?worksheet=${result.worksheet.id}`;
 
             } else {
                 throw new Error(result.error || 'Upload failed');
@@ -947,24 +922,6 @@ class SingleUploadManager {
                 <div class="processing-spinner"></div>
                 <div class="processing-text">${title}</div>
                 <div class="processing-subtext">${subtitle}</div>
-                <div class="processing-steps" id="processing-steps">
-                    <div class="step active">
-                        <i class="fas fa-upload"></i>
-                        <span>Uploading file...</span>
-                    </div>
-                    <div class="step">
-                        <i class="fas fa-eye"></i>
-                        <span>Analyzing worksheet</span>
-                    </div>
-                    <div class="step">
-                        <i class="fas fa-robot"></i>
-                        <span>AI grading in progress</span>
-                    </div>
-                    <div class="step">
-                        <i class="fas fa-check"></i>
-                        <span>Generating feedback</span>
-                    </div>
-                </div>
             </div>
         `;
 
