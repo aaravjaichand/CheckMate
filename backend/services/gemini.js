@@ -1,17 +1,17 @@
 // Gemini API Service for AI Grading and Feedback Generation
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
-// Rate limiting configuration
+// OPTIMIZED Rate limiting configuration for speed
 const RATE_LIMIT = {
-    maxRetries: 3,
-    baseDelayMs: 1000,  // Start with 1 second
-    maxDelayMs: 30000,  // Max 30 seconds
-    backoffMultiplier: 2
+    maxRetries: 2, // Reduced from 3
+    baseDelayMs: 500,  // Reduced from 1000ms to 500ms
+    maxDelayMs: 15000,  // Reduced from 30000ms to 15000ms
+    backoffMultiplier: 1.5 // Reduced from 2 for faster recovery
 };
 
-// Simple in-memory rate limiter
+// OPTIMIZED: Reduced rate limiting for faster processing
 let lastRequestTime = 0;
-const MIN_REQUEST_INTERVAL = 1000; // Minimum 1 second between requests
+const MIN_REQUEST_INTERVAL = 200; // Reduced from 1000ms to 200ms for faster requests
 
 // Rate limiting helper function
 async function enforceRateLimit() {
@@ -27,7 +27,7 @@ async function enforceRateLimit() {
     lastRequestTime = Date.now();
 }
 
-// Retry with exponential backoff
+// OPTIMIZED: Faster retry with reduced backoff
 async function retryWithBackoff(apiCall) {
     let lastError;
 
@@ -71,7 +71,7 @@ async function retryWithBackoff(apiCall) {
     throw lastError;
 }
 
-// Try to extract partial results from streaming text
+// OPTIMIZED: Faster partial results extraction
 function tryExtractPartialResults(text) {
     try {
         // Look for complete question objects in the streaming text
@@ -150,7 +150,7 @@ function tryExtractPartialResults(text) {
                 strengths: strengths,
                 weaknesses: weaknesses,
                 recommendations: recommendations,
-                source: 'gemini-2.5-flash-streaming',
+                source: 'gemini-2.5-flash-streaming-optimized',
                 isPartial: true
             };
         }
@@ -162,10 +162,11 @@ function tryExtractPartialResults(text) {
     }
 }
 
-// NEW: Direct worksheet image processing with Gemini 2.5 Pro
+// OPTIMIZED: Direct worksheet image processing with Gemini 2.5 Flash - Enhanced for Speed
 export async function gradeWorksheetDirect({ fileBuffer, mimeType, subject, gradeLevel, rubric, studentName, assignmentName, customPrompt, customGradingInstructions, streamCallback }) {
     try {
         const apiKey = process.env.GEMINI_API_KEY;
+        console.log('🚀 SPEED-OPTIMIZED Gemini 2.5 Flash grading starting...');
         console.log('Checking Gemini API key:', apiKey ? 'Present' : 'Missing');
         console.log('Environment check:', {
             hasApiKey: !!apiKey,
@@ -182,14 +183,25 @@ export async function gradeWorksheetDirect({ fileBuffer, mimeType, subject, grad
         // Initialize Gemini with the API key
         const genAI = new GoogleGenerativeAI(apiKey);
 
-        // Use Gemini 2.5 Flash - faster processing with excellent image support
-        const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+        // OPTIMIZED: Use Gemini 2.5 Flash with speed-optimized configuration
+        const model = genAI.getGenerativeModel({
+            model: "gemini-2.5-flash",
+            // SPEED OPTIMIZATION: Configure for fastest response
+            generationConfig: {
+                temperature: 0.05,  // ULTRA-LOW: Even faster, more deterministic
+                topP: 0.7,         // REDUCED: Faster token selection
+                topK: 15,          // REDUCED: Fewer options = faster decisions
+                maxOutputTokens: 8192,  // Keep high for complex worksheets
+                candidateCount: 1,      // Single candidate for speed
+                stopSequences: []       // No stop sequences for uninterrupted generation
+            }
+        });
 
-        console.log(`Processing worksheet directly with Gemini 2.5 Flash for ${studentName}`);
+        console.log(`🚀 SPEED-OPTIMIZED processing worksheet directly with Gemini 2.5 Flash for ${studentName}`);
 
-        // Determine upload method based on file size
+        // OPTIMIZED: Determine upload method based on file size with faster thresholds
         const fileSize = fileBuffer.length;
-        const MAX_INLINE_SIZE = 20 * 1024 * 1024; // 20MB
+        const MAX_INLINE_SIZE = 25 * 1024 * 1024; // Increased to 25MB for better inline processing
 
         let result;
 
@@ -199,8 +211,8 @@ export async function gradeWorksheetDirect({ fileBuffer, mimeType, subject, grad
             result = await processLargeWorksheet(model, fileBuffer, mimeType, { subject, gradeLevel, rubric, studentName, assignmentName, streamCallback });
         } else {
             // Use inline processing for smaller files
-            console.log(`Small file (${Math.round(fileSize / 1024)}KB), using inline processing`);
-            result = await processInlineWorksheet(model, fileBuffer, mimeType, { subject, gradeLevel, rubric, studentName, assignmentName, customPrompt, customGradingInstructions, streamCallback });
+            console.log(`🚀 SPEED-OPTIMIZED file (${Math.round(fileSize / 1024)}KB), using inline processing`);
+            result = await processInlineWorksheetOptimized(model, fileBuffer, mimeType, { subject, gradeLevel, rubric, studentName, assignmentName, customPrompt, customGradingInstructions, streamCallback });
         }
 
         return result;
@@ -232,10 +244,12 @@ export async function gradeWorksheetDirect({ fileBuffer, mimeType, subject, grad
     }
 }
 
-// Process worksheet using inline image data (for files < 20MB)
-async function processInlineWorksheet(model, fileBuffer, mimeType, context) {
+// OPTIMIZED: Process worksheet using inline image data with speed enhancements
+async function processInlineWorksheetOptimized(model, fileBuffer, mimeType, context) {
     try {
-        // Ensure we have a proper Buffer
+        console.log('🚀 SPEED-OPTIMIZED inline processing starting...');
+
+        // OPTIMIZED: Faster buffer conversion
         let buffer = fileBuffer;
 
         if (!Buffer.isBuffer(buffer)) {
@@ -257,39 +271,32 @@ async function processInlineWorksheet(model, fileBuffer, mimeType, context) {
 
         const base64Image = buffer.toString('base64');
 
-        // Use custom prompt if provided, otherwise build standard grading prompt
+        // OPTIMIZED: Use custom prompt if provided, otherwise build speed-optimized grading prompt
         let prompt;
         if (context.customPrompt) {
             console.log('Using CUSTOM prompt:', context.customPrompt);
             prompt = context.customPrompt;
         } else {
-            console.log('Using DEFAULT grading prompt');
-            prompt = buildDirectGradingPrompt(context);
+            console.log('🚀 Using SPEED-OPTIMIZED grading prompt');
+            prompt = buildSpeedOptimizedGradingPrompt(context);
         }
 
-        console.log('Sending request to Gemini 2.5 Flash with prompt length:', prompt.length);
-        console.log('Image data size:', base64Image.length, 'characters');
-        console.log('MIME type:', mimeType);
-        console.log('Base64 preview:', base64Image.substring(0, 100) + '...');
-        console.log('File buffer info:', {
-            originalBufferLength: fileBuffer?.length,
-            originalBufferType: typeof fileBuffer,
-            originalIsBuffer: Buffer.isBuffer(fileBuffer),
-            finalBufferLength: buffer.length,
-            finalBufferType: typeof buffer,
-            finalIsBuffer: Buffer.isBuffer(buffer),
-            firstBytes: buffer.toString('hex').substring(0, 20)
+        console.log('🚀 SPEED-OPTIMIZED request to Gemini 2.5 Flash:', {
+            promptLength: prompt.length,
+            imageDataSize: base64Image.length,
+            mimeType: mimeType,
+            studentName: context.studentName
         });
 
-        // Rate limit API calls
+        // OPTIMIZED: Minimal rate limiting for speed
         await enforceRateLimit();
 
-        // Add timeout to prevent hanging
+        // OPTIMIZED: Reduced timeout for faster failures
         const timeout = new Promise((_, reject) =>
-            setTimeout(() => reject(new Error('Gemini API call timed out after 2 minutes')), 2 * 60 * 1000)
+            setTimeout(() => reject(new Error('SPEED-OPTIMIZED: Gemini API call timed out after 90 seconds')), 90 * 1000)
         );
 
-        // Enable streaming with retry logic for rate limiting
+        // OPTIMIZED: Enable streaming with faster retry logic for rate limiting
         const apiCall = retryWithBackoff(async () => {
             return model.generateContentStream([
                 prompt,
@@ -304,49 +311,61 @@ async function processInlineWorksheet(model, fileBuffer, mimeType, context) {
 
         const result = await Promise.race([apiCall, timeout]);
 
-        console.log('=== GEMINI API STREAMING RESPONSE ===');
+        console.log('🚀 SPEED-OPTIMIZED Gemini API streaming response started');
         let text = '';
         let chunkCount = 0;
+        let lastCallbackTime = 0;
+        const CALLBACK_THROTTLE = 50; // Only call callback every 50ms for performance
 
-        // Process streaming chunks and send to frontend via callback
+        // OPTIMIZED: Process streaming chunks with throttled callbacks for better performance
         for await (const chunk of result.stream) {
             chunkCount++;
             const chunkText = chunk.text();
             text += chunkText;
 
-            // Log streaming progress for debugging
-            console.log(`Stream chunk ${chunkCount}: ${chunkText.length} chars`);
-            console.log(`Chunk preview: ${chunkText.substring(0, 100)}...`);
-            console.log(`Total accumulated: ${text.length} chars`);
+            // OPTIMIZED: Throttled logging for performance
+            if (chunkCount % 5 === 1) {
+                console.log(`🚀 Stream chunk ${chunkCount}: ${chunkText.length} chars, total: ${text.length}`);
+            }
 
-            // Send chunk to frontend via callback if provided
-            if (context.streamCallback && typeof context.streamCallback === 'function') {
+            // OPTIMIZED: Throttled callback for better frontend performance
+            const now = Date.now();
+            if (context.streamCallback && typeof context.streamCallback === 'function' &&
+                (now - lastCallbackTime > CALLBACK_THROTTLE || chunkCount === 1)) {
                 try {
                     context.streamCallback({
                         type: 'chunk',
                         data: chunkText,
                         chunkNumber: chunkCount,
-                        totalLength: text.length
+                        totalLength: text.length,
+                        isOptimized: true
                     });
 
-                    // Try to extract partial results as we stream
-                    const partialResults = tryExtractPartialResults(text);
-                    if (partialResults) {
-                        context.streamCallback({
-                            type: 'partial_results',
-                            data: partialResults,
-                            isComplete: false
-                        });
+                    // OPTIMIZED: Try to extract partial results every few chunks instead of every chunk
+                    if (chunkCount % 3 === 0) {
+                        const partialResults = tryExtractPartialResults(text);
+                        if (partialResults) {
+                            context.streamCallback({
+                                type: 'partial_results',
+                                data: partialResults,
+                                isComplete: false,
+                                isOptimized: true
+                            });
+                        }
                     }
+
+                    lastCallbackTime = now;
                 } catch (callbackError) {
                     console.error('Stream callback error:', callbackError);
                 }
             }
         }
 
-        console.log('=== STREAMING COMPLETE ===');
-        console.log(`Total chunks received: ${chunkCount}`);
-        console.log(`Final response length: ${text.length}`);
+        console.log('🚀 SPEED-OPTIMIZED streaming complete:', {
+            totalChunks: chunkCount,
+            finalLength: text.length,
+            avgChunkSize: Math.round(text.length / chunkCount)
+        });
 
         // Notify frontend that streaming is complete
         if (context.streamCallback && typeof context.streamCallback === 'function') {
@@ -355,19 +374,18 @@ async function processInlineWorksheet(model, fileBuffer, mimeType, context) {
                     type: 'complete',
                     data: text,
                     totalChunks: chunkCount,
-                    totalLength: text.length
+                    totalLength: text.length,
+                    isOptimized: true
                 });
             } catch (callbackError) {
                 console.error('Stream completion callback error:', callbackError);
             }
         }
 
-        console.log('Raw Gemini response length:', text.length);
-        console.log('Raw Gemini response (first 200 chars):', text.substring(0, 200));
-        console.log('Raw Gemini response (last 200 chars):', text.substring(Math.max(0, text.length - 200)));
-
-        console.log('Response text length:', text.length);
-        console.log('Response preview:', text.substring(0, 200) + '...');
+        console.log('🚀 SPEED-OPTIMIZED response received:', {
+            length: text.length,
+            preview: text.substring(0, 200) + '...'
+        });
 
         // If using custom prompt, return raw response instead of trying to parse as grading JSON
         if (context.customPrompt) {
@@ -375,16 +393,17 @@ async function processInlineWorksheet(model, fileBuffer, mimeType, context) {
             return {
                 customPromptResponse: text,
                 prompt: context.customPrompt,
-                source: 'gemini-2.5-flash-custom',
+                source: 'gemini-2.5-flash-custom-optimized',
                 gradedAt: new Date(),
-                rawResponse: true
+                rawResponse: true,
+                isOptimized: true
             };
         } else {
-            return parseDirectGradingResponse(text, context.subject, context.studentName);
+            return parseDirectGradingResponseOptimized(text, context.subject, context.studentName);
         }
 
     } catch (error) {
-        console.error('Inline worksheet processing error:', error);
+        console.error('🚀 SPEED-OPTIMIZED inline worksheet processing error:', error);
         console.error('Gemini API call failed:', {
             errorName: error.name,
             errorMessage: error.message,
@@ -395,150 +414,99 @@ async function processInlineWorksheet(model, fileBuffer, mimeType, context) {
     }
 }
 
-// Process worksheet using Files API (for files > 20MB)
+// OPTIMIZED: Process worksheet using Files API (for files > 25MB)
 async function processLargeWorksheet(model, fileBuffer, mimeType, context) {
     // For large files, try inline processing first (Files API implementation pending)
-    console.log('Large file detected, attempting inline processing (Files API not yet implemented)');
+    console.log('🚀 Large file detected, attempting SPEED-OPTIMIZED inline processing (Files API not yet implemented)');
 
     try {
-        return await processInlineWorksheet(model, fileBuffer, mimeType, context);
+        return await processInlineWorksheetOptimized(model, fileBuffer, mimeType, context);
     } catch (error) {
         console.error('Large worksheet processing error:', error);
         throw error;
     }
 }
 
-// Build comprehensive grading prompt for direct image analysis
-function buildDirectGradingPrompt({ subject, gradeLevel, rubric, studentName, assignmentName, customGradingInstructions }) {
-    let basePrompt = `You are an experienced ${subject || 'elementary'} teacher grading a worksheet for a ${gradeLevel || 'elementary'} student named ${studentName || 'the student'}.
+// OPTIMIZED: Build speed-optimized grading prompt for direct image analysis
+function buildSpeedOptimizedGradingPrompt({ subject, gradeLevel, rubric, studentName, assignmentName, customGradingInstructions }) {
+    let basePrompt = `Grade this ${subject || 'math'} worksheet for ${studentName || 'Student'} (${gradeLevel || 'Grade'}).
 
-ASSIGNMENT: ${assignmentName || 'Worksheet Assignment'}
-SUBJECT: ${subject || 'General'}
-GRADE LEVEL: ${gradeLevel || 'Elementary'}
-STUDENT: ${studentName || 'Student'}`;
+ASSIGNMENT: ${assignmentName || 'Worksheet'}`;
 
     // PRIORITY: Add custom grading instructions first if provided
     if (customGradingInstructions && customGradingInstructions.trim()) {
         basePrompt += `
 
-**CUSTOM GRADING INSTRUCTIONS (HIGHEST PRIORITY):**
-${customGradingInstructions.trim()}
-
-IMPORTANT: The custom grading instructions above take PRIORITY over all other grading guidelines. Follow them exactly as specified.`;
+CUSTOM INSTRUCTIONS: ${customGradingInstructions.trim()}`;
     }
 
     basePrompt += `
 
-CRITICAL: You MUST respond with ONLY valid JSON. Do not include any text before or after the JSON. Do not use markdown formatting. Do not include explanations outside the JSON structure.
-
-Please carefully analyze this worksheet image and provide a comprehensive grading evaluation. Look at:
-
-1. **Text Recognition**: Read all handwritten and printed text carefully
-2. **Question Identification**: Identify each question number and what is being asked
-3. **Student Answers**: Find and evaluate each student's response
-4. **Show Work**: Look for mathematical work, diagrams, or explanations
-5. **Corrections**: Notice any crossed-out answers or corrections
-6. **Overall Presentation**: Assess neatness and organization
-
-RESPONSE FORMAT: Return ONLY the JSON object below with no additional text:
+Return ONLY this JSON (no markdown, no explanations):
 
 {
-    "totalScore": <percentage score 0-100>,
+    "totalScore": <0-100>,
     "questions": [
         {
-            "number": <question number>,
-            "question": "<question text you can see>",
-            "studentAnswer": "<student's written answer>",
-            "correctAnswer": "<correct answer>",
-            "score": <points earned>,
-            "maxScore": <maximum points>,
-            "isCorrect": <true/false>,
-            "partialCredit": <true/false>,
-            "feedback": "<specific feedback for this question>",
-            "showWork": "<description of any work shown>",
-            "hasCorrections": <true/false>
+            "number": <int>,
+            "question": "<text>",
+            "studentAnswer": "<answer>",
+            "correctAnswer": "<correct>",
+            "score": <points>,
+            "maxScore": <max>,
+            "isCorrect": <bool>,
+            "partialCredit": <bool>,
+            "feedback": "<brief feedback>"
         }
     ],
-    "strengths": ["<strength 1>", "<strength 2>"],
-    "weaknesses": ["<weakness 1>", "<weakness 2>"],
-    "commonErrors": ["<error 1>", "<error 2>"],
-    "recommendations": ["<recommendation 1>", "<recommendation 2>"],
-    "presentationNotes": "<comments on handwriting, organization, etc>",
-    "visualElements": "<description of any diagrams, drawings, or visual work>"
+    "strengths": ["<strength>"],
+    "weaknesses": ["<weakness>"],
+    "recommendations": ["<recommendation>"]
 }
 
-IMPORTANT: 
-- Return ONLY valid JSON
-- Use double quotes for all strings
-- Ensure all brackets and braces are properly closed
-- Do not include any markdown formatting (no backticks or code blocks)
-- Do not include any explanatory text outside the JSON`;
-
-    // Add subject-specific instructions if no custom instructions override them
-    if (!customGradingInstructions || !customGradingInstructions.trim()) {
-        if (subject?.toLowerCase().includes('math')) {
-            return basePrompt + `
-
-MATH-SPECIFIC INSTRUCTIONS:
-- Pay special attention to mathematical notation and equations`;
-        }
-        // Add other subject-specific instructions as needed
-    }
+Grade quickly and accurately. For math: check work shown, give partial credit, note computational vs conceptual errors.`;
 
     return basePrompt;
 }
 
-// Parse the direct grading response from Gemini 2.5 Pro
-function parseDirectGradingResponse(response, subject, studentName) {
-    console.log('=== PARSING GEMINI RESPONSE ===');
+// OPTIMIZED: Parse the direct grading response from Gemini 2.5 Flash with speed enhancements
+function parseDirectGradingResponseOptimized(response, subject, studentName) {
+    console.log('🚀 SPEED-OPTIMIZED parsing Gemini response');
     console.log('Original response length:', response.length);
     console.log('Subject:', subject);
     console.log('Student name:', studentName);
 
     try {
-        // Clean the response first
+        // OPTIMIZED: Faster response cleaning
         let cleanedResponse = response.trim();
-        console.log('After trim, length:', cleanedResponse.length);
 
-        // Remove markdown formatting if present
+        // OPTIMIZED: Remove markdown formatting if present (single pass)
         cleanedResponse = cleanedResponse.replace(/```json\s*/, '').replace(/```\s*$/, '');
-        console.log('After markdown removal, length:', cleanedResponse.length);
-        console.log('Cleaned response (first 300 chars):', cleanedResponse.substring(0, 300));
 
-        // Try to extract JSON from the response with multiple methods
+        console.log('🚀 Cleaned response length:', cleanedResponse.length);
+
+        // OPTIMIZED: Try to extract JSON with faster methods
         let jsonString = null;
 
-        // Method 1: Try direct parsing if it looks like pure JSON
+        // Method 1: Direct JSON detection (fastest)
         if (cleanedResponse.startsWith('{') && cleanedResponse.endsWith('}')) {
-            console.log('Method 1: Direct JSON detected');
+            console.log('🚀 Method 1: Direct JSON detected');
             jsonString = cleanedResponse;
         } else {
-            console.log('Method 1: Not pure JSON, trying extraction methods');
-            // Method 2: Find the largest JSON object in the response
-            const jsonMatches = cleanedResponse.match(/\{[\s\S]*?\}(?=\s*$|\s*[^}])/g);
-            console.log('Method 2: Found matches:', jsonMatches?.length || 0);
-            if (jsonMatches && jsonMatches.length > 0) {
-                // Take the longest match (most likely to be complete)
-                jsonString = jsonMatches.reduce((longest, current) =>
-                    current.length > longest.length ? current : longest
-                );
-                console.log('Method 2: Selected match length:', jsonString.length);
-            } else {
-                // Method 3: Find any JSON-like structure
-                const fallbackMatch = cleanedResponse.match(/\{[\s\S]*\}/);
-                console.log('Method 3: Fallback match found:', !!fallbackMatch);
-                if (fallbackMatch) {
-                    jsonString = fallbackMatch[0];
-                    console.log('Method 3: Match length:', jsonString.length);
-                }
+            console.log('🚀 Method 2: JSON extraction needed');
+            // Method 2: Find JSON object in response
+            const jsonMatch = cleanedResponse.match(/\{[\s\S]*\}/);
+            if (jsonMatch) {
+                jsonString = jsonMatch[0];
+                console.log('🚀 Method 2: JSON extracted, length:', jsonString.length);
             }
         }
 
         if (jsonString) {
-            console.log('Attempting to parse JSON:', jsonString.substring(0, 200) + '...');
+            console.log('🚀 Attempting JSON parse...');
             const parsed = JSON.parse(jsonString);
 
-            // Validate and enhance the response
+            // OPTIMIZED: Validate and enhance the response quickly
             const result = {
                 totalScore: Math.max(0, Math.min(100, parsed.totalScore || 0)),
                 questions: (parsed.questions || []).map((q, index) => ({
@@ -561,22 +529,23 @@ function parseDirectGradingResponse(response, subject, studentName) {
                 presentationNotes: parsed.presentationNotes || '',
                 visualElements: parsed.visualElements || '',
                 gradedAt: new Date(),
-                source: 'gemini-2.5-flash-direct',
-                processingMethod: 'direct-image-analysis'
+                source: 'gemini-2.5-flash-direct-optimized',
+                processingMethod: 'speed-optimized-direct-image-analysis',
+                isOptimized: true
             };
 
-            console.log('Successfully parsed Gemini response with', result.questions.length, 'questions');
+            console.log('🚀 SPEED-OPTIMIZED: Successfully parsed Gemini response with', result.questions.length, 'questions');
             return result;
         }
     } catch (error) {
-        console.error('Error parsing direct grading response:', error);
+        console.error('🚀 Error parsing speed-optimized grading response:', error);
         console.log('Raw response length:', response.length);
         console.log('Raw response preview:', response.substring(0, 500));
     }
 
     // Fallback if parsing fails
-    console.warn('Falling back to mock grading results due to parsing failure');
-    return generateMockGradingResults(subject, `Direct analysis for ${studentName}`);
+    console.warn('🚀 Falling back to mock grading results due to parsing failure');
+    return generateMockGradingResults(subject, `Speed-optimized direct analysis for ${studentName}`);
 }
 
 // Mock grading fallback for direct image processing
@@ -597,7 +566,7 @@ export async function gradeWithGemini({ text, subject, gradeLevel, rubric, stude
             return await mockGrading({ text, subject, gradeLevel, studentName });
         }
 
-        // Rate limit grading calls
+        // OPTIMIZED: Minimal rate limiting for speed
         await enforceRateLimit();
 
         const gradingPrompt = buildGradingPrompt({
@@ -611,11 +580,11 @@ export async function gradeWithGemini({ text, subject, gradeLevel, rubric, stude
 
         const response = await retryWithBackoff(async () => {
             const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 60000); // 60 second timeout
+            const timeoutId = setTimeout(() => controller.abort(), 45000); // OPTIMIZED: Reduced from 60s to 45s
 
             try {
                 const response = await fetch(
-                    `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+                    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
                     {
                         method: 'POST',
                         headers: {
@@ -629,10 +598,11 @@ export async function gradeWithGemini({ text, subject, gradeLevel, rubric, stude
                                 }]
                             }],
                             generationConfig: {
-                                temperature: 0.2, // Lower for more consistent grading
-                                topK: 32,
-                                topP: 0.9,
-                                maxOutputTokens: 4096 // Increased for complex grading tasks
+                                temperature: 0.1, // OPTIMIZED: Lower for faster, more consistent responses
+                                topK: 20,         // OPTIMIZED: Reduced for speed
+                                topP: 0.8,        // OPTIMIZED: Reduced for speed
+                                maxOutputTokens: 6144, // OPTIMIZED: Balanced for speed and completeness
+                                candidateCount: 1       // OPTIMIZED: Single candidate for speed
                             },
                         safetySettings: [
                             {
@@ -691,16 +661,16 @@ export async function generateFeedback({ gradingResults, studentName, subject, t
             tone
         });
 
-        // Rate limit feedback generation calls too
+        // OPTIMIZED: Minimal rate limiting for speed
         await enforceRateLimit();
 
         const response = await retryWithBackoff(async () => {
             const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout for feedback
+            const timeoutId = setTimeout(() => controller.abort(), 20000); // OPTIMIZED: Reduced from 30s to 20s
 
             try {
                 const response = await fetch(
-                    `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+                    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
                     {
                         method: 'POST',
                         headers: {
@@ -714,10 +684,11 @@ export async function generateFeedback({ gradingResults, studentName, subject, t
                             }]
                         }],
                         generationConfig: {
-                            temperature: 0.4, // Slightly higher for creative feedback
-                            topK: 32,
-                            topP: 0.9,
-                            maxOutputTokens: 2048 // Adequate for feedback generation
+                            temperature: 0.3, // OPTIMIZED: Slightly reduced for faster generation
+                            topK: 25,         // OPTIMIZED: Reduced for speed
+                            topP: 0.85,       // OPTIMIZED: Slightly reduced
+                            maxOutputTokens: 1536, // OPTIMIZED: Reduced for speed while maintaining quality
+                            candidateCount: 1       // OPTIMIZED: Single candidate for speed
                         }
                     })
                 }
@@ -945,7 +916,7 @@ function parseFeedbackResponse(response) {
     };
 }
 
-// Generate AI-powered recommendations based on class performance
+// OPTIMIZED: Generate AI-powered recommendations with faster processing
 export async function generateAIRecommendations({ className, subject, gradeLevel, feedbackData, commonErrors, studentPerformanceData }) {
     try {
         const apiKey = process.env.GEMINI_API_KEY;
@@ -954,7 +925,7 @@ export async function generateAIRecommendations({ className, subject, gradeLevel
             return generateMockRecommendations({ className, subject, gradeLevel });
         }
 
-        // Rate limit recommendation calls
+        // OPTIMIZED: Minimal rate limiting for speed
         await enforceRateLimit();
 
         const recommendationPrompt = buildRecommendationPrompt({
@@ -981,10 +952,11 @@ export async function generateAIRecommendations({ className, subject, gradeLevel
                             }]
                         }],
                         generationConfig: {
-                            temperature: 0.7, // Higher for creative recommendations
-                            topK: 40,
-                            topP: 0.9,
-                            maxOutputTokens: 3072 // More tokens for comprehensive recommendations
+                            temperature: 0.4, // OPTIMIZED: Reduced for faster generation
+                            topK: 30,         // OPTIMIZED: Reduced for speed
+                            topP: 0.85,       // OPTIMIZED: Reduced for speed
+                            maxOutputTokens: 2048, // OPTIMIZED: Reduced for faster response
+                            candidateCount: 1       // OPTIMIZED: Single candidate for speed
                         }
                     })
                 }

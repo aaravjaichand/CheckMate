@@ -29,9 +29,9 @@ router.get('/classes', verifyToken, async (req, res) => {
         const db = await getDb();
         const teacherId = req.user.userId;
 
-        // Get all classes for the teacher
+        // Get all classes for the teacher - FIXED: Classes use ObjectId teacherId
         const classes = await db.collection('classes').find({
-            teacherId: new ObjectId(teacherId),
+            teacherId: new ObjectId(teacherId),  // Classes stored with ObjectId
             isActive: true
         }).toArray();
 
@@ -44,16 +44,16 @@ router.get('/classes', verifyToken, async (req, res) => {
         for (const classDoc of classes) {
             const classId = classDoc._id;
 
-            // Get all worksheets for this class
+            // Get all worksheets for this class - FIXED: Worksheets use string teacherId
             const worksheets = await db.collection('worksheets').find({
-                teacherId: new ObjectId(teacherId),
+                teacherId: teacherId,  // Worksheets stored with string teacherId
                 classId: classId,
                 status: 'graded'
             }).toArray();
 
-            // Get all students in this class
+            // Get all students in this class - FIXED: Students use ObjectId teacherId  
             const students = await db.collection('students').find({
-                teacherId: new ObjectId(teacherId),
+                teacherId: new ObjectId(teacherId),  // Students stored with ObjectId
                 classes: classId,
                 isActive: true
             }).toArray();
@@ -69,10 +69,35 @@ router.get('/classes', verifyToken, async (req, res) => {
                 );
 
                 if (studentWorksheets.length > 0) {
-                    const totalPoints = studentWorksheets.reduce((sum, w) =>
-                        sum + (w.gradingResults?.totalPoints || 0), 0);
-                    const totalPointsEarned = studentWorksheets.reduce((sum, w) =>
-                        sum + (w.gradingResults?.totalPointsEarned || 0), 0);
+                    // FIXED: Calculate points from actual grading results structure
+                    let totalPoints = 0;
+                    let totalPointsEarned = 0;
+
+                    for (const worksheet of studentWorksheets) {
+                        if (worksheet.gradingResults) {
+                            // Check if we have the old totalPoints structure
+                            if (worksheet.gradingResults.totalPoints !== undefined) {
+                                totalPoints += worksheet.gradingResults.totalPoints || 0;
+                                totalPointsEarned += worksheet.gradingResults.totalPointsEarned || 0;
+                            }
+                            // FIXED: Handle new Gemini 2.5 Flash structure
+                            else if (worksheet.gradingResults.questions && Array.isArray(worksheet.gradingResults.questions)) {
+                                const worksheetPoints = worksheet.gradingResults.questions.reduce((sum, q) => sum + (q.maxScore || 1), 0);
+                                const worksheetPointsEarned = worksheet.gradingResults.questions.reduce((sum, q) => sum + (q.score || 0), 0);
+                                totalPoints += worksheetPoints;
+                                totalPointsEarned += worksheetPointsEarned;
+                            }
+                            // FIXED: Fallback to totalScore percentage if available
+                            else if (worksheet.gradingResults.totalScore !== undefined) {
+                                // Assume 100 point scale if no individual questions
+                                const worksheetPoints = 100;
+                                const worksheetPointsEarned = worksheet.gradingResults.totalScore;
+                                totalPoints += worksheetPoints;
+                                totalPointsEarned += worksheetPointsEarned;
+                            }
+                        }
+                    }
+
                     const averageScore = totalPoints > 0 ? Math.round((totalPointsEarned / totalPoints) * 100) : 0;
 
                     totalClassPoints += totalPoints;
@@ -194,19 +219,19 @@ router.get('/classes/:classId/student-grades', verifyToken, async (req, res) => 
         const teacherId = req.user.userId;
         const classId = req.params.classId;
 
-        // Verify class belongs to teacher
+        // Verify class belongs to teacher - FIXED: Classes use ObjectId teacherId
         const classDoc = await db.collection('classes').findOne({
             _id: new ObjectId(classId),
-            teacherId: new ObjectId(teacherId)
+            teacherId: new ObjectId(teacherId)  // Classes stored with ObjectId
         });
 
         if (!classDoc) {
             return res.status(404).json({ error: 'Class not found' });
         }
 
-        // Get all students in the class
+        // Get all students in the class - FIXED: Students use ObjectId teacherId
         const students = await db.collection('students').find({
-            teacherId: new ObjectId(teacherId),
+            teacherId: new ObjectId(teacherId),  // Students stored with ObjectId
             classes: new ObjectId(classId),
             isActive: true
         }).toArray();
@@ -214,19 +239,44 @@ router.get('/classes/:classId/student-grades', verifyToken, async (req, res) => 
         const studentGrades = [];
 
         for (const student of students) {
-            // Get all worksheets for this student in this class
+            // Get all worksheets for this student in this class - FIXED: Worksheets use string teacherId
             const worksheets = await db.collection('worksheets').find({
-                teacherId: new ObjectId(teacherId),
+                teacherId: teacherId,  // Worksheets stored with string teacherId
                 classId: new ObjectId(classId),
                 studentId: student._id,
                 status: 'graded'
             }).toArray();
 
             if (worksheets.length > 0) {
-                const totalPoints = worksheets.reduce((sum, w) =>
-                    sum + (w.gradingResults?.totalPoints || 0), 0);
-                const totalPointsEarned = worksheets.reduce((sum, w) =>
-                    sum + (w.gradingResults?.totalPointsEarned || 0), 0);
+                // FIXED: Calculate points from actual grading results structure
+                let totalPoints = 0;
+                let totalPointsEarned = 0;
+
+                for (const worksheet of worksheets) {
+                    if (worksheet.gradingResults) {
+                        // Check if we have the old totalPoints structure
+                        if (worksheet.gradingResults.totalPoints !== undefined) {
+                            totalPoints += worksheet.gradingResults.totalPoints || 0;
+                            totalPointsEarned += worksheet.gradingResults.totalPointsEarned || 0;
+                        }
+                        // FIXED: Handle new Gemini 2.5 Flash structure
+                        else if (worksheet.gradingResults.questions && Array.isArray(worksheet.gradingResults.questions)) {
+                            const worksheetPoints = worksheet.gradingResults.questions.reduce((sum, q) => sum + (q.maxScore || 1), 0);
+                            const worksheetPointsEarned = worksheet.gradingResults.questions.reduce((sum, q) => sum + (q.score || 0), 0);
+                            totalPoints += worksheetPoints;
+                            totalPointsEarned += worksheetPointsEarned;
+                        }
+                        // FIXED: Fallback to totalScore percentage if available
+                        else if (worksheet.gradingResults.totalScore !== undefined) {
+                            // Assume 100 point scale if no individual questions
+                            const worksheetPoints = 100;
+                            const worksheetPointsEarned = worksheet.gradingResults.totalScore;
+                            totalPoints += worksheetPoints;
+                            totalPointsEarned += worksheetPointsEarned;
+                        }
+                    }
+                }
+
                 const percentage = totalPoints > 0 ? Math.round((totalPointsEarned / totalPoints) * 100) : 0;
 
                 studentGrades.push({
@@ -273,10 +323,10 @@ router.post('/classes/:classId/ai-recommendations', verifyToken, async (req, res
         const teacherId = req.user.userId;
         const classId = req.params.classId;
 
-        // Verify class belongs to teacher
+        // Verify class belongs to teacher - FIXED: Classes use ObjectId teacherId
         const classDoc = await db.collection('classes').findOne({
             _id: new ObjectId(classId),
-            teacherId: new ObjectId(teacherId)
+            teacherId: new ObjectId(teacherId)  // Classes stored with ObjectId
         });
 
         if (!classDoc) {
@@ -285,7 +335,7 @@ router.post('/classes/:classId/ai-recommendations', verifyToken, async (req, res
 
         // Get all worksheets for this class
         const worksheets = await db.collection('worksheets').find({
-            teacherId: new ObjectId(teacherId),
+            teacherId: teacherId,  // Worksheets stored with string teacherId
             classId: new ObjectId(classId),
             status: 'graded'
         }).toArray();
@@ -325,12 +375,35 @@ router.post('/classes/:classId/ai-recommendations', verifyToken, async (req, res
                 commonErrors.push(...worksheet.gradingResults.commonErrors);
             }
 
+            // FIXED: Calculate points for AI recommendations from actual grading results structure
+            let pointsEarned = 0;
+            let totalPoints = 0;
+
+            if (worksheet.gradingResults) {
+                // Check if we have the old totalPoints structure
+                if (worksheet.gradingResults.totalPoints !== undefined) {
+                    pointsEarned = worksheet.gradingResults.totalPointsEarned || 0;
+                    totalPoints = worksheet.gradingResults.totalPoints || 0;
+                }
+                // FIXED: Handle new Gemini 2.5 Flash structure
+                else if (worksheet.gradingResults.questions && Array.isArray(worksheet.gradingResults.questions)) {
+                    totalPoints = worksheet.gradingResults.questions.reduce((sum, q) => sum + (q.maxScore || 1), 0);
+                    pointsEarned = worksheet.gradingResults.questions.reduce((sum, q) => sum + (q.score || 0), 0);
+                }
+                // FIXED: Fallback to totalScore percentage if available
+                else if (worksheet.gradingResults.totalScore !== undefined) {
+                    // Assume 100 point scale if no individual questions
+                    totalPoints = 100;
+                    pointsEarned = worksheet.gradingResults.totalScore;
+                }
+            }
+
             studentPerformanceData.push({
                 studentName: worksheet.studentName,
                 topic: worksheet.metadata?.assignment || 'Unknown',
                 score: worksheet.gradingResults?.totalScore || 0,
-                pointsEarned: worksheet.gradingResults?.totalPointsEarned || 0,
-                totalPoints: worksheet.gradingResults?.totalPoints || 0
+                pointsEarned: pointsEarned,
+                totalPoints: totalPoints
             });
         });
 
@@ -407,6 +480,167 @@ router.get('/classes/:classId/ai-recommendations', verifyToken, async (req, res)
     } catch (error) {
         console.error('Get AI recommendations error:', error);
         res.status(500).json({ error: 'Failed to get AI recommendations' });
+    }
+});
+
+// Debug endpoint to check worksheet structure and analytics data
+router.get('/debug/worksheets', verifyToken, async (req, res) => {
+    try {
+        const db = await getDb();
+        const teacherId = req.user.userId;
+
+        // Get all worksheets for this teacher
+        const worksheets = await db.collection('worksheets').find({
+            teacherId: teacherId  // Use string directly
+        }).toArray();
+
+        console.log(`Found ${worksheets.length} worksheets for teacher ${teacherId}`);
+
+        const worksheetAnalysis = worksheets.map(w => {
+            // Calculate points using the same logic as analytics
+            let pointsEarned = 0;
+            let totalPoints = 0;
+
+            if (w.gradingResults) {
+                if (w.gradingResults.totalPoints !== undefined) {
+                    pointsEarned = w.gradingResults.totalPointsEarned || 0;
+                    totalPoints = w.gradingResults.totalPoints || 0;
+                }
+                else if (w.gradingResults.questions && Array.isArray(w.gradingResults.questions)) {
+                    totalPoints = w.gradingResults.questions.reduce((sum, q) => sum + (q.maxScore || 1), 0);
+                    pointsEarned = w.gradingResults.questions.reduce((sum, q) => sum + (q.score || 0), 0);
+                }
+                else if (w.gradingResults.totalScore !== undefined) {
+                    totalPoints = 100;
+                    pointsEarned = w.gradingResults.totalScore;
+                }
+            }
+
+            const percentage = totalPoints > 0 ? Math.round((pointsEarned / totalPoints) * 100) : 0;
+
+            return {
+                id: w._id,
+                status: w.status,
+                studentId: w.studentId,
+                studentName: w.studentName,
+                classId: w.classId,
+                className: w.className,
+                originalName: w.originalName,
+                hasGradingResults: !!w.gradingResults,
+                gradingStructure: w.gradingResults ? {
+                    hasTotalPoints: w.gradingResults.totalPoints !== undefined,
+                    hasQuestions: w.gradingResults.questions && Array.isArray(w.gradingResults.questions),
+                    hasTotalScore: w.gradingResults.totalScore !== undefined,
+                    questionsCount: w.gradingResults.questions?.length || 0,
+                    totalScore: w.gradingResults.totalScore
+                } : null,
+                calculatedResults: {
+                    pointsEarned,
+                    totalPoints,
+                    percentage
+                },
+                uploadDate: w.uploadDate,
+                completedAt: w.completedAt
+            };
+        });
+
+        // Get classes for this teacher - FIXED: Classes use ObjectId teacherId
+        const classes = await db.collection('classes').find({
+            teacherId: new ObjectId(teacherId),  // Classes stored with ObjectId
+            isActive: true
+        }).toArray();
+
+        // Get students for this teacher - FIXED: Students use ObjectId teacherId
+        const students = await db.collection('students').find({
+            teacherId: new ObjectId(teacherId),  // Students stored with ObjectId
+            isActive: true
+        }).toArray();
+
+        res.json({
+            teacherId,
+            totalWorksheets: worksheets.length,
+            totalClasses: classes.length,
+            totalStudents: students.length,
+            worksheets: worksheetAnalysis,
+            classes: classes.map(c => ({
+                id: c._id,
+                name: c.name,
+                subject: c.subject,
+                gradeLevel: c.gradeLevel,
+                studentsCount: c.students?.length || 0
+            })),
+            students: students.map(s => ({
+                id: s._id,
+                name: s.name,
+                grade: s.grade,
+                classesCount: s.classes?.length || 0
+            }))
+        });
+
+    } catch (error) {
+        console.error('Debug worksheets error:', error);
+        res.status(500).json({ error: 'Failed to debug worksheets' });
+    }
+});
+
+// Debug endpoint to verify grading results structure
+router.get('/debug/grading-results/:worksheetId', verifyToken, async (req, res) => {
+    try {
+        const db = await getDb();
+        const { worksheetId } = req.params;
+
+        const worksheet = await db.collection('worksheets').findOne({
+            _id: new ObjectId(worksheetId),
+            teacherId: req.user.userId  // Use string directly
+        });
+
+        if (!worksheet) {
+            return res.status(404).json({ error: 'Worksheet not found' });
+        }
+
+        // Calculate points using the same logic as analytics
+        let pointsEarned = 0;
+        let totalPoints = 0;
+
+        if (worksheet.gradingResults) {
+            if (worksheet.gradingResults.totalPoints !== undefined) {
+                pointsEarned = worksheet.gradingResults.totalPointsEarned || 0;
+                totalPoints = worksheet.gradingResults.totalPoints || 0;
+            }
+            else if (worksheet.gradingResults.questions && Array.isArray(worksheet.gradingResults.questions)) {
+                totalPoints = worksheet.gradingResults.questions.reduce((sum, q) => sum + (q.maxScore || 1), 0);
+                pointsEarned = worksheet.gradingResults.questions.reduce((sum, q) => sum + (q.score || 0), 0);
+            }
+            else if (worksheet.gradingResults.totalScore !== undefined) {
+                totalPoints = 100;
+                pointsEarned = worksheet.gradingResults.totalScore;
+            }
+        }
+
+        const percentage = totalPoints > 0 ? Math.round((pointsEarned / totalPoints) * 100) : 0;
+
+        res.json({
+            worksheetId: worksheet._id,
+            studentName: worksheet.studentName,
+            status: worksheet.status,
+            hasGradingResults: !!worksheet.gradingResults,
+            gradingStructure: {
+                hasTotalPoints: worksheet.gradingResults?.totalPoints !== undefined,
+                hasQuestions: worksheet.gradingResults?.questions && Array.isArray(worksheet.gradingResults.questions),
+                hasTotalScore: worksheet.gradingResults?.totalScore !== undefined,
+                questionsCount: worksheet.gradingResults?.questions?.length || 0
+            },
+            calculatedResults: {
+                pointsEarned,
+                totalPoints,
+                percentage
+            },
+            rawGradingResults: worksheet.gradingResults
+        });
+
+    } catch (error) {
+        console.error('Debug endpoint error:', error);
+        res.status(500).json({ error: 'Failed to debug grading results' });
     }
 });
 
