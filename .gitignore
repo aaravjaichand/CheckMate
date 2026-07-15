@@ -1,1 +1,25 @@
+# Dependencies
+node_modules/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+
+# Build output
+public/
+
+# Uploads
+uploads/
+
+# Deployment
 .vercel
+
+# OS
+.DS_Store
+
+# Tooling
+.claude/
